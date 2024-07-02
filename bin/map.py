@@ -46,7 +46,7 @@ class Chunk(pygame.sprite.Group):
         heightCounter = 0
         height = 0
         
-        for x in range(0,int(Chunk.SIZE.x+1)):
+        for x in range(0,int(Chunk.SIZE.x)):
             heightCounter += 1
             if random.randint(0,100) > 90:
                 heightCounter = 0
@@ -155,8 +155,8 @@ class Chunk(pygame.sprite.Group):
         
         self.__chunkPos = chunkPos
         self.__startPoint = Vector2(
-            chunkPos[0] * Chunk.SIZE.x * Block.SIZE.x + 1,
-            chunkPos[1] * Chunk.SIZE.y * Block.SIZE.y + 1
+            chunkPos[0] * Chunk.SIZE.x * Block.SIZE.x,
+            chunkPos[1] * Chunk.SIZE.y * Block.SIZE.y
         )
         
   
@@ -213,17 +213,25 @@ class Block(pygame.sprite.Sprite):
         super().__init__(chunk,chunk.getScene())
         self.__chunk = chunk
         self.image = image
-        self.rect: pygame.Rect = self.image.get_rect()
-        self.rect.topleft = cords
         self.__cords: Vector2 = cords
         self.__cordsAbsolute: Vector2 = Vector2(cords.x + self.__chunk.getStartingPoint().x,
-                                        cords.y + self.__chunk.getStartingPoint().y,)
+                                        cords.y + self.__chunk.getStartingPoint().y)
+        
+        self.rect: pygame.Rect = self.image.get_rect()
+        self.rect.topleft = self.__cordsAbsolute
+        
         self.doRender = True
 
+class dupa(): pass
 class Scene(pygame.sprite.Group):    
     RENDERDISTANCE = 3
     
     async def tick(self) -> None:
+        aha = dupa()
+        aha.rect = pygame.rect.Rect(pygame.mouse.get_pos()[0]-self.getGame().camera.cords.x,pygame.mouse.get_pos()[1]-self.getGame().camera.cords.y,1,1)
+        print(pygame.sprite.spritecollide(aha, self.sprites(), False))
+        
+        
         surfSize = pygame.display.get_surface().get_size()
         centerChunkPos = ((self.getGame().camera.cords.x + surfSize[0]) // Block.SIZE.x // Chunk.SIZE.x,
                      (self.getGame().camera.cords.y + surfSize[1]) // Block.SIZE.y // Chunk.SIZE.y)

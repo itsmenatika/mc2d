@@ -61,7 +61,7 @@ class Game:
             await self.__drawLoop()
             await self.__functionToGetAnotherMoreSpace()
             self.clock.tick()
-            print(self.clock.get_fps())
+            # print(self.clock.get_fps())
             
             
             
