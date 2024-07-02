@@ -43,7 +43,7 @@ class Chunk(pygame.sprite.Group):
     
     
     def generateHeight(self, x, chunkPos: list[int,int], seedInt: int,  cache: dict, fromLeft: bool = False, startPoint: int = 10,
-                       max: Optional[int] = None, min: Optional[int] = None) -> int:  
+                       max: Optional[int] = None, min: Optional[int] = None, probability: int = 60) -> int:  
         _s = seedInt % 10
         _xAbsolute = x + chunkPos[0] * Chunk.SIZE.x
         
@@ -51,7 +51,7 @@ class Chunk(pygame.sprite.Group):
         if _xAbsolute == 0: return startPoint
         
         if x + (chunkPos[0] + 1) * Chunk.SIZE.x not in cache and not fromLeft:
-            return self.generateHeight(x, chunkPos, seedInt, cache, True, startPoint=startPoint, max=max, min=min)
+            return self.generateHeight(x, chunkPos, seedInt, cache, True, startPoint=startPoint, max=max, min=min, probability=probability)
         
         
         random.seed(f"${self.getScene().getSeed()}_CHUNK_{self.getChunkPos()}_height_${x}")
@@ -64,10 +64,10 @@ class Chunk(pygame.sprite.Group):
         if fromLeft:
             if x < 0:
                 chunkPos[0] += 1
-                return self.generateHeight(x, chunkPos, seedInt, cache, True, startPoint=startPoint, max=max, min=min)
+                return self.generateHeight(x, chunkPos, seedInt, cache, True, startPoint=startPoint, max=max, min=min, probability=probability)
             
-            _n = self.generateHeight(x - 1, chunkPos, seedInt, cache, True, startPoint=startPoint, max=max, min=min)
-            if(wannabe > 60):
+            _n = self.generateHeight(x - 1, chunkPos, seedInt, cache, True, startPoint=startPoint, max=max, min=min, probability=probability)
+            if(wannabe > probability):
                 _n += howmuch      
             
             
@@ -86,8 +86,8 @@ class Chunk(pygame.sprite.Group):
             x -= Chunk.SIZE.x
             chunkPos[0] += 1
         
-        _n = self.generateHeight(x + 1, chunkPos, seedInt, cache, False,  startPoint=startPoint, max=max, min=min)
-        if(wannabe > 60):
+        _n = self.generateHeight(x + 1, chunkPos, seedInt, cache, False,  startPoint=startPoint, max=max, min=min, probability=probability)
+        if(wannabe > probability):
             _n += howmuch
             
         if min is not None and _n < min:
@@ -127,12 +127,40 @@ class Chunk(pygame.sprite.Group):
                 )
                 
             currentHeight = height + dirtheight + 1
-            for y in range(0,20):
+            for y in range(0,30):
                 self.__blocks[(x,y+currentHeight)] = Block.newBlockByResourceManager(
                     chunk=self,
                     name="stone",
                     cords=Vector2(x * Block.SIZE.x,(y + currentHeight) * Block.SIZE.y)
                 ) 
+                if y + currentHeight >= 32:   
+                    bedrockHeight = self.generateHeight(x, list(self.getChunkPos()), self.getScene().getSeedInt(), self.getScene().heightCache['bedrock_height'], False, startPoint=2, max=2, min=1, probability=20)
+                    
+                    if bedrockHeight == 1:
+                        self.__blocks[(x,y+currentHeight + 1)] = Block.newBlockByResourceManager(
+                            chunk=self,
+                            name="stone",
+                            cords=Vector2(x * Block.SIZE.x,(y + currentHeight + 1) * Block.SIZE.y)
+                        )
+                        self.__blocks[(x,y+currentHeight + 2)] = Block.newBlockByResourceManager(
+                            chunk=self,
+                            name="bedrock",
+                            cords=Vector2(x * Block.SIZE.x,(y + currentHeight + 2) * Block.SIZE.y)
+                        ) 
+                    else:
+                        self.__blocks[(x,y+currentHeight + 1)] = Block.newBlockByResourceManager(
+                            chunk=self,
+                            name="bedrock",
+                            cords=Vector2(x * Block.SIZE.x,(y + currentHeight + 1) * Block.SIZE.y)
+                        )
+                        self.__blocks[(x,y+currentHeight + 2)] = Block.newBlockByResourceManager(
+                            chunk=self,
+                            name="bedrock",
+                            cords=Vector2(x * Block.SIZE.x,(y + currentHeight + 2) * Block.SIZE.y)
+                        ) 
+                    break
+                
+                
             
         
     
@@ -342,7 +370,8 @@ class Scene(pygame.sprite.Group):
         
         self.heightCache = {
             "grass_height": {},
-            "dirt_height": {}
+            "dirt_height": {},
+            "bedrock_height": {}
         }
         
         # info

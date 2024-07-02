@@ -8,6 +8,7 @@ from bin.tiles.grassBetween import grassBetween
 from bin.tiles.stoneBetween import stoneBetween
 from bin.tiles.coalOre import coalOre
 from bin.tiles.oak_wood import oakWood
+from bin.tiles.bedrock import bedrock
 
 class unkownNameSpace(Exception): pass
 class resourceManager:
@@ -89,6 +90,10 @@ GAME_NAMESPACE = {
             "oak_wood": {
                 "intID": 7,
                 "class": oakWood
+            },
+            "bedrock": {
+                "intID": 8,
+                "class": bedrock
             }
     }
 }
