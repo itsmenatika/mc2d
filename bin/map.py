@@ -9,11 +9,11 @@ import asyncio
 import random
 # from bin.camera import Camera
 from functools import reduce
-
+from bin.abstractClasses import Executor
 
 class chunkNotLoaded(Exception): pass
 
-class Chunk(pygame.sprite.Group):
+class Chunk(pygame.sprite.Group, Executor):
     SIZE = Vector2(16,360)
     
     '''You have to also remove this chunk from list of actived chunks (python reasons). If you don't wanna mess with this just use map.unloadChunk(chunk) instead!'''
@@ -112,7 +112,9 @@ class Chunk(pygame.sprite.Group):
             self.__blocks[(x,height)] = Block.newBlockByResourceManager(
                 chunk=self,
                 name="grass_block",
-                cords=Vector2(x * Block.SIZE.x,height * Block.SIZE.y)
+                cordsRelative=Vector2(x * Block.SIZE.x,height * Block.SIZE.y),
+                executor=self,
+                reason="world_generator"
             )
             
             dirtheight = self.generateHeight(x, list(self.getChunkPos()), self.getScene().getSeedInt(), self.getScene().heightCache['dirt_height'], False, startPoint=4, max=5, min=3)
@@ -123,7 +125,9 @@ class Chunk(pygame.sprite.Group):
                 self.__blocks[(x,height+y+1)] = Block.newBlockByResourceManager(
                     chunk=self,
                     name="dirt",
-                    cords=Vector2(x * Block.SIZE.x,(height + 1 + y) * Block.SIZE.y)
+                    cordsRelative=Vector2(x * Block.SIZE.x,(height + 1 + y) * Block.SIZE.y),
+                    executor=self,
+                    reason="world_generator"
                 )
                 
             currentHeight = height + dirtheight + 1
@@ -131,7 +135,9 @@ class Chunk(pygame.sprite.Group):
                 self.__blocks[(x,y+currentHeight)] = Block.newBlockByResourceManager(
                     chunk=self,
                     name="stone",
-                    cords=Vector2(x * Block.SIZE.x,(y + currentHeight) * Block.SIZE.y)
+                    cordsRelative=Vector2(x * Block.SIZE.x,(y + currentHeight) * Block.SIZE.y),
+                    executor=self,
+                    reason="world_generator"
                 ) 
                 if y + currentHeight >= 32:   
                     bedrockHeight = self.generateHeight(x, list(self.getChunkPos()), self.getScene().getSeedInt(), self.getScene().heightCache['bedrock_height'], False, startPoint=2, max=2, min=1, probability=20)
@@ -140,23 +146,31 @@ class Chunk(pygame.sprite.Group):
                         self.__blocks[(x,y+currentHeight + 1)] = Block.newBlockByResourceManager(
                             chunk=self,
                             name="stone",
-                            cords=Vector2(x * Block.SIZE.x,(y + currentHeight + 1) * Block.SIZE.y)
+                            cordsRelative=Vector2(x * Block.SIZE.x,(y + currentHeight + 1) * Block.SIZE.y),
+                            executor=self,
+                            reason="world_generator"
                         )
                         self.__blocks[(x,y+currentHeight + 2)] = Block.newBlockByResourceManager(
                             chunk=self,
                             name="bedrock",
-                            cords=Vector2(x * Block.SIZE.x,(y + currentHeight + 2) * Block.SIZE.y)
+                            cordsRelative=Vector2(x * Block.SIZE.x,(y + currentHeight + 2) * Block.SIZE.y),
+                            executor=self,
+                            reason="world_generator"
                         ) 
                     else:
                         self.__blocks[(x,y+currentHeight + 1)] = Block.newBlockByResourceManager(
                             chunk=self,
                             name="bedrock",
-                            cords=Vector2(x * Block.SIZE.x,(y + currentHeight + 1) * Block.SIZE.y)
+                            cordsRelative=Vector2(x * Block.SIZE.x,(y + currentHeight + 1) * Block.SIZE.y),
+                            executor=self,
+                            reason="world_generator"
                         )
                         self.__blocks[(x,y+currentHeight + 2)] = Block.newBlockByResourceManager(
                             chunk=self,
                             name="bedrock",
-                            cords=Vector2(x * Block.SIZE.x,(y + currentHeight + 2) * Block.SIZE.y)
+                            cordsRelative=Vector2(x * Block.SIZE.x,(y + currentHeight + 2) * Block.SIZE.y),
+                            executor=self,
+                            reason="world_generator"
                         ) 
                     break
                 
@@ -228,6 +242,9 @@ class Block(pygame.sprite.Sprite):
     
     SIZE = Vector2(32,32)
     
+    def onGenerate(self, cordsRelative: Vector2, cordsAbsolute: Vector2, chunk: Chunk):
+        pass
+    
     '''Returns cords relative to chunk starting Points'''
     def getCordsRelative(self) -> Vector2:
         return self.__cords
@@ -238,18 +255,20 @@ class Block(pygame.sprite.Sprite):
         
     '''Create new block using resourceManager'''
     @staticmethod
-    def newBlockByResourceManager(chunk: Chunk, name: str, cords: Optional[Vector2] = None) -> 'Block':
+    def newBlockByResourceManager(chunk: Chunk, name: str, cordsRelative: Optional[Vector2] = None, executor: Optional[Executor] = None, reason: Optional[str] = None) -> 'Block':
         rm = chunk.getScene().getGame().getResourceManager()
         
-        if cords == None:
+        if cordsRelative == None:
             cords = Vector2(0,0)
             
         blockInfo = rm.getBlockInformation(name)
         
         return blockInfo['class'](
             image=rm.getTexture(blockInfo['class'].MAINTEXTURE),
-            cords=cords,
-            chunk=chunk
+            cordsRelative=cordsRelative,
+            chunk=chunk,
+            executor = executor,
+            reason=reason
         )
         
     
@@ -259,18 +278,21 @@ class Block(pygame.sprite.Sprite):
     def getScene(self) -> 'Scene':
         return self.__chunk.getScene()
     
-    def __init__(self, image:pygame.surface.Surface, cords: Vector2, chunk: Chunk) -> None:
+    def __init__(self, image:pygame.surface.Surface, cordsRelative: Vector2, chunk: Chunk, executor: Optional[Executor] = None, reason: Optional[str] = None) -> None:
         super().__init__(chunk,chunk.getScene())
         self.__chunk = chunk
         self.image = image
-        self.__cords: Vector2 = cords
-        self.__cordsAbsolute: Vector2 = Vector2(cords.x + self.__chunk.getStartingPoint().x,
-                                        cords.y + self.__chunk.getStartingPoint().y)
+        self.__cords: Vector2 = cordsRelative
+        self.__cordsAbsolute: Vector2 = Vector2(cordsRelative.x + self.__chunk.getStartingPoint().x,
+                                        cordsRelative.y + self.__chunk.getStartingPoint().y)
         
         self.rect: pygame.Rect = self.image.get_rect()
         self.rect.topleft = self.__cordsAbsolute
         
         self.doRender = True
+        
+        if reason=="world_generator":
+            self.onGenerate(cordsAbsolute=self.__cordsAbsolute,cordsRelative=self.__cords, chunk=chunk)
 
 # class dupa(): pass
 class Scene(pygame.sprite.Group):    
