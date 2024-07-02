@@ -44,6 +44,7 @@ class Chunk(pygame.sprite.Group):
         random.seed(f"${self.getScene().getSeed()}_CHUNK_{self.getChunkPos()}")
         
         heightCounter = 0
+        treeCounter = 0
         height = 0
         
         for x in range(0,int(Chunk.SIZE.x)):
@@ -58,7 +59,26 @@ class Chunk(pygame.sprite.Group):
                 height += random.randint(-1,1)
                 if random.randint(0,100) > 90:
                     height += random.randint(0,3)
+                    
+            if treeCounter > 3 and random.randint(0,3) == 1:
+                treeCounter = 0
+                self.__blocks[(x,9+height)] = Block.newBlockByResourceManager(
+                        chunk=self,
+                        name="oak_wood",
+                        cords=Vector2(x * Block.SIZE.x, (9+height) * Block.SIZE.y)
+                    )  
+                self.__blocks[(x,8+height)] = Block.newBlockByResourceManager(
+                        chunk=self,
+                        name="oak_wood",
+                        cords=Vector2(x * Block.SIZE.x, (8+height) * Block.SIZE.y)
+                    )  
+                self.__blocks[(x,7+height)] = Block.newBlockByResourceManager(
+                        chunk=self,
+                        name="oak_wood",
+                        cords=Vector2(x * Block.SIZE.x, (7+height) * Block.SIZE.y)
+                    ) 
             
+            treeCounter += 1
                 
                 
             
