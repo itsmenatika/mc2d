@@ -242,7 +242,7 @@ class Block(pygame.sprite.Sprite):
     
     SIZE = Vector2(32,32)
     
-    def onGenerate(self, cordsRelative: Vector2, cordsAbsolute: Vector2, chunk: Chunk):
+    def onGenerate(self, cordsRelative: Vector2, cordsAbsolute: Vector2, inChunkPosition: tuple[int,int], chunk: Chunk):
         pass
     
     '''Returns cords relative to chunk starting Points'''
@@ -252,6 +252,10 @@ class Block(pygame.sprite.Sprite):
     '''Returns cords'''
     def getCords(self) -> Vector2:
         return self.__cordsAbsolute
+    
+    def getInChunkPosition(self) -> tuple[int,int]:
+        return (int(self.__cords.x / Block.SIZE.x),
+                int(self.__cords.y / Block.SIZE.y))
         
     '''Create new block using resourceManager'''
     @staticmethod
@@ -292,7 +296,9 @@ class Block(pygame.sprite.Sprite):
         self.doRender = True
         
         if reason=="world_generator":
-            self.onGenerate(cordsAbsolute=self.__cordsAbsolute,cordsRelative=self.__cords, chunk=chunk)
+            inChunkPosition = (int(self.__cords.x / Block.SIZE.x),
+                               int(self.__cords.y / Block.SIZE.y))
+            self.onGenerate(cordsAbsolute=self.__cordsAbsolute,cordsRelative=self.__cords, inChunkPosition=inChunkPosition, chunk=chunk)
 
 # class dupa(): pass
 class Scene(pygame.sprite.Group):    

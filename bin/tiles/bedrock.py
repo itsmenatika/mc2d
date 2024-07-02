@@ -9,8 +9,8 @@ class bedrock(Block):
     ID = "bedrock"
     IDInt = 8
     
-    def onGenerate(self, cordsRelative: Vector2, cordsAbsolute: Vector2, chunk: Chunk):
-        print(f"bedrock generated in {cordsAbsolute}")
+    def onGenerate(self, cordsRelative: Vector2, cordsAbsolute: Vector2, inChunkPosition: tuple[int,int], chunk: Chunk):
+        print(f"bedrock generated in {cordsAbsolute} {inChunkPosition}")
 
         
     def __init__(self, image: Surface, cordsRelative: Vector2, chunk: Chunk, executor: Executor | None = None, reason: str | None = None) -> None:
