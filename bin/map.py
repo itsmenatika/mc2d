@@ -108,7 +108,7 @@ class Chunk(pygame.sprite.Group):
         random.seed(f"${self.getScene().getSeed()}_CHUNK_{self.getChunkPos()}")
         
         for x in range(0,int(Chunk.SIZE.x)):
-            height = self.generateHeight(x, list(self.getChunkPos()), self.getScene().getSeedInt(), self.getScene().heightCache['grass_height'], False)
+            height = self.generateHeight(x, list(self.getChunkPos()), self.getScene().getSeedInt(), self.getScene().heightCache['grass_height'], False, min=6, max=16)
             self.__blocks[(x,height)] = Block.newBlockByResourceManager(
                 chunk=self,
                 name="grass_block",
