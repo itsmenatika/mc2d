@@ -242,7 +242,13 @@ class Block(pygame.sprite.Sprite):
     
     SIZE = Vector2(32,32)
     
+    
+    '''Method executed when chunk is generated'''
     def onGenerate(self, cordsRelative: Vector2, cordsAbsolute: Vector2, inChunkPosition: tuple[int,int], chunk: Chunk):
+        pass
+
+    '''Method executed when chunk is loaded'''
+    def onLoad(self, cordsRelative: Vector2, cordsAbsolute: Vector2, inChunkPosition: tuple[int,int], chunk: Chunk):
         pass
     
     '''Returns cords relative to chunk starting Points'''
@@ -299,6 +305,11 @@ class Block(pygame.sprite.Sprite):
             inChunkPosition = (int(self.__cords.x / Block.SIZE.x),
                                int(self.__cords.y / Block.SIZE.y))
             self.onGenerate(cordsAbsolute=self.__cordsAbsolute,cordsRelative=self.__cords, inChunkPosition=inChunkPosition, chunk=chunk)
+        elif reason == "chunk_load":
+            inChunkPosition = (int(self.__cords.x / Block.SIZE.x),
+                               int(self.__cords.y / Block.SIZE.y))
+            self.onLoad(cordsAbsolute=self.__cordsAbsolute,cordsRelative=self.__cords, inChunkPosition=inChunkPosition, chunk=chunk)
+            
 
 # class dupa(): pass
 class Scene(pygame.sprite.Group):    
