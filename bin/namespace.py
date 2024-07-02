@@ -40,11 +40,10 @@ class resourceManager:
                             
                             self.__resources['intIds'][block['intID']] = blockName
                             
-                            print(block['class'].MAINTEXTURE.split(".")[:-1])
+                        
                             
                             # main Texture
                             if 'MAINTEXTURE' in block['class'].__dict__:
-                                print(block['class'].MAINTEXTURE)
                                 self.__resources[block['class'].MAINTEXTURE] = pygame.image.load(block['class'].MAINTEXTURE).convert_alpha()
                         
                             else:

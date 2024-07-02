@@ -24,6 +24,7 @@ class Chunk(pygame.sprite.Group):
         
     def save(self) -> None:
         pass
+        # self.getScene().chunkCache[self.getChunkPos()] = self
     
     def getScene(self) -> 'Scene':
         return self.__map
@@ -40,154 +41,103 @@ class Chunk(pygame.sprite.Group):
     def getChunkPos(self) -> tuple[int,int]:
         return self.__chunkPos
     
+    
+    def generateHeight(self, x, chunkPos: list[int,int], seedInt: int,  cache: dict, fromLeft: bool = False, startPoint: int = 10,
+                       max: Optional[int] = None, min: Optional[int] = None) -> int:  
+        _s = seedInt % 10
+        _xAbsolute = x + chunkPos[0] * Chunk.SIZE.x
+        
+        if _xAbsolute in cache: return cache[_xAbsolute]
+        if _xAbsolute == 0: return startPoint
+        
+        if x + (chunkPos[0] + 1) * Chunk.SIZE.x not in cache and not fromLeft:
+            return self.generateHeight(x, chunkPos, seedInt, cache, True, startPoint=startPoint, max=max, min=min)
+        
+        
+        random.seed(f"${self.getScene().getSeed()}_CHUNK_{self.getChunkPos()}_height_${x}")
+        
+        wannabe = random.randint(0,100)
+        howmuch = random.randint(-1,1)
+        
+        random.seed(f"${self.getScene().getSeed()}_CHUNK_{self.getChunkPos()}")
+        
+        if fromLeft:
+            if x < 0:
+                chunkPos[0] += 1
+                return self.generateHeight(x, chunkPos, seedInt, cache, True, startPoint=startPoint, max=max, min=min)
+            
+            _n = self.generateHeight(x - 1, chunkPos, seedInt, cache, True, startPoint=startPoint, max=max, min=min)
+            if(wannabe > 60):
+                _n += howmuch      
+            
+            
+            if min is not None and _n < min:
+                _n = min
+            elif max is not None and _n > max:
+                _n = max
+                
+            cache[_xAbsolute] = _n
+            return _n
+            
+            
+            
+        
+        while x > Chunk.SIZE.x:
+            x -= Chunk.SIZE.x
+            chunkPos[0] += 1
+        
+        _n = self.generateHeight(x + 1, chunkPos, seedInt, cache, False,  startPoint=startPoint, max=max, min=min)
+        if(wannabe > 60):
+            _n += howmuch
+            
+        if min is not None and _n < min:
+            _n = min
+        elif max is not None and _n > max:
+            _n = max
+            
+        cache[_xAbsolute] = _n
+        
+        return _n
+      
+            
+    
+    def height(self, x, chunkPos: tuple[int,int], seedInt: int) -> int:
+        print(seedInt)
+    
     def generateChunk(self) -> None:
         random.seed(f"${self.getScene().getSeed()}_CHUNK_{self.getChunkPos()}")
         
-        heightCounter = 0
-        treeCounter = 0
-        height = 0
-        lastChangeBetween = 0
-        lastBetween = 0
-        
         for x in range(0,int(Chunk.SIZE.x)):
-            heightCounter += 1
-            if random.randint(0,100) > 90:
-                heightCounter = 0
-                height += random.randint(-1,1)
-                if random.randint(0,100) > 90:
-                    height += random.randint(0,3)
-            elif heightCounter > 4 and random.randint(0,100) > 50:
-                heightCounter = 0
-                height += random.randint(-1,1)
-                if random.randint(0,100) > 90:
-                    height += random.randint(0,3)
-                    
-            if treeCounter > 3 and random.randint(0,3) == 1:
-                treeCounter = 0
-                self.__blocks[(x,9+height)] = Block.newBlockByResourceManager(
-                        chunk=self,
-                        name="oak_wood",
-                        cords=Vector2(x * Block.SIZE.x, (9+height) * Block.SIZE.y)
-                    )  
-                self.__blocks[(x,8+height)] = Block.newBlockByResourceManager(
-                        chunk=self,
-                        name="oak_wood",
-                        cords=Vector2(x * Block.SIZE.x, (8+height) * Block.SIZE.y)
-                    )  
-                self.__blocks[(x,7+height)] = Block.newBlockByResourceManager(
-                        chunk=self,
-                        name="oak_wood",
-                        cords=Vector2(x * Block.SIZE.x, (7+height) * Block.SIZE.y)
-                    ) 
+            height = self.generateHeight(x, list(self.getChunkPos()), self.getScene().getSeedInt(), self.getScene().heightCache['grass_height'], False)
+            self.__blocks[(x,height)] = Block.newBlockByResourceManager(
+                chunk=self,
+                name="grass_block",
+                cords=Vector2(x * Block.SIZE.x,height * Block.SIZE.y)
+            )
             
-            treeCounter += 1
+            dirtheight = self.generateHeight(x, list(self.getChunkPos()), self.getScene().getSeedInt(), self.getScene().heightCache['dirt_height'], False, startPoint=4, max=5, min=3)
+            
+
+            
+            for y in range(0,dirtheight):
+                self.__blocks[(x,height+y+1)] = Block.newBlockByResourceManager(
+                    chunk=self,
+                    name="dirt",
+                    cords=Vector2(x * Block.SIZE.x,(height + 1 + y) * Block.SIZE.y)
+                )
                 
-                
+            currentHeight = height + dirtheight + 1
+            for y in range(0,20):
+                self.__blocks[(x,y+currentHeight)] = Block.newBlockByResourceManager(
+                    chunk=self,
+                    name="stone",
+                    cords=Vector2(x * Block.SIZE.x,(y + currentHeight) * Block.SIZE.y)
+                ) 
             
-            self.__blocks[(x,10+height)] = Block.newBlockByResourceManager(
-                        chunk=self,
-                        name="grass_block",
-                        cords=Vector2(x * Block.SIZE.x, (10+height) * Block.SIZE.y)
-                    )  
-
-
-            # self.__blocks[(x,11+height)] = Block.newBlockByResourceManager(
-            #             chunk=self,
-            #             name="dirt",
-            #             cords=Vector2(x * Block.SIZE.x, (11+height) * Block.SIZE.y)
-            #         )  
-            
-            # self.__blocks[(x,12+height)] = Block.newBlockByResourceManager(
-            #             chunk=self,
-            #             name="dirt",
-            #             cords=Vector2(x * Block.SIZE.x, (12+height) * Block.SIZE.y)
-            #         )      
-
-            # self.__blocks[(x,13+height)] = Block.newBlockByResourceManager(
-            #             chunk=self,
-            #             name="grass_between",
-            #             cords=Vector2(x * Block.SIZE.x, (13+height) * Block.SIZE.y)
-            #         )             
-
-            # self.__blocks[(x,14+height)] = Block.newBlockByResourceManager(
-            #             chunk=self,
-            #             name="stone_between",
-            #             cords=Vector2(x * Block.SIZE.x, (14+height) * Block.SIZE.y)
-            #         )    
-
-            # self.__blocks[(x, 13+height)] = Block(
-            #                 image=stone, 
-            #                 cords=Vector2(x * Block.SIZE.x, (10+height) * Block.SIZE.y), 
-            #                 chunk=self) 
-            
-            
-            currentState = "dirt"
-            for y in range(11+height,35):
-                match currentState:
-                    case 'dirt':
-                        self.__blocks[(x,y)] = Block.newBlockByResourceManager(
-                            chunk=self,
-                            name="dirt",
-                            cords=Vector2(x * Block.SIZE.x, y * Block.SIZE.y)
-                        )    
-                        
-                        if lastChangeBetween > 4:
-                            if y > 14:
-                                currentState = "grass_between"
-                                lastChangeBetween = 0
-                                lastBetween = 14
-                            elif y > 13 and random.randint(0,1) == 1:
-                                currentState = "grass_between"
-                                lastChangeBetween = 0
-                                lastBetween = 13
-                                
-                        else:
-                            if y > lastBetween:
-                                lastChangeBetween += 1
-                                currentState = "grass_between"
-                        
-                        print(lastChangeBetween, lastBetween, currentState, y)
-                                
-                                
-                    
-                    case 'grass_between':
-                        self.__blocks[(x,y)] = Block.newBlockByResourceManager(
-                            chunk=self,
-                            name="grass_between",
-                            cords=Vector2(x * Block.SIZE.x, y * Block.SIZE.y)
-                        )                      
-                        
-                        currentState = "stone_between"
-                    
-                    case 'stone_between':
-                        self.__blocks[(x,y)] = Block.newBlockByResourceManager(
-                            chunk=self,
-                            name="stone_between",
-                            cords=Vector2(x * Block.SIZE.x, y * Block.SIZE.y)
-                        )                      
-                        
-                        currentState = "stone"      
-                    
-                    case 'stone':               
-                    
-                
-                        if 1 == random.randint(0,60):
-                            self.__blocks[(x,y)] = Block.newBlockByResourceManager(
-                                chunk=self,
-                                name="coal_ore",
-                                cords=Vector2(x * Block.SIZE.x, y * Block.SIZE.y)
-                            )                 
-                        else:
-                            self.__blocks[(x,y)] = Block.newBlockByResourceManager(
-                                chunk=self,
-                                name="stone",
-                                cords=Vector2(x * Block.SIZE.x, y * Block.SIZE.y)
-                            )
-                            # self.__blocks[(x, y)] = Block(
-                            #             image=stone, 
-                            #             cords=Vector2(x * Block.SIZE.x, y * Block.SIZE.y), 
-                            #             chunk=self)
+        
     
+
+
     def loadChunkFromCsv(self, csvSource: str) -> None:
         with open(csvSource) as csvFile:
             data = csv.reader(csvFile, delimiter=",")
@@ -381,11 +331,19 @@ class Scene(pygame.sprite.Group):
         chunk.unload()
         del self.__activeChunks[chunk.getChunkPos()]
         
-    def getSeed(self) -> None:
+    def getSeed(self) -> str:
         return self.__seed
     
-    def __init__(self, game: 'Game', name: str, autoAdd: bool = True, inIdle: bool = False, seed: str = "sus") -> None:
+    def getSeedInt(self) -> int:
+        return self.__seedInt
+    
+    def __init__(self, game: 'Game', name: str, autoAdd: bool = True, inIdle: bool = False, seed: str = "uwu") -> None:
         super().__init__()
+        
+        self.heightCache = {
+            "grass_height": {},
+            "dirt_height": {}
+        }
         
         # info
         self.__game: 'Game' = game
