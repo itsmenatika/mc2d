@@ -5,7 +5,7 @@ from bin.map import Scene, Chunk
 from bin.camera import Camera
 
 from pygame.math import Vector2
-
+from bin.namespace import resourceManager
 
 class gameEngineError(Exception): pass
 
@@ -109,6 +109,8 @@ class Game:
     def getCurrentScene(self) -> Scene:
         return self.__currentScene
         
+    def getResourceManager(self) -> resourceManager:
+        return self.__resourceManager
 
     
     def __init__(self, resolution: tuple[int,int]) -> None:
@@ -121,6 +123,8 @@ class Game:
         
         self.camera = Camera(cords=Vector2(0,0), game=self)
         
+        
+        
         # pygame issues
         pygame.init()
         self.__display = pygame.display.set_mode(self.__resolution)
@@ -128,6 +132,7 @@ class Game:
         self.clock = pygame.time.Clock()
         
    
+        self.__resourceManager = resourceManager(self)
         
         # asyncio
         # self.__eventLoop = asyncio.new_event_loop()

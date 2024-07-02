@@ -1,5 +1,5 @@
 # from bin import Game
-from typing import Iterable
+from typing import Iterable, Optional
 import pygame
 from pygame.math import Vector2
 from pygame.sprite import AbstractGroup
@@ -8,6 +8,7 @@ import os
 import asyncio
 import random
 # from bin.camera import Camera
+from functools import reduce
 
 
 class chunkNotLoaded(Exception): pass
@@ -40,42 +41,57 @@ class Chunk(pygame.sprite.Group):
         return self.__chunkPos
     
     def generateChunk(self) -> None:
-        grass = pygame.image.load("grass.png").convert_alpha()
-        coal = pygame.image.load("coal.png").convert_alpha()
-        stone = pygame.image.load("stone.png").convert_alpha()
-        stone_between = pygame.image.load("stone_between.png").convert_alpha()
-        grass_between = pygame.image.load("grass_between.png").convert_alpha()
-        dirt = pygame.image.load("dirt.png").convert_alpha()
-        # test.fill((100,100,100))
+        random.seed(f"${self.getScene().getSeed()}_CHUNK_{self.getChunkPos()}")
+        
+        heightCounter = 0
+        height = 0
         
         for x in range(0,int(Chunk.SIZE.x+1)):
-            height = random.randint(0,1)
+            heightCounter += 1
+            if random.randint(0,100) > 90:
+                heightCounter = 0
+                height += random.randint(-1,1)
+                if random.randint(0,100) > 90:
+                    height += random.randint(0,3)
+            elif heightCounter > 4 and random.randint(0,100) > 50:
+                heightCounter = 0
+                height += random.randint(-1,1)
+                if random.randint(0,100) > 90:
+                    height += random.randint(0,3)
             
-            self.__blocks[(x, 10+height)] = Block(
-                            image=grass, 
-                            cords=Vector2(x * Block.SIZE.x, (10+height) * Block.SIZE.y), 
-                            chunk=self)
-
-
-            self.__blocks[(x, 11+height)] = Block(
-                            image=dirt, 
-                            cords=Vector2(x * Block.SIZE.x, (11+height) * Block.SIZE.y), 
-                            chunk=self)       
+                
+                
             
-            self.__blocks[(x, 12+height)] = Block(
-                image=dirt, 
-                cords=Vector2(x * Block.SIZE.x, (12+height) * Block.SIZE.y), 
-                chunk=self)       
+            self.__blocks[(x,10+height)] = Block.newBlockByResourceManager(
+                        chunk=self,
+                        name="grass_block",
+                        cords=Vector2(x * Block.SIZE.x, (10+height) * Block.SIZE.y)
+                    )  
 
-            self.__blocks[(x, 13+height)] = Block(
-                            image=grass_between, 
-                            cords=Vector2(x * Block.SIZE.x, (13+height) * Block.SIZE.y), 
-                            chunk=self)            
 
-            self.__blocks[(x, 14+height)] = Block(
-                            image=stone_between, 
-                            cords=Vector2(x * Block.SIZE.x, (14+height) * Block.SIZE.y), 
-                            chunk=self)    
+            self.__blocks[(x,11+height)] = Block.newBlockByResourceManager(
+                        chunk=self,
+                        name="dirt",
+                        cords=Vector2(x * Block.SIZE.x, (11+height) * Block.SIZE.y)
+                    )  
+            
+            self.__blocks[(x,12+height)] = Block.newBlockByResourceManager(
+                        chunk=self,
+                        name="dirt",
+                        cords=Vector2(x * Block.SIZE.x, (12+height) * Block.SIZE.y)
+                    )      
+
+            self.__blocks[(x,13+height)] = Block.newBlockByResourceManager(
+                        chunk=self,
+                        name="grass_between",
+                        cords=Vector2(x * Block.SIZE.x, (13+height) * Block.SIZE.y)
+                    )             
+
+            self.__blocks[(x,14+height)] = Block.newBlockByResourceManager(
+                        chunk=self,
+                        name="stone_between",
+                        cords=Vector2(x * Block.SIZE.x, (14+height) * Block.SIZE.y)
+                    )    
 
             # self.__blocks[(x, 13+height)] = Block(
             #                 image=stone, 
@@ -84,15 +100,21 @@ class Chunk(pygame.sprite.Group):
             
             for y in range(15+height,35):
                 if 1 == random.randint(0,60):
-                    self.__blocks[(x, y)] = Block(
-                                image=coal, 
-                                cords=Vector2(x * Block.SIZE.x, y * Block.SIZE.y), 
-                                chunk=self)                    
+                    self.__blocks[(x,y)] = Block.newBlockByResourceManager(
+                        chunk=self,
+                        name="coal_ore",
+                        cords=Vector2(x * Block.SIZE.x, y * Block.SIZE.y)
+                    )                 
                 else:
-                    self.__blocks[(x, y)] = Block(
-                                image=stone, 
-                                cords=Vector2(x * Block.SIZE.x, y * Block.SIZE.y), 
-                                chunk=self)
+                    self.__blocks[(x,y)] = Block.newBlockByResourceManager(
+                        chunk=self,
+                        name="stone",
+                        cords=Vector2(x * Block.SIZE.x, y * Block.SIZE.y)
+                    )
+                    # self.__blocks[(x, y)] = Block(
+                    #             image=stone, 
+                    #             cords=Vector2(x * Block.SIZE.x, y * Block.SIZE.y), 
+                    #             chunk=self)
     
     def loadChunkFromCsv(self, csvSource: str) -> None:
         with open(csvSource) as csvFile:
@@ -149,6 +171,11 @@ class Chunk(pygame.sprite.Group):
 
 
 class Block(pygame.sprite.Sprite):
+    MAINTEXTURE: str | None = None
+    ID: str | None = None
+    IDInt: int|None = None
+    
+    
     SIZE = Vector2(32,32)
     
     '''Returns cords relative to chunk starting Points'''
@@ -159,6 +186,21 @@ class Block(pygame.sprite.Sprite):
     def getCords(self) -> Vector2:
         return self.__cordsAbsolute
         
+    '''Create new block using resourceManager'''
+    @staticmethod
+    def newBlockByResourceManager(chunk: Chunk, name: str, cords: Optional[Vector2] = None) -> 'Block':
+        rm = chunk.getScene().getGame().getResourceManager()
+        
+        if cords == None:
+            cords = Vector2(0,0)
+            
+        blockInfo = rm.getBlockInformation(name)
+        
+        return blockInfo['class'](
+            image=rm.getTexture(blockInfo['class'].MAINTEXTURE),
+            cords=cords,
+            chunk=chunk
+        )
         
     
     def getChunk(self) -> Chunk:
@@ -258,8 +300,11 @@ class Scene(pygame.sprite.Group):
     def unloadChunk(self, chunk: Chunk) -> None:
         chunk.unload()
         del self.__activeChunks[chunk.getChunkPos()]
+        
+    def getSeed(self) -> None:
+        return self.__seed
     
-    def __init__(self, game: 'Game', name: str, autoAdd: bool = True, inIdle: bool = False) -> None:
+    def __init__(self, game: 'Game', name: str, autoAdd: bool = True, inIdle: bool = False, seed: str = "sus") -> None:
         super().__init__()
         
         # info
@@ -267,6 +312,8 @@ class Scene(pygame.sprite.Group):
         self.__autoAdd: bool = autoAdd
         self.__name: str = name
         self.idle: bool = inIdle
+        self.__seed, self.__seedInt = seed, int("".join([str(ord(char)) for char in seed]))
+       
         
         self.__activeChunks: dict[tuple[int,int], Chunk] = {}
         
