@@ -79,14 +79,17 @@ class worldGeneratorNormal(WorldGenerator):
         howmuchveins: int = random.randint(howMuchVeinsMin, howMuchVeinsMax)
         howmuchInVein: int = random.randint(minInVein, maxInVein)
         
-        rightBlocks: dict[tuple[int, int], Block] = {}
-        leftBlocks: dict[tuple[int, int], Block] = {}
+        rightBlocks: list[tuple[int, int]] = []
+        leftBlocks: list[tuple[int, int]] = []
+        
+        gina = []
         
         veins = 0
         while veins < howmuchveins:
             x = random.randint(0, Chunk.SIZE.x-1)
             y = random.randint(minY, maxY)
             
+            gina.append((x,y))
 
             if fromWhatSide == None:
                 # print(blocks[(x,y)], veins, not((x,y) in blocks and blocks[(x,y)] == "stone"))
@@ -108,8 +111,10 @@ class worldGeneratorNormal(WorldGenerator):
             choices = [[1, 0], [-1, 0], [0, 1], [0, -1]] 
             while howManyHasGenerated < howmuchInVein:
                 if len(choices) <= 0: break
+                random.seed(f"${self.getScene().getSeed()}_CHUNK_{chunkPos}_VEINS_{blockName}_{x}_{y}")
                 addx, addy = random.choice(choices)
                 choices.remove([addx,addy])
+                gina.append((x+addx, y+addy))
                 
                 if fromWhatSide == None:
                     if not((x+addx,y+addy) in blocks and blocks[(x+addx,y+addy)].ID == "stone"): continue
@@ -125,25 +130,30 @@ class worldGeneratorNormal(WorldGenerator):
                             )
                     choices = [[1, 0], [-1, 0], [0, 1], [0, -1]] 
                         
-                if x+addx > Chunk.SIZE.x-1 and fromWhatSide=="right":
-                    print((x,y))
-                    print(x+addx)
-                    rightBlocks[(x+addx - (Chunk.SIZE.x-1), y)] = Block.newBlockByResourceManager(
-                    chunk=chunk,
-                    name="coal_ore",
-                    cordsRelative=Vector2((x+addx - (Chunk.SIZE.x-1))* Block.SIZE.x, y * Block.SIZE.y),
-                    executor=self,
-                    reason=Reason.WorldGenerator
-                    )
+                if x+addx > Chunk.SIZE.x and fromWhatSide=="right": 
+                    print(gina)
+                    rightBlocks.append((x+addx-Chunk.SIZE.x, y))
+                    # print((x,y))
+                    # print(x+addx)
+                    # rightBlocks[(x+addx - (Chunk.SIZE.x-1), y)] = Block.newBlockByResourceManager(
+                    # chunk=chunk,
+                    # name="coal_ore",
+                    # cordsRelative=Vector2((x+addx - (Chunk.SIZE.x-1))* Block.SIZE.x, y * Block.SIZE.y),
+                    # executor=self,
+                    # reason=Reason.WorldGenerator
+                    # )
 
-                elif x+addx < 0 and fromWhatSide=="left":
-                    leftBlocks[abs(x+addx), y] = Block.newBlockByResourceManager(
-                    chunk=chunk,
-                    name="coal_ore",
-                    cordsRelative=Vector2(abs(x+addx)* Block.SIZE.x, y * Block.SIZE.y),
-                    executor=self,
-                    reason=Reason.WorldGenerator
-                    )
+                elif x+addx < 0 and fromWhatSide=="left": 
+                    print(Chunk.SIZE.x-(x+addx), x, x+addx)
+                    print(gina)
+                    leftBlocks.append((Chunk.SIZE.x+(x+addx), y))
+                    # leftBlocks[abs(x+addx), y] = Block.newBlockByResourceManager(
+                    # chunk=chunk,
+                    # name="coal_ore",
+                    # cordsRelative=Vector2(abs(x+addx)* Block.SIZE.x, y * Block.SIZE.y),
+                    # executor=self,
+                    # reason=Reason.WorldGenerator
+                    # )
                     
                 
                 x += addx
@@ -152,33 +162,58 @@ class worldGeneratorNormal(WorldGenerator):
                 
         if fromWhatSide == "right": return rightBlocks
         elif fromWhatSide == "left": return leftBlocks
+        
+        for cords in fromLeft:
+            cords = (int(cords[0]), int(cords[1]))
+            blocks[cords].kill()
+            del blocks[cords]
+            # blocks[cords] = Block.newBlockByResourceManager(
+            #     chunk=chunk,
+            #     name="coal_ore",
+            #     cordsRelative=Vector2(cords[0] * Block.SIZE.x, cords[1] * Block.SIZE.y),
+            #     executor=self,
+            #     reason=Reason.WorldGenerator
+            #     )
+            
+        for cords in fromRight:
+            cords = (int(cords[0]), int(cords[1]))
+            blocks[cords].kill()
+            del blocks[cords]
+            # blocks[cords] = Block.newBlockByResourceManager(
+            #     chunk=chunk,
+            #     name="coal_ore",
+            #     cordsRelative=Vector2(cords[0] * Block.SIZE.x, cords[1] * Block.SIZE.y),
+            #     executor=self,
+            #     reason=Reason.WorldGenerator
+            #     )
                 
-        for cords, block in fromLeft.items():
-            print(cords in blocks and blocks[cords].ID == "stone")
-            if cords in blocks and blocks[cords].ID == "stone":
-                blocks[cords].kill
-                del blocks[cords]
                 
-                # blocks[cords] = block
-                # print('s', chunkPos, fromLeft, fromRight, cords)
-                self.getScene().getGame().camera.cords = Vector2(cords[0] * Block.SIZE.x,
-                                                                    cords[1] * Block.SIZE.y)
-                # print(blocks)  
-                # print("\n\n\n") 
+        # for cords, block in fromLeft.items():
+        #     print(cords in blocks and blocks[cords].ID == "stone")
+        #     if cords in blocks and blocks[cords].ID == "stone":
+        #         blocks[cords].kill
+        #         del blocks[cords]
+                
+        #         # blocks[cords] = block
+        #         # print('s', chunkPos, fromLeft, fromRight, cords)
+        #         self.getScene().getGame().camera.cords = Vector2(cords[0] * Block.SIZE.x,
+        #                                                             cords[1] * Block.SIZE.y)
+        #         # print(blocks)  
+        #         # print("\n\n\n") 
                     
-        for cords, block in fromRight.items():
-            print(cords in blocks and blocks[cords].ID == "stone")
-            if cords in blocks and blocks[cords].ID == "stone":
-                self.getScene().remove(blocks[cords])
-                blocks[cords].kill()
-                del blocks[cords]
-                # print(blocks[cords])
-                # blocks[cords] = block
-                # print('s', chunkPos, fromLeft, fromRight, cords)
-                self.getScene().getGame().camera.cords = Vector2(cords[0] * Block.SIZE.x,
-                                                                 cords[1] * Block.SIZE.y)
-                # print(blocks)   
-                # print("\n\n\n")
+        # for cords, block in fromRight.items():
+        #     print(cords in blocks and blocks[cords].ID == "stone")
+        #     if cords in blocks and blocks[cords].ID == "stone":
+        #         self.getScene().remove(blocks[cords])
+        #         blocks[cords].kill()
+        #         del blocks[cords]
+        #         # print(blocks[cords])
+        #         # blocks[cords] = block
+        #         # print('s', chunkPos, fromLeft, fromRight, cords)
+        #         self.getScene().getGame().camera.cords = Vector2(cords[0] * Block.SIZE.x,
+        #                                                          cords[1] * Block.SIZE.y)
+        #         # print(blocks)   
+        #         # print("\n\n\n")
                 
         return {}
         
