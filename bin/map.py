@@ -9,7 +9,7 @@ import asyncio
 import random
 # from bin.camera import Camera
 from functools import reduce
-from bin.abstractClasses import Executor
+from bin.abstractClasses import Executor, WorldGenerator
 
 class chunkNotLoaded(Exception): pass
 
@@ -42,62 +42,62 @@ class Chunk(pygame.sprite.Group, Executor):
         return self.__chunkPos
     
     
-    def generateHeight(self, x, chunkPos: list[int,int], seedInt: int,  cache: dict, fromLeft: bool = False, startPoint: int = 10,
-                       max: Optional[int] = None, min: Optional[int] = None, probability: int = 60) -> int:  
-        _s = seedInt % 10
-        _xAbsolute = x + chunkPos[0] * Chunk.SIZE.x
+    # def generateHeight(self, x, chunkPos: list[int,int], seedInt: int,  cache: dict, fromLeft: bool = False, startPoint: int = 10,
+    #                    max: Optional[int] = None, min: Optional[int] = None, probability: int = 60, seedName: str = "global") -> int:  
+    #     _s = seedInt % 10
+    #     _xAbsolute = x + chunkPos[0] * Chunk.SIZE.x
         
-        if _xAbsolute in cache: return cache[_xAbsolute]
-        if _xAbsolute == 0: return startPoint
+    #     if _xAbsolute in cache: return cache[_xAbsolute]
+    #     if _xAbsolute == 0: return startPoint
         
-        if x + (chunkPos[0] + 1) * Chunk.SIZE.x not in cache and not fromLeft:
-            return self.generateHeight(x, chunkPos, seedInt, cache, True, startPoint=startPoint, max=max, min=min, probability=probability)
+    #     if x + (chunkPos[0] + 1) * Chunk.SIZE.x not in cache and not fromLeft:
+    #         return self.generateHeight(x, chunkPos, seedInt, cache, True, startPoint=startPoint, max=max, min=min, probability=probability, seedName=seedName)
         
         
-        random.seed(f"${self.getScene().getSeed()}_CHUNK_{self.getChunkPos()}_height_${x}")
+    #     random.seed(f"${self.getScene().getSeed()}_CHUNK_{self.getChunkPos()}_h{seedName}_${x}")
         
-        wannabe = random.randint(0,100)
-        howmuch = random.randint(-1,1)
+    #     wannabe = random.randint(0,100)
+    #     howmuch = random.randint(-1,1)
         
-        random.seed(f"${self.getScene().getSeed()}_CHUNK_{self.getChunkPos()}")
+    #     random.seed(f"${self.getScene().getSeed()}_CHUNK_{self.getChunkPos()}")
         
-        if fromLeft:
-            if x < 0:
-                chunkPos[0] += 1
-                return self.generateHeight(x, chunkPos, seedInt, cache, True, startPoint=startPoint, max=max, min=min, probability=probability)
+    #     if fromLeft:
+    #         if x < 0:
+    #             chunkPos[0] += 1
+    #             return self.generateHeight(x, chunkPos, seedInt, cache, True, startPoint=startPoint, max=max, min=min, probability=probability, seedName=seedName)
             
-            _n = self.generateHeight(x - 1, chunkPos, seedInt, cache, True, startPoint=startPoint, max=max, min=min, probability=probability)
-            if(wannabe > probability):
-                _n += howmuch      
+    #         _n = self.generateHeight(x - 1, chunkPos, seedInt, cache, True, startPoint=startPoint, max=max, min=min, probability=probability, seedName=seedName)
+    #         if(wannabe > probability):
+    #             _n += howmuch      
             
             
-            if min is not None and _n < min:
-                _n = min
-            elif max is not None and _n > max:
-                _n = max
+    #         if min is not None and _n < min:
+    #             _n = min
+    #         elif max is not None and _n > max:
+    #             _n = max
                 
-            cache[_xAbsolute] = _n
-            return _n
+    #         cache[_xAbsolute] = _n
+    #         return _n
             
             
             
         
-        while x > Chunk.SIZE.x:
-            x -= Chunk.SIZE.x
-            chunkPos[0] += 1
+    #     while x > Chunk.SIZE.x:
+    #         x -= Chunk.SIZE.x
+    #         chunkPos[0] += 1
         
-        _n = self.generateHeight(x + 1, chunkPos, seedInt, cache, False,  startPoint=startPoint, max=max, min=min, probability=probability)
-        if(wannabe > probability):
-            _n += howmuch
+    #     _n = self.generateHeight(x + 1, chunkPos, seedInt, cache, False,  startPoint=startPoint, max=max, min=min, probability=probability, seedName=seedName)
+    #     if(wannabe > probability):
+    #         _n += howmuch
             
-        if min is not None and _n < min:
-            _n = min
-        elif max is not None and _n > max:
-            _n = max
+    #     if min is not None and _n < min:
+    #         _n = min
+    #     elif max is not None and _n > max:
+    #         _n = max
             
-        cache[_xAbsolute] = _n
+    #     cache[_xAbsolute] = _n
         
-        return _n
+    #     return _n
       
             
     
@@ -108,7 +108,7 @@ class Chunk(pygame.sprite.Group, Executor):
         random.seed(f"${self.getScene().getSeed()}_CHUNK_{self.getChunkPos()}")
         
         for x in range(0,int(Chunk.SIZE.x)):
-            height = self.generateHeight(x, list(self.getChunkPos()), self.getScene().getSeedInt(), self.getScene().heightCache['grass_height'], False, min=6, max=16)
+            height = self.generateHeight(x, list(self.getChunkPos()), self.getScene().getSeedInt(), self.getScene().heightCache['grass_height'], False, min=6, max=16, seedName="height")
             self.__blocks[(x,height)] = Block.newBlockByResourceManager(
                 chunk=self,
                 name="grass_block",
@@ -117,7 +117,7 @@ class Chunk(pygame.sprite.Group, Executor):
                 reason="world_generator"
             )
             
-            dirtheight = self.generateHeight(x, list(self.getChunkPos()), self.getScene().getSeedInt(), self.getScene().heightCache['dirt_height'], False, startPoint=4, max=5, min=3)
+            dirtheight = self.generateHeight(x, list(self.getChunkPos()), self.getScene().getSeedInt(), self.getScene().heightCache['dirt_height'], False, startPoint=4, max=5, min=3, seedName="dirtheight")
             
 
             
@@ -173,6 +173,61 @@ class Chunk(pygame.sprite.Group, Executor):
                             reason="world_generator"
                         ) 
                     break
+        
+        veins = 5
+        while veins > 0:
+            veins -= 1
+            x = random.randint(0,Chunk.SIZE.x)
+            y = random.randint(currentHeight+3, 32)
+            
+            self.__blocks[(x,y)] = Block.newBlockByResourceManager(
+                chunk=self,
+                name="coal_ore",
+                cordsRelative=Vector2(x * Block.SIZE.x,y * Block.SIZE.y),
+                executor=self,
+                reason="world_generator"
+            ) 
+            
+            howmuch = random.randint(0,3)
+            
+            choices = [[1,0], [-1,0], [0,1], [0,-1]]
+            while howmuch > 0:
+                if len(choices) == 0: break
+                
+                addx, addy = random.choice(choices)
+                choices.remove([addx,addy])
+                if x+addx > 16:
+                    self.getScene().blockToNextCache((self.getChunkPos()[0]+1, self.getChunkPos()[1]))
+                    howmuch -= 1
+                    continue
+                elif x+addx < 0:
+                    self.getScene().blockToNextCache((self.getChunkPos()[0]-1, self.getChunkPos()[1]))
+                    howmuch -= 1
+                    continue
+                
+                if (x+addx, y+addy) in self.__blocks:
+                    if self.__blocks[(x+addx, y+addy)].ID != "stone": continue
+                    
+                    self.__blocks[(x+addx,y+addy)] = Block.newBlockByResourceManager(
+                        chunk=self,
+                        name="coal_ore",
+                        cordsRelative=Vector2(x * Block.SIZE.x,y * Block.SIZE.y),
+                        executor=self,
+                        reason="world_generator"
+                    ) 
+                    
+                    x += addx
+                    y += addy
+                    
+                    howmuch -= 1
+                    
+            
+            
+                
+
+            
+            
+                
                 
                 
             
@@ -223,14 +278,20 @@ class Chunk(pygame.sprite.Group, Executor):
             chunkPos[1] * Chunk.SIZE.y * Block.SIZE.y
         )
         
+        self.__endPoint = self.__startPoint + Chunk.SIZE
+        
   
         
-        self.__blocks: dict[tuple[int,int], Block] = {}
+        # self.__blocks: dict[tuple[int,int], Block] = {}
         
         
         # self.loadChunkFromCsv("test.csv")
-        self.generateChunk()
-        
+        # self.generateChunk()
+        self.__blocks: dict[tuple[int,int], Block] = self.getScene().getWorldGenerator().generateChunk(
+            chunkPos=self.__chunkPos,
+            chunk=self,
+            Scene=self.__map
+        )  
         
 
 
@@ -404,7 +465,10 @@ class Scene(pygame.sprite.Group):
     def getSeedInt(self) -> int:
         return self.__seedInt
     
-    def __init__(self, game: 'Game', name: str, autoAdd: bool = True, inIdle: bool = False, seed: str = "uwu") -> None:
+    def getWorldGenerator(self) -> WorldGenerator:
+        return self.__worldGenerator
+    
+    def __init__(self, game: 'Game', name: str, worldGenerator: WorldGenerator, autoAdd: bool = True, inIdle: bool = False, seed: str = "uwusa") -> None:
         super().__init__()
         
         self.heightCache = {
@@ -413,37 +477,28 @@ class Scene(pygame.sprite.Group):
             "bedrock_height": {}
         }
         
+        self.blockToNextCache = {
+            
+        }
+        
         # info
         self.__game: 'Game' = game
         self.__autoAdd: bool = autoAdd
         self.__name: str = name
         self.idle: bool = inIdle
         self.__seed, self.__seedInt = seed, int("".join([str(ord(char)) for char in seed]))
+        self.__worldGenerator = worldGenerator(self)
        
         
         self.__activeChunks: dict[tuple[int,int], Chunk] = {}
         
         for x in range(3):
             self.__activeChunks[(x,0)] = Chunk(map=self, chunkPos=(x,0)) 
-            
-        # self.unloadChunk(self.getChunk((1,0)))
-        # self.unloadChunk(self.getChunk((0,0)))
-        # self.unloadChunk(self.getChunk((2,0)))
-            
-        # print(self.__activeChunks[1,0].getBlockByTuple((0,0)).groups())
-
-        
-        # test = pygame.surface.Surface((200,200))
-        # test.fill((100,100,100))
-        # block(test, self.__activeChunks[(0,0)])
-        
-        
-        
+                 
         if autoAdd:
             self.__game.addScene(scene=self, name=self.__name)
             
         
             
-        # print(
-        #     self.getBlock(Vector2(10,32))
-        # )
+        
+            

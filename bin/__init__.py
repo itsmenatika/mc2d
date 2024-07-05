@@ -6,6 +6,7 @@ from bin.camera import Camera
 
 from pygame.math import Vector2
 from bin.namespace import resourceManager
+from bin.worldgenerator import worldGeneratorNormal
 
 class gameEngineError(Exception): pass
 
@@ -41,7 +42,7 @@ class Game:
                     
             
     async def __onRun(self) -> None:
-        t = Scene(self, name="test")
+        t = Scene(self, name="test", worldGenerator=worldGeneratorNormal)
         self.setCurrentScene(t)
     
     async def __gameLoop(self) -> None:
@@ -127,6 +128,7 @@ class Game:
         
         # pygame issues
         pygame.init()
+        pygame.font.init()
         self.__display = pygame.display.set_mode(self.__resolution)
         pygame.display.set_caption("Kantraft")
         self.clock = pygame.time.Clock()
