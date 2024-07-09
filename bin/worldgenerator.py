@@ -8,6 +8,8 @@ from bin.abstractClasses import WorldGenerator, Executor, Reason
 from typing import Optional
 
 
+stats = []
+
 class worldGeneratorNormal(WorldGenerator):
     def generateHeight(self, x, chunkPos: list[int,int], seedInt: int,  cache: dict, fromLeft: bool = False, startPoint: int = 10,
                        max: Optional[int] = None, min: Optional[int] = None, probability: int = 60, seedName: str = "global") -> int:  
@@ -86,11 +88,13 @@ class worldGeneratorNormal(WorldGenerator):
         
              # getting ores from neighbouring chunks
         if recursive:
-            fromLeft = self.generateVeins(chunkPos=(chunkPos[0]+1, chunkPos[1]), chunk=chunk, blockName=blockName, howMuchVeinsMin=howMuchVeinsMin, howMuchVeinsMax=howMuchVeinsMax, minInVein=minInVein, maxInVein=maxInVein, recursive=False, fromWhatSide='left', blocks=blocks, minY=minY,maxY=maxY)
+            fromLeft = self.generateVeins(chunkPos=(chunkPos[0]-1, chunkPos[1]), chunk=chunk, blockName=blockName, howMuchVeinsMin=howMuchVeinsMin, howMuchVeinsMax=howMuchVeinsMax, minInVein=minInVein, maxInVein=maxInVein, recursive=False, fromWhatSide='left', blocks=blocks, minY=minY,maxY=maxY)
             fromRight = self.generateVeins(chunkPos=(chunkPos[0]+1, chunkPos[1]), chunk=chunk, blockName=blockName, howMuchVeinsMin=howMuchVeinsMin, howMuchVeinsMax=howMuchVeinsMax, minInVein=minInVein, maxInVein=maxInVein, recursive=False, fromWhatSide='right', blocks=blocks, minY=minY,maxY=maxY)
         
+        print('dawdawd11', chunkPos)
         # setting seed
-        random.seed(f"${self.getScene().getSeed()}_CHUNK_{chunkPos}_VEINS_{blockName}")    
+        random.seed(f"${self.getScene().getSeed()}_CHUNK_{int(chunkPos[0])}_VEINS_{blockName}")    
+        global stats
         
         howManyVeins: int = random.randint(howMuchVeinsMin, howMuchVeinsMax)
         everyVein: list[tuple[int,int]] = []
@@ -101,12 +105,17 @@ class worldGeneratorNormal(WorldGenerator):
             blocksMole: list[tuple[int,int]] = []
             howManyInThisVein = random.randint(minInVein, maxInVein)
             choices: list[list[int,int]] = [[1, 0], [-1, 0], [0, 1], [0, -1]] 
+            # choices: list[list[int,int]] = [[1, 0]] 
             
             # first block
             currentBlock: tuple[int,int] = (random.randint(0, Chunk.SIZE.x-1), random.randint(minY, maxY))
-            blocksMole.append(currentBlock)
+            if chunkPos[0] == 0:
+                print('01', currentBlock)
+            stats.append(random.getstate())
+        
+            blocksMole.append((currentBlock[0], currentBlock[1]))
             
-            while True:
+            while True:                
                 # end if no choices
                 if len(choices) <= 0:
                     everyVein.extend(blocksMole)
@@ -134,26 +143,35 @@ class worldGeneratorNormal(WorldGenerator):
         if fromWhatSide is not None:
             if fromWhatSide == "right":
                 print('dadawedR', everyVein)
-                return list(filter(lambda block: block[0] >= Chunk.SIZE.x, everyVein))
+                return list(filter(lambda block: block[0] < 0, everyVein))
             elif fromWhatSide == "left":
                 print('dadawedL', everyVein)
-                return list(filter(lambda block: block[0] < 0, everyVein))
+                return list(filter(lambda block: block[0] >= Chunk.SIZE.x, everyVein))
             
 
             
         # final
         
         
-        print('dawdaR', list(map(lambda ore: (ore[0]-chunk.SIZE.x+1, ore[1]), fromRight)), list(fromRight))
-        print('dawdaL', list(map(lambda ore: (Chunk.SIZE.x+ore[0], ore[1]), fromLeft)), list(fromLeft))
+        print('dawdaL', list(map(lambda ore: (int(ore[0]-chunk.SIZE.x), ore[1]), fromLeft)), list(fromLeft), chunk.getChunkPos())
+        print('dawdaR', list(map(lambda ore: (int(Chunk.SIZE.x+ore[0]), ore[1]), fromRight)), list(fromRight), chunk.getChunkPos())
         
-        first = list(map(lambda ore: (ore[0]-chunk.SIZE.x+1, ore[1]), fromRight))
-        if len(first) > 1:
-            first = first[0]
-            self.getScene().getGame().camera.cords = Vector2(first[0] * Block.SIZE.x + chunk.getStartingPoint()[0], first[1] * Block.SIZE.y + chunk.getStartingPoint()[1])
+        # first = list(map(lambda ore: (int(Chunk.SIZE.x+ore[0]), ore[1]), fromRight))
+        # if len(first) > 1:
+        #     first = first[0]
+        #     self.getScene().getGame().camera.cords = Vector2(first[0] * Block.SIZE.x + chunk.getStartingPoint()[0], first[1] * Block.SIZE.y + chunk.getStartingPoint()[1])
+            
+        # first = list(map(lambda ore: (ore[0]-chunk.SIZE.x+1, ore[1]), fromRight))
+        # if len(first) > 1:
+        #     first = first[0]
+        #     self.getScene().getGame().camera.cords = Vector2(first[0] * Block.SIZE.x + chunk.getStartingPoint()[0], first[1] * Block.SIZE.y + chunk.getStartingPoint()[1])
         
-        everyVein.extend(map(lambda ore: (ore[0]-chunk.SIZE.x+1, ore[1]), fromLeft))
-        everyVein.extend(map(lambda ore: (Chunk.SIZE.x+ore[0], ore[1]), fromRight))
+        everyVein.extend(map(lambda ore: (int(ore[0]-chunk.SIZE.x), ore[1]), fromLeft))
+        everyVein.extend(map(lambda ore: (int(Chunk.SIZE.x+ore[0]), ore[1]), fromRight))
+        
+        
+        print('90121', list(map(lambda ore: (int(ore[0]-chunk.SIZE.x), ore[1]), fromLeft)), chunk.getChunkPos())
+        
         
         # def oreRepair(ore):
         #     if ore[0] < 0:
@@ -173,6 +191,7 @@ class worldGeneratorNormal(WorldGenerator):
             if block in blocks and blocks[block].ID == "stone":
                 blocks[block].kill()
                 del blocks[block]
+                print("dadawdaw", block, chunk.getChunkPos())
                 Block.newBlockByResourceManager(
                     chunk=chunk,
                     name=blockName,
@@ -181,7 +200,7 @@ class worldGeneratorNormal(WorldGenerator):
                     reason=Reason.WorldGenerator
                 )
                 
-        return blocks
+       
                 
                 
                 
@@ -438,7 +457,7 @@ class worldGeneratorNormal(WorldGenerator):
                 )
                 
             currentHeight = height + dirtheight + 1
-            for y in range(0,30):
+            for y in range(0,100):
                 blocks[(x,y+currentHeight)] = Block.newBlockByResourceManager(
                     chunk=chunk,
                     name="stone",
@@ -446,7 +465,7 @@ class worldGeneratorNormal(WorldGenerator):
                     executor=self,
                     reason=Reason.WorldGenerator
                 ) 
-                if y + currentHeight >= 32:   
+                if y + currentHeight >= 100:   
                     bedrockHeight = self.generateHeight(x, list(chunkPos), self.getScene().getSeedInt(), self.getScene().heightCache['bedrock_height'], False, startPoint=2, max=2, min=1, probability=20)
                     
                     if bedrockHeight == 1:
@@ -482,8 +501,50 @@ class worldGeneratorNormal(WorldGenerator):
                     break
                 
         # ores
-        blocks = self.generateVeins(chunkPos, chunk, "coal_ore", 1, 1, 6, 6, True, None, blocks, currentHeight+3, 32)
+        self.generateVeins(chunkPos=chunkPos,
+                           chunk=chunk,
+                           blockName="coal_ore",
+                           howMuchVeinsMin=4,
+                           howMuchVeinsMax=8,
+                           minInVein=2,
+                           maxInVein=4,
+                           recursive=True,
+                           fromWhatSide=None,
+                           blocks=blocks,
+                           minY=35,
+                           maxY=85)
         
+        self.generateVeins(chunkPos=chunkPos,
+                           chunk=chunk,
+                           blockName="iron_ore",
+                           howMuchVeinsMin=2,
+                           howMuchVeinsMax=3,
+                           minInVein=2,
+                           maxInVein=4,
+                           recursive=True,
+                           fromWhatSide=None,
+                           blocks=blocks,
+                           minY=60,
+                           maxY=80)
+        
+        self.generateVeins(chunkPos=chunkPos,
+                           chunk=chunk,
+                           blockName="diamond_ore",
+                           howMuchVeinsMin=1,
+                           howMuchVeinsMax=2,
+                           minInVein=1,
+                           maxInVein=2,
+                           recursive=True,
+                           fromWhatSide=None,
+                           blocks=blocks,
+                           minY=85,
+                           maxY=100)
+        
+        # self.generateVeins(chunkPos, chunk, "coal_ore", 1, 1, 6, 6, True, None, blocks, currentHeight+3, 32)
+        
+        global stats
+        
+        print('dadawe9888', len(set(stats)))
         return blocks
         
         # veins = 5

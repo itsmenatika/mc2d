@@ -7,6 +7,8 @@ from bin.tiles.grassBlock import grassBlock
 from bin.tiles.grassBetween import grassBetween
 from bin.tiles.stoneBetween import stoneBetween
 from bin.tiles.coalOre import coalOre
+from bin.tiles.diamondOre import diamondOre
+from bin.tiles.ironOre import ironOre
 from bin.tiles.oak_wood import oakWood
 from bin.tiles.bedrock import bedrock
 
@@ -94,6 +96,14 @@ GAME_NAMESPACE = {
             "bedrock": {
                 "intID": 8,
                 "class": bedrock
+            },
+            "diamond_ore": {
+                "intID": 9,
+                "class": diamondOre
+            },
+            "iron_ore": {
+                "intID": 10,
+                "class": ironOre
             }
     }
 }
