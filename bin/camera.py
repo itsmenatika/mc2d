@@ -48,8 +48,13 @@ class Camera:
         BlockPos.x = int(( (BlockPos.x + self.cords.x) / Block.SIZE.x ) % Chunk.SIZE.x)
         BlockPos.y = int(( (BlockPos.y + self.cords.y) / Block.SIZE.y ) % Chunk.SIZE.y)
         
+        chunkPos = Vector2(pygame.mouse.get_pos())
+        
+        chunkPos.x = int((chunkPos.x + self.cords.x) // Block.SIZE.x // Chunk.SIZE.x)
+        chunkPos.y = int((chunkPos.y + self.cords.y) // Block.SIZE.y // Chunk.SIZE.y)
+        
         font = pygame.font.SysFont('Comic Sans MS', 20)
-        tak = font.render(f"{BlockPos}", False, (100,100,100))
+        tak = font.render(f"BlockPos: {BlockPos} CHUNK: {chunkPos}", False, (100,100,100))
         
         surface.blit(tak, (0,0))
         

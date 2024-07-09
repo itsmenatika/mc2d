@@ -262,11 +262,32 @@ class Chunk(pygame.sprite.Group, Executor):
                         
                     
     
-    def getBlockByVector(self, cords: Vector2) -> 'Block':
-        return self.__blocks[(cords.x,cords.y)] if (cords.x,cords.y) in self.__blocks else None
+    def getBlockByVector(self, blockPosition: Vector2) -> 'Block':
+        return self.__blocks[(blockPosition.x,blockPosition.y)] if (blockPosition.x,blockPosition.y) in self.__blocks else None
     
-    def getBlockByTuple(self, cords: tuple | list) -> 'Block':
-        return self.__blocks[(cords[0],cords[1])] if (cords[0],cords[1]) in self.__blocks else None
+    def getBlockByTuple(self, blockPosition: tuple | list) -> 'Block':
+        return self.__blocks[(blockPosition[0],blockPosition[1])] if (blockPosition[0],blockPosition[1]) in self.__blocks else None
+    
+    
+    def setBlock(self, blockPosition: tuple[int,int], block: 'Block') -> None:
+        self.__blocks[blockPosition] = block
+    
+    def removeBlock(self, blockPosition: tuple[int,int], notRaiseException: bool = False) -> None:
+        if blockPosition not in self.__blocks and not notRaiseException:
+            raise Exception("block not Found")
+        
+        self.__blocks[blockPosition].kill()
+        del self.__blocks[blockPosition]
+        
+    def checkPositionForBlock(self, blockPosition: tuple[int,int], block: Optional['Block'], exactCopy: bool = False) -> bool:
+        if blockPosition not in self.__blocks: return False
+        
+        if block is None: True
+        
+        if exactCopy:
+            return True if self.__blocks[blockPosition] is block else False
+        else:
+            return True if self.__blocks[blockPosition] == block else False
     
     def __init__(self, map: 'Scene', chunkPos: Vector2 = Vector2(0,0)) -> None:
         super().__init__()
@@ -303,6 +324,20 @@ class Block(pygame.sprite.Sprite):
     
     SIZE = Vector2(32,32)
     
+    def changeBlockTo(self, block: 'Block') -> None:
+        chunk = self.getChunk()
+        cords = self.getCords()
+        
+        chunk.removeBlock(cords)
+        chunk.setBlock(cords, block)
+        
+        
+         
+    
+    '''delete this from chunk and map'''
+    def removeBlock(self) -> None:
+        self.getChunk().removeBlock(self.getCords())
+        
     
     '''Method executed when chunk is generated'''
     def onGenerate(self, cordsRelative: Vector2, cordsAbsolute: Vector2, inChunkPosition: tuple[int,int], chunk: Chunk):

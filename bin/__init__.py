@@ -32,13 +32,13 @@ class Game:
                 self.__isGameOn = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
-                    self.camera.cords.x -= 50
+                    self.camera.cords.x -= 100
                 elif event.key == pygame.K_RIGHT:
-                    self.camera.cords.x += 50
+                    self.camera.cords.x += 100
                 elif event.key == pygame.K_UP:
-                    self.camera.cords.y -= 50
+                    self.camera.cords.y -= 100
                 elif event.key == pygame.K_DOWN:
-                    self.camera.cords.y += 50
+                    self.camera.cords.y += 100
                     
             
     async def __onRun(self) -> None:
