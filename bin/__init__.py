@@ -42,8 +42,10 @@ class Game:
                     
             
     async def __onRun(self) -> None:
+        self.camera = Camera(cords=Vector2(0,70), game=self)
         t = Scene(self, name="test", worldGenerator=worldGeneratorNormal)
         self.setCurrentScene(t)
+        
     
     async def __gameLoop(self) -> None:
         await self.__onRun()
@@ -61,7 +63,8 @@ class Game:
             
             await self.__drawLoop()
             await self.__functionToGetAnotherMoreSpace()
-            self.clock.tick()
+            self.clock.tick(60)
+            # self.clock.get_rawtime()
             # print(self.clock.get_fps())
             
             
@@ -69,7 +72,7 @@ class Game:
         
     
     async def __functionToGetAnotherMoreSpace(self) -> None:
-        pass
+        await asyncio.sleep(0.01)
     
     
     
@@ -122,7 +125,6 @@ class Game:
         self.__currentScene: None | Scene = None
         
         
-        self.camera = Camera(cords=Vector2(0,70), game=self)
         
         
         

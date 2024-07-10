@@ -1,6 +1,7 @@
 import pygame
 from pygame.math import Vector2
 import random
+import asyncio
 
 from bin.map import Chunk, Scene, Block
 from bin.abstractClasses import WorldGenerator, Executor, Reason
@@ -91,10 +92,8 @@ class worldGeneratorNormal(WorldGenerator):
             fromLeft = self.generateVeins(chunkPos=(chunkPos[0]-1, chunkPos[1]), chunk=chunk, blockName=blockName, howMuchVeinsMin=howMuchVeinsMin, howMuchVeinsMax=howMuchVeinsMax, minInVein=minInVein, maxInVein=maxInVein, recursive=False, fromWhatSide='left', blocks=blocks, minY=minY,maxY=maxY)
             fromRight = self.generateVeins(chunkPos=(chunkPos[0]+1, chunkPos[1]), chunk=chunk, blockName=blockName, howMuchVeinsMin=howMuchVeinsMin, howMuchVeinsMax=howMuchVeinsMax, minInVein=minInVein, maxInVein=maxInVein, recursive=False, fromWhatSide='right', blocks=blocks, minY=minY,maxY=maxY)
         
-        print('dawdawd11', chunkPos)
         # setting seed
         random.seed(f"${self.getScene().getSeed()}_CHUNK_{int(chunkPos[0])}_VEINS_{blockName}")    
-        global stats
         
         howManyVeins: int = random.randint(howMuchVeinsMin, howMuchVeinsMax)
         everyVein: list[tuple[int,int]] = []
@@ -109,9 +108,6 @@ class worldGeneratorNormal(WorldGenerator):
             
             # first block
             currentBlock: tuple[int,int] = (random.randint(0, Chunk.SIZE.x-1), random.randint(minY, maxY))
-            if chunkPos[0] == 0:
-                print('01', currentBlock)
-            stats.append(random.getstate())
         
             blocksMole.append((currentBlock[0], currentBlock[1]))
             
@@ -142,19 +138,14 @@ class worldGeneratorNormal(WorldGenerator):
         # return if fromWhatSide is not None (for recursive)
         if fromWhatSide is not None:
             if fromWhatSide == "right":
-                print('dadawedR', everyVein)
                 return list(filter(lambda block: block[0] < 0, everyVein))
             elif fromWhatSide == "left":
-                print('dadawedL', everyVein)
                 return list(filter(lambda block: block[0] >= Chunk.SIZE.x, everyVein))
             
 
             
         # final
         
-        
-        print('dawdaL', list(map(lambda ore: (int(ore[0]-chunk.SIZE.x), ore[1]), fromLeft)), list(fromLeft), chunk.getChunkPos())
-        print('dawdaR', list(map(lambda ore: (int(Chunk.SIZE.x+ore[0]), ore[1]), fromRight)), list(fromRight), chunk.getChunkPos())
         
         # first = list(map(lambda ore: (int(Chunk.SIZE.x+ore[0]), ore[1]), fromRight))
         # if len(first) > 1:
@@ -170,7 +161,6 @@ class worldGeneratorNormal(WorldGenerator):
         everyVein.extend(map(lambda ore: (int(Chunk.SIZE.x+ore[0]), ore[1]), fromRight))
         
         
-        print('90121', list(map(lambda ore: (int(ore[0]-chunk.SIZE.x), ore[1]), fromLeft)), chunk.getChunkPos())
         
         
         # def oreRepair(ore):
@@ -191,7 +181,6 @@ class worldGeneratorNormal(WorldGenerator):
             if block in blocks and blocks[block].ID == "stone":
                 blocks[block].kill()
                 del blocks[block]
-                print("dadawdaw", block, chunk.getChunkPos())
                 Block.newBlockByResourceManager(
                     chunk=chunk,
                     name=blockName,
@@ -424,10 +413,10 @@ class worldGeneratorNormal(WorldGenerator):
         
             
         
-        
+    async def __waitForAnother(self): pass
         
 
-    def generateChunk(self, chunkPos: tuple[int, int], chunk: 'Chunk', Scene: 'Scene') -> dict[tuple[int, int], Block]:
+    async def generateChunk(self, chunkPos: tuple[int, int], chunk: 'Chunk', Scene: 'Scene') -> dict[tuple[int, int], Block]:
         blocks: dict[tuple[int,int], Block] = {}
         
         
@@ -500,6 +489,7 @@ class worldGeneratorNormal(WorldGenerator):
                     break
                 
         # ores
+        await asyncio.sleep(0.1)
         self.generateVeins(chunkPos=chunkPos,
                            chunk=chunk,
                            blockName="coal_ore",
@@ -513,6 +503,7 @@ class worldGeneratorNormal(WorldGenerator):
                            minY=60,
                            maxY=170)
         
+        await asyncio.sleep(0.1)
         self.generateVeins(chunkPos=chunkPos,
                            chunk=chunk,
                            blockName="iron_ore",
@@ -526,6 +517,7 @@ class worldGeneratorNormal(WorldGenerator):
                            minY=90,
                            maxY=150)
         
+        await asyncio.sleep(0.1)
         self.generateVeins(chunkPos=chunkPos,
                            chunk=chunk,
                            blockName="iron_ore",
@@ -539,6 +531,7 @@ class worldGeneratorNormal(WorldGenerator):
                            minY=151,
                            maxY=185)
         
+        await asyncio.sleep(0.1)
         self.generateVeins(chunkPos=chunkPos,
                            chunk=chunk,
                            blockName="coal_ore",
@@ -552,6 +545,7 @@ class worldGeneratorNormal(WorldGenerator):
                            minY=151,
                            maxY=190)
         
+        await asyncio.sleep(0.1)
         self.generateVeins(chunkPos=chunkPos,
                            chunk=chunk,
                            blockName="diamond_ore",
@@ -569,7 +563,7 @@ class worldGeneratorNormal(WorldGenerator):
         
         global stats
         
-        print('dadawe9888', len(set(stats)))
+       
         return blocks
         
         # veins = 5

@@ -308,11 +308,12 @@ class Chunk(pygame.sprite.Group, Executor):
         
         # self.loadChunkFromCsv("test.csv")
         # self.generateChunk()
-        self.__blocks: dict[tuple[int,int], Block] = self.getScene().getWorldGenerator().generateChunk(
+        self.__blocks: dict[tuple[int,int], Block] = asyncio.create_task(self.getScene().getWorldGenerator().generateChunk(
             chunkPos=self.__chunkPos,
             chunk=self,
             Scene=self.__map
-        )  
+        ), name=f"world_generator{self.__chunkPos}"
+        )
         
 
 
