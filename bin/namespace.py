@@ -114,6 +114,8 @@ class resourceManager:
         #                     raise e
                     
                     
+    def getNameSpace(self) -> dict:
+        return GAME_NAMESPACE
     
     def __init__(self, game: 'Game') -> None:
         self.__game = game

@@ -116,6 +116,8 @@ class Game:
     def getResourceManager(self) -> resourceManager:
         return self.__resourceManager
 
+    def getNameSpace(self) -> dict:
+        return self.__resourceManager.getNameSpace()
     
     def __init__(self, resolution: tuple[int,int]) -> None:
         # save data
