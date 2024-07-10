@@ -5,7 +5,7 @@ from bin.abstractClasses import Executor
 
 
 
-class oakWood(Block):
+class oak_wood(Block):
     MAINTEXTURE = "oak_wood.png"
     ID = "oak_wood"
     IDInt = "8"
