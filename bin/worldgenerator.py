@@ -434,7 +434,7 @@ class worldGeneratorNormal(WorldGenerator):
         random.seed(f"${self.getScene().getSeed()}_CHUNK_{chunkPos}")
         
         for x in range(0,int(Chunk.SIZE.x)):
-            height = self.generateHeight(x, list(chunkPos), self.getScene().getSeedInt(), self.__cache['grass_height'], False, min=6, max=16, seedName="height")
+            height = self.generateHeight(x, list(chunkPos), self.getScene().getSeedInt(), self.__cache['grass_height'], False, min=70, max=80, seedName="height", startPoint=75)
             blocks[(x,height)] = Block.newBlockByResourceManager(
                 chunk=chunk,
                 name="grass_block",
@@ -445,7 +445,6 @@ class worldGeneratorNormal(WorldGenerator):
             
             dirtheight = self.generateHeight(x, list(chunkPos), self.getScene().getSeedInt(), self.__cache['dirt_height'], False, startPoint=4, max=5, min=3, seedName="dirtheight")
             
-
             
             for y in range(0,dirtheight):
                 blocks[(x,height+y+1)] = Block.newBlockByResourceManager(
@@ -457,7 +456,7 @@ class worldGeneratorNormal(WorldGenerator):
                 )
                 
             currentHeight = height + dirtheight + 1
-            for y in range(0,100):
+            for y in range(0,200):
                 blocks[(x,y+currentHeight)] = Block.newBlockByResourceManager(
                     chunk=chunk,
                     name="stone",
@@ -465,7 +464,7 @@ class worldGeneratorNormal(WorldGenerator):
                     executor=self,
                     reason=Reason.WorldGenerator
                 ) 
-                if y + currentHeight >= 100:   
+                if y + currentHeight >= 200:   
                     bedrockHeight = self.generateHeight(x, list(chunkPos), self.getScene().getSeedInt(), self.getScene().heightCache['bedrock_height'], False, startPoint=2, max=2, min=1, probability=20)
                     
                     if bedrockHeight == 1:
@@ -504,28 +503,54 @@ class worldGeneratorNormal(WorldGenerator):
         self.generateVeins(chunkPos=chunkPos,
                            chunk=chunk,
                            blockName="coal_ore",
-                           howMuchVeinsMin=4,
-                           howMuchVeinsMax=8,
-                           minInVein=2,
-                           maxInVein=4,
-                           recursive=True,
-                           fromWhatSide=None,
-                           blocks=blocks,
-                           minY=35,
-                           maxY=85)
-        
-        self.generateVeins(chunkPos=chunkPos,
-                           chunk=chunk,
-                           blockName="iron_ore",
-                           howMuchVeinsMin=2,
-                           howMuchVeinsMax=3,
+                           howMuchVeinsMin=10,
+                           howMuchVeinsMax=16,
                            minInVein=2,
                            maxInVein=4,
                            recursive=True,
                            fromWhatSide=None,
                            blocks=blocks,
                            minY=60,
-                           maxY=80)
+                           maxY=170)
+        
+        self.generateVeins(chunkPos=chunkPos,
+                           chunk=chunk,
+                           blockName="iron_ore",
+                           howMuchVeinsMin=2,
+                           howMuchVeinsMax=6,
+                           minInVein=2,
+                           maxInVein=4,
+                           recursive=True,
+                           fromWhatSide=None,
+                           blocks=blocks,
+                           minY=90,
+                           maxY=150)
+        
+        self.generateVeins(chunkPos=chunkPos,
+                           chunk=chunk,
+                           blockName="iron_ore",
+                           howMuchVeinsMin=2,
+                           howMuchVeinsMax=5,
+                           minInVein=2,
+                           maxInVein=4,
+                           recursive=True,
+                           fromWhatSide=None,
+                           blocks=blocks,
+                           minY=151,
+                           maxY=185)
+        
+        self.generateVeins(chunkPos=chunkPos,
+                           chunk=chunk,
+                           blockName="coal_ore",
+                           howMuchVeinsMin=2,
+                           howMuchVeinsMax=4,
+                           minInVein=2,
+                           maxInVein=3,
+                           recursive=True,
+                           fromWhatSide=None,
+                           blocks=blocks,
+                           minY=151,
+                           maxY=190)
         
         self.generateVeins(chunkPos=chunkPos,
                            chunk=chunk,
@@ -537,8 +562,8 @@ class worldGeneratorNormal(WorldGenerator):
                            recursive=True,
                            fromWhatSide=None,
                            blocks=blocks,
-                           minY=85,
-                           maxY=100)
+                           minY=170,
+                           maxY=200)
         
         # self.generateVeins(chunkPos, chunk, "coal_ore", 1, 1, 6, 6, True, None, blocks, currentHeight+3, 32)
         

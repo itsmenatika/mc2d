@@ -122,7 +122,7 @@ class Game:
         self.__currentScene: None | Scene = None
         
         
-        self.camera = Camera(cords=Vector2(0,0), game=self)
+        self.camera = Camera(cords=Vector2(0,70), game=self)
         
         
         
