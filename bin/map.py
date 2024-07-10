@@ -319,6 +319,7 @@ class Chunk(pygame.sprite.Group, Executor):
 
 class Block(pygame.sprite.Sprite):
     MAINTEXTURE: str | None = None
+    MAINTEXTUREISTRANSPARENT: bool = False
     ID: str | None = None
     IDInt: int|None = None
     
@@ -362,17 +363,17 @@ class Block(pygame.sprite.Sprite):
         
     '''Create new block using resourceManager'''
     @staticmethod
-    def newBlockByResourceManager(chunk: Chunk, name: str, cordsRelative: Optional[Vector2] = None, executor: Optional[Executor] = None, reason: Optional[str] = None) -> 'Block':
+    def newBlockByResourceManager(chunk: Chunk, name: str, blockPos: tuple[int,int], executor: Optional[Executor] = None, reason: Optional[str] = None) -> 'Block':
         rm = chunk.getScene().getGame().getResourceManager()
         
-        if cordsRelative == None:
-            cords = Vector2(0,0)
+        # if cordsRelative == None:
+        #     cords = Vector2(0,0)
             
         blockInfo = rm.getBlockInformation(name)
         
         return blockInfo['class'](
             image=rm.getTexture(blockInfo['class'].MAINTEXTURE),
-            cordsRelative=cordsRelative,
+            blockPos=blockPos,
             chunk=chunk,
             executor = executor,
             reason=reason
@@ -385,13 +386,14 @@ class Block(pygame.sprite.Sprite):
     def getScene(self) -> 'Scene':
         return self.__chunk.getScene()
     
-    def __init__(self, image:pygame.surface.Surface, cordsRelative: Vector2, chunk: Chunk, executor: Optional[Executor] = None, reason: Optional[str] = None) -> None:
+    def __init__(self, image:pygame.surface.Surface, blockPos: tuple[int,int], chunk: Chunk, executor: Optional[Executor] = None, reason: Optional[str] = None) -> None:
         super().__init__(chunk,chunk.getScene())
         self.__chunk = chunk
         self.image = image
-        self.__cords: Vector2 = cordsRelative
-        self.__cordsAbsolute: Vector2 = Vector2(cordsRelative.x + self.__chunk.getStartingPoint().x,
-                                        cordsRelative.y + self.__chunk.getStartingPoint().y)
+        self.__cords: Vector2 = Vector2(blockPos[0] * Block.SIZE.x, blockPos[1] * Block.SIZE.y)
+        # print(self.__cords)
+        self.__cordsAbsolute: Vector2 = Vector2(self.__cords.x + self.__chunk.getStartingPoint().x,
+                                        self.__cords.y + self.__chunk.getStartingPoint().y)
         
         self.rect: pygame.Rect = self.image.get_rect()
         self.rect.topleft = self.__cordsAbsolute

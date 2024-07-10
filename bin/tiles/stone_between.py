@@ -7,7 +7,8 @@ from bin.abstractClasses import Executor
 
 class stone_between(Block):
     MAINTEXTURE = "stone_between.png"
+    MAINTEXTUREISTRANSPARENT = False
     ID = "stone_between"
     IDInt = 5
-    def __init__(self, image: Surface, cordsRelative: Vector2, chunk: Chunk, executor: Executor | None = None, reason: str | None = None) -> None:
-        super().__init__(image, cordsRelative, chunk, executor, reason)
+    def __init__(self, image: Surface, blockPos: Vector2, chunk: Chunk, executor: Executor | None = None, reason: str | None = None) -> None:
+        super().__init__(image, blockPos, chunk, executor, reason)

@@ -12,6 +12,111 @@ from typing import Optional
 stats = []
 
 class worldGeneratorNormal(WorldGenerator):
+    def generateTress(self, chunkPos: list[int,int], chunk: Chunk, blocks: dict[tuple[int, int], Block], howMuchMin: int, howMuchMax: int, get: Optional[str] = None) -> dict[tuple[int, int], Block]:
+        if get is None:
+            fromLeft = self.generateTress((chunkPos[0]-1,chunkPos[1]), chunk, blocks, 1, 2, get="left")
+            fromRight = self.generateTress((chunkPos[0]+1,chunkPos[1]), chunk, blocks, 1, 2, get="right")
+        random.seed(f"${self.getScene().getSeed()}_CHUNK_{chunkPos[0]}_trees")
+        
+        howMuchTrees: int = random.randint(howMuchMin, howMuchMax)
+        
+        _taken = []
+        _recent = random.randint(0, Chunk.SIZE.x-1)
+        _taken.extend([_recent, _recent+1, _recent+2, _recent-1, _recent-2])
+        treesPos = [_recent]
+        for _ in range(howMuchTrees):
+            _recent = _recent + random.randint(3,4) * random.choice([-1,1])
+            print(_taken, _recent, chunkPos)
+            if len(set(_taken).intersection([_recent, _recent-1, _recent+1])) != 0: continue
+            treesPos.append(_recent)
+            _taken.extend([_recent, _recent+1, _recent+2, _recent-1, _recent-2])
+            
+            
+        # if get == "right":
+        #     return  filter(lambda pos: pos >= Chunk.SIZE.x, treesPos)
+        # elif get == "left":
+        #     return filter(lambda pos: pos < 0, treesPos)
+            
+        treesPos = filter(lambda pos: pos >= 0 and pos < Chunk.SIZE.x, treesPos)
+        
+        newBlocks = {}
+        for pos in treesPos:
+            heightTree = self.generateHeight(pos, list(chunkPos), self.getScene().getSeedInt(), self.__cache['grass_height'], False, min=70, max=80, seedName="height", startPoint=75)
+            newBlocks[(pos,heightTree-1)] = "oak_wood"
+            newBlocks[(pos,heightTree-2)] = "oak_wood"
+            newBlocks[(pos,heightTree-3)] = "oak_wood"
+            newBlocks[(pos,heightTree-4)] = "oak_wood"
+            newBlocks[(pos,heightTree-5)] = "oak_leaves"
+            newBlocks[(pos+1,heightTree-4)] = "oak_leaves"
+            newBlocks[(pos-1,heightTree-4)] = "oak_leaves"
+            newBlocks[(pos+1,heightTree-3)] = "oak_leaves"
+            newBlocks[(pos-1,heightTree-3)] = "oak_leaves"
+            newBlocks[(pos+2,heightTree-3)] = "oak_leaves"
+            newBlocks[(pos-2,heightTree-3)] = "oak_leaves"
+            
+        
+            # print(newBlocks)
+        if get == "left":
+            return {(key[0]-Chunk.SIZE.x, key[1]): item for key, item in newBlocks.items() if key[0] >= Chunk.SIZE.x}
+        elif get == "right":
+            return {(Chunk.SIZE.x+key[0], key[1]): item for key, item in newBlocks.items() if key[0] < 0}
+        # if get == "right": 
+        #     # _f = dict(filter(lambda pos: pos.keys()[0] < 0, newBlocks))
+        #     # print(_f)
+        #     return {()}
+        #     return {(Chunk.SIZE.x+key[0], key[1]): item for key, item in newBlocks.items() if key[0] >= Chunk.SIZE.x }
+        #     # return filter(lambda pos: pos.keys()[0] < 0, newBlocks)
+        # elif get == "left":
+        #     # _f = dict(filter(lambda pos: pos.keys()[0] >= Chunk.SIZE.x, newBlocks))
+        #     return {(key[0]-Chunk.SIZE.x, key[0]): item for key, item in newBlocks.items() if key[0] < 0}
+        
+        _final = {key: item for key, item in newBlocks.items() if key[0] >= 0 and key[0] < Chunk.SIZE.x}
+        _final.update(fromLeft)
+        _final.update(fromRight)
+        
+        print('dw', _final, newBlocks)
+        for pos, block in _final.items():
+            Block.newBlockByResourceManager(
+                chunk=chunk,
+                name=block,
+                blockPos=pos,
+                executor=self,
+                reason=Reason.WorldGenerator
+            )
+            
+       
+            
+                
+        # treesPos = [pos for pos in treesPos if pos not in _err]
+        # for tree in treesPos:
+        #     heightTree = self.generateHeight(tree, list(chunkPos), self.getScene().getSeedInt(), self.__cache['grass_height'], False, min=70, max=80, seedName="height", startPoint=75)
+            
+        #     blocks[(tree, heightTree-1)] = Block.newBlockByResourceManager(
+        #         chunk=chunk,
+        #         name="oak_wood",
+        #         blockPos=Vector2(tree,heightTree-1),
+        #         executor=self,
+        #         reason=Reason.WorldGenerator,
+        #     )
+            
+        #     blocks[(tree, heightTree-2)] = Block.newBlockByResourceManager(
+        #         chunk=chunk,
+        #         name="oak_wood",
+        #         blockPos=(tree,(heightTree-2)),
+        #         executor=self,
+        #         reason=Reason.WorldGenerator,
+        #     )
+            
+        #     blocks[(tree, heightTree-3)] = Block.newBlockByResourceManager(
+        #         chunk=chunk,
+        #         name="oak_wood",
+        #         blockPos=Vector2(tree,heightTree-3),
+        #         executor=self,
+        #         reason=Reason.WorldGenerator,
+        #     )
+            
+        return blocks
+         
     def generateHeight(self, x, chunkPos: list[int,int], seedInt: int,  cache: dict, fromLeft: bool = False, startPoint: int = 10,
                        max: Optional[int] = None, min: Optional[int] = None, probability: int = 60, seedName: str = "global") -> int:  
         _s = seedInt % 10
@@ -184,7 +289,7 @@ class worldGeneratorNormal(WorldGenerator):
                 Block.newBlockByResourceManager(
                     chunk=chunk,
                     name=blockName,
-                    cordsRelative=Vector2(block[0] * Block.SIZE.x, block[1] * Block.SIZE.y),
+                    blockPos=block,
                     executor=self,
                     reason=Reason.WorldGenerator
                 )
@@ -427,7 +532,7 @@ class worldGeneratorNormal(WorldGenerator):
             blocks[(x,height)] = Block.newBlockByResourceManager(
                 chunk=chunk,
                 name="grass_block",
-                cordsRelative=Vector2(x * Block.SIZE.x,height * Block.SIZE.y),
+                blockPos=Vector2(x,height),
                 executor=self,
                 reason=Reason.WorldGenerator
             )
@@ -439,7 +544,7 @@ class worldGeneratorNormal(WorldGenerator):
                 blocks[(x,height+y+1)] = Block.newBlockByResourceManager(
                     chunk=chunk,
                     name="dirt",
-                    cordsRelative=Vector2(x * Block.SIZE.x,(height + 1 + y) * Block.SIZE.y),
+                    blockPos=(x,height + 1 + y),
                     executor=self,
                     reason=Reason.WorldGenerator
                 )
@@ -449,7 +554,7 @@ class worldGeneratorNormal(WorldGenerator):
                 blocks[(x,y+currentHeight)] = Block.newBlockByResourceManager(
                     chunk=chunk,
                     name="stone",
-                    cordsRelative=Vector2(x * Block.SIZE.x,(y + currentHeight) * Block.SIZE.y),
+                    blockPos=(x,y + currentHeight),
                     executor=self,
                     reason=Reason.WorldGenerator
                 ) 
@@ -460,14 +565,14 @@ class worldGeneratorNormal(WorldGenerator):
                         blocks[(x,y+currentHeight + 1)] = Block.newBlockByResourceManager(
                             chunk=chunk,
                             name="stone",
-                            cordsRelative=Vector2(x * Block.SIZE.x,(y + currentHeight + 1) * Block.SIZE.y),
+                            blockPos=(x,y + currentHeight + 1),
                             executor=self,
                             reason=Reason.WorldGenerator
                         )
                         blocks[(x,y+currentHeight + 2)] = Block.newBlockByResourceManager(
                             chunk=chunk,
                             name="bedrock",
-                            cordsRelative=Vector2(x * Block.SIZE.x,(y + currentHeight + 2) * Block.SIZE.y),
+                            blockPos=(x,y + currentHeight + 2),
                             executor=self,
                             reason=Reason.WorldGenerator
                         ) 
@@ -475,14 +580,14 @@ class worldGeneratorNormal(WorldGenerator):
                         blocks[(x,y+currentHeight + 1)] = Block.newBlockByResourceManager(
                             chunk=chunk,
                             name="bedrock",
-                            cordsRelative=Vector2(x * Block.SIZE.x,(y + currentHeight + 1) * Block.SIZE.y),
+                            blockPos=(x,y + currentHeight + 1),
                             executor=self,
                             reason=Reason.WorldGenerator
                         )
                         blocks[(x,y+currentHeight + 2)] = Block.newBlockByResourceManager(
                             chunk=chunk,
                             name="bedrock",
-                            cordsRelative=Vector2(x * Block.SIZE.x,(y + currentHeight + 2) * Block.SIZE.y),
+                            blockPos=(x,y + currentHeight + 2),
                             executor=self,
                             reason=Reason.WorldGenerator
                         ) 
@@ -558,6 +663,9 @@ class worldGeneratorNormal(WorldGenerator):
                            blocks=blocks,
                            minY=170,
                            maxY=200)
+        
+        await asyncio.sleep(0.1)
+        self.generateTress(chunkPos, chunk, blocks, 1, 2)
         
         # self.generateVeins(chunkPos, chunk, "coal_ore", 1, 1, 6, 6, True, None, blocks, currentHeight+3, 32)
         

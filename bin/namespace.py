@@ -24,7 +24,7 @@ class resourceManager:
             return self.loadTextureFromFile(name)
             
     def loadTextureFromFile(self, name: str):
-        self.__resources[name] = pygame.image.load(name).convert_alpha()
+        self.__resources[name] = pygame.image.load(name).convert()
         return self.__resources[name]
     
     def get(self, name: str):
@@ -65,6 +65,9 @@ class resourceManager:
                 if "MAINTEXTURE" not in module.__dict__[name].__dict__:
                     raise Exception("main class doesnt have MAINTEXTURE")
                 
+                if "MAINTEXTUREISTRANSPARENT" not in module.__dict__[name].__dict__:
+                    raise Exception("main class doesnt have MAINTEXTUREISTRANSPARENT")
+                
                 if name in GAME_NAMESPACE["blocks"]:
                     raise Exception(f"{name} is ambiguous! There's at least two classes with the same id!")
                 
@@ -78,12 +81,16 @@ class resourceManager:
                     "type": "block",
                     "class": module.__dict__[name],
                     "idInt": module.__dict__[name].IDInt,
-                    "MAINTEXTURE": module.__dict__[name].MAINTEXTURE
+                    "MAINTEXTURE_LOC": module.__dict__[name].MAINTEXTURE,
+                    "ISMAINTEXTURETRANSPARENT": module.__dict__[name].MAINTEXTUREISTRANSPARENT
                 }
                 
                 GAME_NAMESPACE["IDInts"][str(module.__dict__[name].IDInt)] = name
                 
-                self.__resources[module.__dict__[name].MAINTEXTURE] = pygame.image.load(module.__dict__[name].MAINTEXTURE).convert_alpha()
+                if module.__dict__[name].MAINTEXTUREISTRANSPARENT:
+                     self.__resources[module.__dict__[name].MAINTEXTURE] = pygame.image.load(module.__dict__[name].MAINTEXTURE).convert_alpha()
+                else:
+                    self.__resources[module.__dict__[name].MAINTEXTURE] = pygame.image.load(module.__dict__[name].MAINTEXTURE).convert()
                 
                 print(f"[NAMESPACE] New block added: {name} (INT ID: {module.__dict__[name].IDInt})")
             except Exception as e:

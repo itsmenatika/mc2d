@@ -6,7 +6,8 @@ from bin.abstractClasses import Executor
 
 class dirt(Block):
     MAINTEXTURE = "dirt.png"
+    MAINTEXTUREISTRANSPARENT = False
     ID = "dirt"
-    IDInt = "1"
-    def __init__(self, image: Surface, cordsRelative: Vector2, chunk: Chunk, executor: Executor | None = None, reason: str | None = None) -> None:
-        super().__init__(image, cordsRelative, chunk, executor, reason)
+    IDInt = 1
+    def __init__(self, image: Surface, blockPos: Vector2, chunk: Chunk, executor: Executor | None = None, reason: str | None = None) -> None:
+        super().__init__(image, blockPos, chunk, executor, reason)

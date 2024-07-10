@@ -6,6 +6,7 @@ from bin.abstractClasses import Executor
 
 class bedrock(Block):
     MAINTEXTURE = "bedrock.png"
+    MAINTEXTUREISTRANSPARENT = False
     ID = "bedrock"
     IDInt = 8
     
@@ -14,7 +15,6 @@ class bedrock(Block):
         
 
         
-    def __init__(self, image: Surface, cordsRelative: Vector2, chunk: Chunk, executor: Executor | None = None, reason: str | None = None) -> None:
-        super().__init__(image, cordsRelative, chunk, executor, reason)
-        
+    def __init__(self, image: Surface, blockPos: Vector2, chunk: Chunk, executor: Executor | None = None, reason: str | None = None) -> None:
+        super().__init__(image, blockPos, chunk, executor, reason)
     
