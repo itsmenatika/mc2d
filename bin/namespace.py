@@ -60,6 +60,9 @@ class resourceManager:
                 if "IDInt" not in module.__dict__[name].__dict__:
                     raise Exception("main class doesnt have IDInt")
                 
+                if "MAINTEXTURE" not in module.__dict__[name].__dict__:
+                    raise Exception("main class doesnt have MAINTEXTURE")
+                
                 GAME_NAMESPACE["blocks"][name] = {
                     "module": module,
                     "id": name,
@@ -68,6 +71,9 @@ class resourceManager:
                     "idInt": module.__dict__[name].IDInt,
                     "MAINTEXTURE": module.__dict__[name].MAINTEXTURE
                 }
+                
+                self.__resources[module.__dict__[name].MAINTEXTURE] = pygame.image.load(module.__dict__[name].MAINTEXTURE).convert_alpha()
+                
             except Exception as e:
                 print(f"[NAMESPACE] unable to load tile of id {name}\nERROR:\n {e}\n")
         
