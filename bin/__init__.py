@@ -32,13 +32,17 @@ class Game:
                 self.__isGameOn = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
-                    self.camera.cords.x -= 200
+                    # self.camera.cords.x -= 200
+                    self.camera.moveBy(Vector2(-200,0))
                 elif event.key == pygame.K_RIGHT:
-                    self.camera.cords.x += 200
+                    # self.camera.cords.x += 200
+                    self.camera.moveBy(Vector2(200,0))
                 elif event.key == pygame.K_UP:
-                    self.camera.cords.y -= 200
+                    # self.camera.cords.y -= 200
+                    self.camera.moveBy(Vector2(0,-200))
                 elif event.key == pygame.K_DOWN:
-                    self.camera.cords.y += 200
+                    # self.camera.cords.y += 200
+                    self.camera.moveBy(Vector2(0,200))
                     
             
     async def __onRun(self) -> None:
@@ -61,9 +65,9 @@ class Game:
             for scene in self.__scenes.values():
                 if not scene.idle: await scene.tick()
             
-            await self.__drawLoop()
             await self.__functionToGetAnotherMoreSpace()
-            self.clock.tick(60)
+            await self.__drawLoop()
+            self.clock.tick(120)
             # self.clock.get_rawtime()
             # print(self.clock.get_fps())
             

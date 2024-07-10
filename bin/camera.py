@@ -6,6 +6,11 @@ import asyncio
 
 
 class Camera:
+    def __filterSpritesToDrawNonAsync(self) -> None:
+        cameraEndPoint = (self.SCREENSIZE[0] + self.cords.x,
+        self.SCREENSIZE[1] + self.cords.y)
+        
+        self.spritesTodraw = list(filter(lambda sprite: sprite.getCords().x > self.cords.x - Block.SIZE.x and sprite.getCords().x < cameraEndPoint[0] + Block.SIZE.x and sprite.getCords().y + Block.SIZE.y > self.cords.y and sprite.getCords().y < cameraEndPoint[1] + Block.SIZE.y, self.sceneToDraw.sprites()))
     async def __filterSpritesToDraw(self):
         while True:
             
@@ -93,6 +98,23 @@ class Camera:
         
         surface.blit(self.__infoToDraw, (0,0))
         
+    # @property
+    # def cords(self):
+    #     return self.cords
+        
+    # @property.setter
+    # def cords(self, setTo):
+    #     self.__cords = setTo
+    #     self.__filterSpritesToDrawNonAsync()
+    
+    def moveTo(self, newCords: Vector2, callFilter: bool = True) -> None:
+        self.cords = newCords
+        if callFilter: self.__filterSpritesToDrawNonAsync()
+        
+    def moveBy(self, by: Vector2, callFilter: bool = True) -> Vector2:
+        self.cords += by
+        if callFilter: self.__filterSpritesToDrawNonAsync()
+        return self.cords
         
     def __init__(self, cords: Vector2, game: 'Game') -> None:
         self.cords: Vector2 = cords
