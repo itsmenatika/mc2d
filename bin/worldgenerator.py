@@ -78,13 +78,15 @@ class worldGeneratorNormal(WorldGenerator):
         
         print('dw', _final, newBlocks)
         for pos, block in _final.items():
-            Block.newBlockByResourceManager(
+            blocks[block] = Block.newBlockByResourceManager(
                 chunk=chunk,
                 name=block,
                 blockPos=pos,
                 executor=self,
                 reason=Reason.WorldGenerator
             )
+            
+       
             
        
             
@@ -116,7 +118,9 @@ class worldGeneratorNormal(WorldGenerator):
         #         executor=self,
         #         reason=Reason.WorldGenerator,
         #     )
-            
+         
+        # print(blocks)
+        # chunk.setBlocks(blocks)   
         return blocks
          
     def generateHeight(self, x, chunkPos: list[int,int], seedInt: int,  cache: dict, fromLeft: bool = False, startPoint: int = 10,
@@ -288,13 +292,15 @@ class worldGeneratorNormal(WorldGenerator):
             if block in blocks and blocks[block].ID == "stone":
                 blocks[block].kill()
                 del blocks[block]
-                Block.newBlockByResourceManager(
+                blocks[block] = Block.newBlockByResourceManager(
                     chunk=chunk,
                     name=blockName,
                     blockPos=block,
                     executor=self,
                     reason=Reason.WorldGenerator
                 )
+                
+        # chunk.setBlocks(blocks)
                 
        
                 
@@ -534,7 +540,7 @@ class worldGeneratorNormal(WorldGenerator):
             blocks[(x,height)] = Block.newBlockByResourceManager(
                 chunk=chunk,
                 name="grass_block",
-                blockPos=Vector2(x,height),
+                blockPos=(x,height),
                 executor=self,
                 reason=Reason.WorldGenerator
             )
@@ -671,9 +677,9 @@ class worldGeneratorNormal(WorldGenerator):
         
         # self.generateVeins(chunkPos, chunk, "coal_ore", 1, 1, 6, 6, True, None, blocks, currentHeight+3, 32)
         
-        global stats
+        # global stats
         
-       
+        # chunk.setBlocks(blocks)
         return blocks
         
         # veins = 5

@@ -11,16 +11,29 @@ class Camera:
             sceneToDraw: Scene = self.__game.getCurrentScene()
             
             BlockPos = Vector2(pygame.mouse.get_pos())
+            chunkPos = BlockPos.copy()
+            AbsolutePos = BlockPos.copy()
             
             BlockPos.x = int(( (BlockPos.x + self.cords.x) / Block.SIZE.x ) % Chunk.SIZE.x)
             BlockPos.y = int(( (BlockPos.y + self.cords.y) / Block.SIZE.y ) % Chunk.SIZE.y)
             
-            chunkPos = Vector2(pygame.mouse.get_pos())
-            
             chunkPos.x = int((chunkPos.x + self.cords.x) // Block.SIZE.x // Chunk.SIZE.x)
             chunkPos.y = int((chunkPos.y + self.cords.y) // Block.SIZE.y // Chunk.SIZE.y)
             
-            self.__infoToDraw = self.__font.render(f"BlockPos: {BlockPos} CHUNK: {chunkPos} {round(sceneToDraw.getGame().clock.get_fps())}FPS {sceneToDraw.getGame().clock.get_rawtime()}MS", False, (100,100,100))
+            AbsolutePos.x = round(AbsolutePos.x + self.cords.x * 100)/100
+            AbsolutePos.y = round(AbsolutePos.y + self.cords.y * 100)/100
+            
+            blockID = "None (air??)"
+            try:
+                chunk: Chunk = self.getGame().getCurrentScene().getChunk((chunkPos[0], chunkPos[1]))
+                # print(chunk.__dict__.keys())
+                # print(chunk._Chunk__blocks, BlockPos)
+                blockID = chunk.getBlockByTuple((BlockPos[0], BlockPos[1])).ID
+            except Exception as e: pass
+                # print(e)
+            # blockID = blockID.getBlockByTuple((chunkPos[0], chunkPos[1]))
+            
+            self.__infoToDraw = self.__font.render(f"BlockPos: {BlockPos} Chunk: {chunkPos} {round(sceneToDraw.getGame().clock.get_fps())}FPS {sceneToDraw.getGame().clock.get_rawtime()}MS AbsPOS: {AbsolutePos} BlockID: {blockID}", False, (100,100,100))
             await asyncio.sleep(0.2)
     
     def getGame(self) -> 'Game':

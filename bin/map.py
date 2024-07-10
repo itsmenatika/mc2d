@@ -279,6 +279,12 @@ class Chunk(pygame.sprite.Group, Executor):
         self.__blocks[blockPosition].kill()
         del self.__blocks[blockPosition]
         
+    def setBlocksAbsolute(self, blocks: dict[tuple[int,int], 'Block']) -> None:
+        self.__blocks = blocks
+        
+    def setBlocks(self, blocks: dict[tuple[int,int], 'Block']) -> None:
+        self.__blocks.update(blocks)
+        
     def checkPositionForBlock(self, blockPosition: tuple[int,int], block: Optional['Block'], exactCopy: bool = False) -> bool:
         if blockPosition not in self.__blocks: return False
         
@@ -308,7 +314,10 @@ class Chunk(pygame.sprite.Group, Executor):
         
         # self.loadChunkFromCsv("test.csv")
         # self.generateChunk()
-        self.__blocks: dict[tuple[int,int], Block] = asyncio.create_task(self.getScene().getWorldGenerator().generateChunk(
+        self.__blocks: dict[tuple[int,int], Block] = {}
+        
+        
+        asyncio.create_task(self.getScene().getWorldGenerator().generateChunk(
             chunkPos=self.__chunkPos,
             chunk=self,
             Scene=self.__map
@@ -371,13 +380,16 @@ class Block(pygame.sprite.Sprite):
             
         blockInfo = rm.getBlockInformation(name)
         
-        return blockInfo['class'](
+        _b = blockInfo['class'](
             image=rm.getTexture(blockInfo['class'].MAINTEXTURE),
             blockPos=blockPos,
             chunk=chunk,
             executor = executor,
             reason=reason
         )
+        chunk.setBlock(blockPos, _b)
+        
+        return _b
         
     
     def getChunk(self) -> Chunk:
