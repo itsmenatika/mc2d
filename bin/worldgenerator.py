@@ -677,7 +677,7 @@ class worldGeneratorNormal(WorldGenerator):
         
         # self.generateVeins(chunkPos, chunk, "coal_ore", 1, 1, 6, 6, True, None, blocks, currentHeight+3, 32)
         
-        # global stats
+        global stats
         
         # chunk.setBlocks(blocks)
         return blocks

@@ -23,7 +23,7 @@ class Game:
         # self.__currentScene.draw()
         self.__display.fill((0,0,0))
         self.camera.draw(self.getDisplayOrginal())
-        pygame.display.update()
+        pygame.display.flip()
         
     async def __eventHandler(self) -> None:
         self.__events = pygame.event.get()
@@ -42,9 +42,9 @@ class Game:
                     
             
     async def __onRun(self) -> None:
-        self.camera = Camera(cords=Vector2(0,70), game=self)
         t = Scene(self, name="test", worldGenerator=worldGeneratorNormal)
         self.setCurrentScene(t)
+        self.camera = Camera(cords=Vector2(0,70), game=self)
         
     
     async def __gameLoop(self) -> None:
@@ -125,6 +125,7 @@ class Game:
         self.__isGameOn: bool = True
         self.__scenes: dict[str,Scene] = {}
         self.__currentScene: None | Scene = None
+        # self.get
         
         
         

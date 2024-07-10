@@ -334,6 +334,13 @@ class Block(pygame.sprite.Sprite):
     
     
     SIZE = Vector2(32,32)
+    SCREENSIZE = (1280,720)
+    
+    def getGame(self) -> 'Game':
+        return self.__chunk.getScene().getGame()
+    
+    def getMainCamera(self) -> 'camera':
+        return self.__chunk.getScene().getGame().camera
     
     def changeBlockTo(self, block: 'Block') -> None:
         chunk = self.getChunk()
@@ -342,7 +349,13 @@ class Block(pygame.sprite.Sprite):
         chunk.removeBlock(cords)
         chunk.setBlock(cords, block)
         
-        
+    # def update(self, surface) -> None:
+    #     camera = self.getMainCamera()  
+    #     print('s')      
+    #     if self.cords.x > camera.cords.x - self.SIZE.x and self.cords.x < camera.cameraEndPoint[0] + self.SIZE.x and self.cords.y + self.SIZE.y > camera.cords.y and self.cords.y < camera.cameraEndPoint[1] + self.SIZE.y:
+    #         surface.blit(self.image,
+    #                     self.cords - camera.cords)
+            
          
     
     '''delete this from chunk and map'''
@@ -364,7 +377,7 @@ class Block(pygame.sprite.Sprite):
     
     '''Returns cords'''
     def getCords(self) -> Vector2:
-        return self.__cordsAbsolute
+        return self.cordsAbsolute
     
     def getInChunkPosition(self) -> tuple[int,int]:
         return (int(self.__cords.x / Block.SIZE.x),
@@ -404,22 +417,22 @@ class Block(pygame.sprite.Sprite):
         self.image = image
         self.__cords: Vector2 = Vector2(blockPos[0] * Block.SIZE.x, blockPos[1] * Block.SIZE.y)
         # print(self.__cords)
-        self.__cordsAbsolute: Vector2 = Vector2(self.__cords.x + self.__chunk.getStartingPoint().x,
+        self.cordsAbsolute: Vector2 = Vector2(self.__cords.x + self.__chunk.getStartingPoint().x,
                                         self.__cords.y + self.__chunk.getStartingPoint().y)
         
         self.rect: pygame.Rect = self.image.get_rect()
-        self.rect.topleft = self.__cordsAbsolute
+        self.rect.topleft = self.cordsAbsolute
         
         self.doRender = True
         
         if reason=="world_generator":
             inChunkPosition = (int(self.__cords.x / Block.SIZE.x),
                                int(self.__cords.y / Block.SIZE.y))
-            self.onGenerate(cordsAbsolute=self.__cordsAbsolute,cordsRelative=self.__cords, inChunkPosition=inChunkPosition, chunk=chunk)
+            self.onGenerate(cordsAbsolute=self.cordsAbsolute,cordsRelative=self.__cords, inChunkPosition=inChunkPosition, chunk=chunk)
         elif reason == "chunk_load":
             inChunkPosition = (int(self.__cords.x / Block.SIZE.x),
                                int(self.__cords.y / Block.SIZE.y))
-            self.onLoad(cordsAbsolute=self.__cordsAbsolute,cordsRelative=self.__cords, inChunkPosition=inChunkPosition, chunk=chunk)
+            self.onLoad(cordsAbsolute=self.cordsAbsolute,cordsRelative=self.__cords, inChunkPosition=inChunkPosition, chunk=chunk)
             
 
 # class dupa(): pass

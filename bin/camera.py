@@ -6,9 +6,17 @@ import asyncio
 
 
 class Camera:
+    async def __filterSpritesToDraw(self):
+        while True:
+            
+            cameraEndPoint = (self.SCREENSIZE[0] + self.cords.x,
+            self.SCREENSIZE[1] + self.cords.y)
+            
+            self.spritesTodraw = list(filter(lambda sprite: sprite.getCords().x > self.cords.x - Block.SIZE.x and sprite.getCords().x < cameraEndPoint[0] + Block.SIZE.x and sprite.getCords().y + Block.SIZE.y > self.cords.y and sprite.getCords().y < cameraEndPoint[1] + Block.SIZE.y, self.sceneToDraw.sprites()))
+            await asyncio.sleep(0.1)
     async def __generateInfo(self):
         while True:
-            sceneToDraw: Scene = self.__game.getCurrentScene()
+
             
             BlockPos = Vector2(pygame.mouse.get_pos())
             chunkPos = BlockPos.copy()
@@ -33,26 +41,27 @@ class Camera:
                 # print(e)
             # blockID = blockID.getBlockByTuple((chunkPos[0], chunkPos[1]))
             
-            self.__infoToDraw = self.__font.render(f"BlockPos: {BlockPos} Chunk: {chunkPos} {round(sceneToDraw.getGame().clock.get_fps())}FPS {sceneToDraw.getGame().clock.get_rawtime()}MS AbsPOS: {AbsolutePos} BlockID: {blockID}", False, (100,100,100))
+            self.__infoToDraw = self.__font.render(f"BlockPos: {BlockPos} Chunk: {chunkPos} {round(self.sceneToDraw.getGame().clock.get_fps())}FPS {self.sceneToDraw.getGame().clock.get_rawtime()}MS AbsPOS: {AbsolutePos} BlockID: {blockID}", False, (100,100,100))
             await asyncio.sleep(0.2)
     
     def getGame(self) -> 'Game':
         return self.__game
     def draw(self, surface: pygame.surface.Surface):
-        sceneToDraw: Scene = self.__game.getCurrentScene()
+        # sceneToDraw: Scene = self.__game.getCurrentScene()
         
-        screensize = pygame.display.get_surface().get_size()
-        cameraEndPoint = (screensize[0] + self.cords.x,
-                    screensize[1] + self.cords.y)
+        # screensize = pygame.display.get_surface().get_size()
         
-        chunk: Chunk = None
+        # chunk: Chunk = None
         sprite: Block = None
-        for sprite in sceneToDraw.sprites():
-            cords = sprite.getCords()
+
+        for sprite in self.spritesTodraw:
+            surface.blit(sprite.image, sprite.getCords() - self.cords)
+        # for sprite in sceneToDraw.sprites():
+        #     cords = sprite.getCords()
             
-            if cords.x > self.cords.x - Block.SIZE.x and cords.x < cameraEndPoint[0] + Block.SIZE.x and cords.y + Block.SIZE.y > self.cords.y and cords.y < cameraEndPoint[1] + Block.SIZE.y:
-                surface.blit(sprite.image,
-                            cords - self.cords)
+        #     if cords.x > self.cords.x - Block.SIZE.x and cords.x < cameraEndPoint[0] + Block.SIZE.x and cords.y + Block.SIZE.y > self.cords.y and cords.y < cameraEndPoint[1] + Block.SIZE.y:
+        #         surface.blit(sprite.image,
+        #                     cords - self.cords)
             
         # for chunk in sceneToDraw.getActiveChunks().values():
         #     for sprite in chunk.sprites():
@@ -71,7 +80,7 @@ class Camera:
         # chunkEdges = set([chunk.getStartingPoint() for chunk in sceneToDraw.getActiveChunks().values()].extend(
         #                 [chunk.getEndingPoint() for chunk in sceneToDraw.getActiveChunks().values()]))
         
-        chunkEdges =  [chunk.getStartingPoint().x for chunk in sceneToDraw.getActiveChunks().values()]
+        chunkEdges =  [chunk.getStartingPoint().x for chunk in self.sceneToDraw.getActiveChunks().values()]
         # chunkEdges.extend(
         #     [chunk.getEndingPoint().x for chunk in sceneToDraw.getActiveChunks().values()]
         # )
@@ -90,5 +99,9 @@ class Camera:
         self.__game: 'Game' = game
         self.__font = pygame.font.SysFont('Comic Sans MS', 20)
         self.__infoToDraw = pygame.surface.Surface((1,1))
+        self.SCREENSIZE = pygame.display.get_surface().get_size()
+        self.spritesTodraw = pygame.sprite.Group()
+        self.sceneToDraw: Scene = self.__game.getCurrentScene()
         
         asyncio.create_task(self.__generateInfo(), name="camera_info")
+        asyncio.create_task(self.__filterSpritesToDraw(), name="camera_spriteFilter")
