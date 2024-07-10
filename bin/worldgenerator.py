@@ -70,9 +70,11 @@ class worldGeneratorNormal(WorldGenerator):
         #     # _f = dict(filter(lambda pos: pos.keys()[0] >= Chunk.SIZE.x, newBlocks))
         #     return {(key[0]-Chunk.SIZE.x, key[0]): item for key, item in newBlocks.items() if key[0] < 0}
         
-        _final = {key: item for key, item in newBlocks.items() if key[0] >= 0 and key[0] < Chunk.SIZE.x}
-        _final.update(fromLeft)
+        # _final = {key: item for key, item in newBlocks.items() if key[0] >= 0 and key[0] < Chunk.SIZE.x}
+        # forcorrection = _final.copy()
+        _final = fromLeft
         _final.update(fromRight)
+        _final.update({key: item for key, item in newBlocks.items() if key[0] >= 0 and key[0] < Chunk.SIZE.x})
         
         print('dw', _final, newBlocks)
         for pos, block in _final.items():
