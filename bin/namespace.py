@@ -46,9 +46,11 @@ class resourceManager:
             "none_item": "item"
         }
         
+        GAME_NAMESPACE['environment']['bin_loc'] = loc
+        
         print("[NAMESPACE] Loading tiles...")
         
-        print(os.listdir(loc_tiles))
+        # print(os.listdir(loc_tiles))
         for tile in os.listdir(loc_tiles):
             name = "".join(tile.split(".")[:-1])
             if name == "__pycache__" or name == "": continue
@@ -63,6 +65,13 @@ class resourceManager:
                 if "MAINTEXTURE" not in module.__dict__[name].__dict__:
                     raise Exception("main class doesnt have MAINTEXTURE")
                 
+                if name in GAME_NAMESPACE["blocks"]:
+                    raise Exception(f"{name} is ambiguous! There's at least two classes with the same id!")
+                
+                # print(GAME_NAMESPACE["IDInts"])
+                if str(module.__dict__[name].IDInt) in GAME_NAMESPACE["IDInts"].keys():
+                    raise Exception(f"Int ID of {name} is already claimed (trying to possess ID of {module.__dict__[name].IDInt}!\nThis is claimed by block of id {GAME_NAMESPACE['IDInts'][module.__dict__[name].IDInt]} !")
+                
                 GAME_NAMESPACE["blocks"][name] = {
                     "module": module,
                     "id": name,
@@ -72,10 +81,16 @@ class resourceManager:
                     "MAINTEXTURE": module.__dict__[name].MAINTEXTURE
                 }
                 
+                GAME_NAMESPACE["IDInts"][str(module.__dict__[name].IDInt)] = name
+                
                 self.__resources[module.__dict__[name].MAINTEXTURE] = pygame.image.load(module.__dict__[name].MAINTEXTURE).convert_alpha()
                 
+                print(f"[NAMESPACE] New block added: {name} (INT ID: {module.__dict__[name].IDInt})")
             except Exception as e:
                 print(f"[NAMESPACE] unable to load tile of id {name}\nERROR:\n {e}\n")
+                
+        print("[NAMESPACE] tiles has been loaded successfully")
+
         
        
         # for type, whatwevegothere in GAME_NAMESPACE.items():
@@ -112,6 +127,9 @@ GAME_NAMESPACE = {
         "bin_loc": "unknown",
         "version": "pre-indev",
         "versionInt": 10,
+    },
+    "IDInts": {
+        
     },
     "types": {
         "air": "block",

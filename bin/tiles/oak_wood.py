@@ -8,6 +8,6 @@ from bin.abstractClasses import Executor
 class oak_wood(Block):
     MAINTEXTURE = "oak_wood.png"
     ID = "oak_wood"
-    IDInt = "8"
+    IDInt = 7
     def __init__(self, image: Surface, cordsRelative: Vector2, chunk: Chunk, executor: Executor | None = None, reason: str | None = None) -> None:
         super().__init__(image, cordsRelative, chunk, executor, reason)
