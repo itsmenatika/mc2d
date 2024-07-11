@@ -10,24 +10,31 @@ import random
 # from bin.camera import Camera
 from functools import reduce
 from bin.abstractClasses import Executor, WorldGenerator
+from bin.logger import Loggable, logType, ParentForLogs
 
 class chunkNotLoaded(Exception): pass
 
-class Chunk(pygame.sprite.Group, Executor):
+class Chunk(pygame.sprite.Group, Executor, Loggable):
     SIZE = Vector2(16,360)
     
     '''You have to also remove this chunk from list of actived chunks (python reasons). If you don't wanna mess with this just use map.unloadChunk(chunk) instead!'''
     def unload(self) -> None:
+        self.log(logType.INFO, f"unloading chunk {self.getChunkPos()}...")
         self.save()
         self.getScene().remove(self.sprites())
         self.empty()
+        self.log(logType.SUCCESS, f"unloading chunk {self.getChunkPos()}... SUCCESS")
         
     def save(self) -> None:
-        pass
+        self.log(logType.INFO, f"saving chunk {self.getChunkPos()}... (NOT DONE YET)")
+        self.log(logType.SUCCESS, f"saving chunk {self.getChunkPos()}... SUCCESS")
         # self.getScene().chunkCache[self.getChunkPos()] = self
     
     def getScene(self) -> 'Scene':
-        return self.__map
+        return self.__scene
+    
+    def getGame(self) -> 'game':
+        return self.__scene.getGame()
     
     def iterateByBlock(self): 
         return enumerate(self.__blocks)
@@ -324,9 +331,13 @@ class Chunk(pygame.sprite.Group, Executor):
             print(blockPosition not in self.__blocks, self.__blocks[blockPosition], block)
             return True if self.__blocks[blockPosition].ID == block.ID else False
     
-    def __init__(self, map: 'Scene', chunkPos: Vector2 = Vector2(0,0)) -> None:
+    def __init__(self, scene: 'Scene', chunkPos: Vector2 = Vector2(0,0)) -> None:
+        self.__scene = scene
+        self.setLogParent(ParentForLogs(name=f"chunk_{chunkPos}", parent=self.getScene().getLogParent()))
+        
         super().__init__()
-        self.__map = map
+        
+        self.log(logType.INIT, "The chunk is being intialized...")
         
         self.__chunkPos = chunkPos
         self.__startPoint = Vector2(
@@ -346,13 +357,16 @@ class Chunk(pygame.sprite.Group, Executor):
         self.__blocks: dict[tuple[int,int], Block] = {}
         
         
+        self.log(logType.INIT, "starting world generation for a chunk...")
         asyncio.create_task(self.getScene().getWorldGenerator().generateChunk(
             chunkPos=self.__chunkPos,
             chunk=self,
-            Scene=self.__map
+            Scene=self.__scene
         ), name=f"world_generator{self.__chunkPos}"
         )
+        self.log(logType.SUCCESS, "starting world generation for a chunk... DONE")
         
+        self.log(logType.SUCCESS, "The chunk is intialized!")
 
 
 class Block(pygame.sprite.Sprite):
@@ -487,7 +501,7 @@ class Block(pygame.sprite.Sprite):
             
 
 # class dupa(): pass
-class Scene(pygame.sprite.Group):    
+class Scene(pygame.sprite.Group, Executor, Loggable):    
     RENDERDISTANCE = 3
     
     async def tick(self) -> None:
@@ -523,7 +537,7 @@ class Scene(pygame.sprite.Group):
         # pygame.time.Clock.ge
             
     def loadChunk(self, chunkPos: tuple[int,int]):
-         self.__activeChunks[chunkPos] = Chunk(map=self, chunkPos=chunkPos) 
+         self.__activeChunks[chunkPos] = Chunk(scene=self, chunkPos=chunkPos) 
     
     def isChunkActive(self, chunkPos: tuple[int,int]) -> bool:
         return chunkPos in self.__activeChunks.keys()
@@ -599,8 +613,11 @@ class Scene(pygame.sprite.Group):
         return self.__worldGenerator
     
     def __init__(self, game: 'Game', name: str, worldGenerator: WorldGenerator, autoAdd: bool = True, inIdle: bool = False, seed: str = "uwusa") -> None:
+        self.__game: 'Game' = game
         super().__init__()
+        self.setLogParent(ParentForLogs(name=f"scene_{name}", parent=self.getGame().getLogParent()))
         
+        self.log(logType.INIT, "The scene is being intialized...")
         self.heightCache = {
             "grass_height": {},
             "dirt_height": {},
@@ -612,7 +629,6 @@ class Scene(pygame.sprite.Group):
         }
         
         # info
-        self.__game: 'Game' = game
         self.__autoAdd: bool = autoAdd
         self.__name: str = name
         self.idle: bool = inIdle
@@ -623,10 +639,12 @@ class Scene(pygame.sprite.Group):
         self.__activeChunks: dict[tuple[int,int], Chunk] = {}
         
         for x in range(3):
-            self.__activeChunks[(x,0)] = Chunk(map=self, chunkPos=(x,0)) 
+            self.__activeChunks[(x,0)] = Chunk(scene=self, chunkPos=(x,0)) 
                  
         if autoAdd:
             self.__game.addScene(scene=self, name=self.__name)
+            
+        self.log(logType.SUCCESS, "The scene is intialized!")
             
         
             

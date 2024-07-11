@@ -9,12 +9,13 @@ from pygame.math import Vector2
 from bin.namespace import resourceManager
 from bin.worldgenerator import worldGeneratorNormal
 from bin.abstractClasses import InputType, inputEventInfo
+from bin.logger import Logger, Loggable, logType, ParentForLogs
 
 class gameEngineError(Exception): pass
 class invalidName(gameEngineError): pass
 
 
-class Game:
+class Game(Loggable):
     '''That get your just display that is used to display game'''
     def getDisplayOrginal(self) -> pygame.surface.Surface:
         return self.__display
@@ -257,7 +258,22 @@ class Game:
     #     if name in self.__events or name in self.__events[''])and not DontRaiseAnyErrors:
     #         raise gameEngineError(f"{name} is already taken")
         
+    # logger
+        
+    def getLogger(self) -> Logger:
+        return self.__logger
+
+    # already implemented in Loggable    
+    # def log(self, logtype: logType, message: str) -> None:
+    #     self.__logger.log(logtype, message, self.__logParent)
+        
     def __init__(self, resolution: tuple[int,int]) -> None:
+        self.__logger: Logger = Logger(self)
+        
+        self.__logger.log(logType.INIT, "loading engine...")
+        
+        
+        super().__init__(logParent=ParentForLogs("game"))
         # save data
         self.__resolution = resolution
         self.__isGameOn: bool = True
@@ -280,22 +296,27 @@ class Game:
         
         
         
-        
+        self.__logger.log(logType.INIT, "loading engine... (loading pygame stuff)")
         # pygame issues
         pygame.init()
         pygame.font.init()
         self.__display = pygame.display.set_mode(self.__resolution)
         pygame.display.set_caption("Kantraft")
         self.clock = pygame.time.Clock()
+        self.__logger.log(logType.SUCCESS, "loading engine... (loading pygame stuff - COMPLETE)")
         
-   
+
         self.__resourceManager = resourceManager(self)
         
         # asyncio
         # self.__eventLoop = asyncio.new_event_loop()
         # asyncio.set_event_loop(self.__eventLoop)
         # asyncio.create_task(self.__gameLoop(), name="gameLoop")
+        
+        self.__logger.log(logType.INIT, "invoking asyncio main game loop... ")
         asyncio.run(self.__gameLoop())
+        
+        self.__logger.log(logType.SUCCESS, "loading engine... COMPLETE")
         
         
         

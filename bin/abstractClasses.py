@@ -3,6 +3,8 @@ import abc
 from enum import Enum
 from typing import Any, TypeAlias
 
+from bin.logger import Loggable, logType, ParentForLogs
+
 ENTITIES = [
     "player",
     ""
@@ -42,8 +44,11 @@ class Executor(abc.ABC):
     def setExecutorName(self, executorName: str) -> None:
         self.__executorName = executorName
     
-class WorldGenerator(Executor, abc.ABC):
+class WorldGenerator(Executor, abc.ABC, Loggable):
     __whoami = "worldGenerator"
+    
+    def getGame(self) -> 'game':
+        return self.__scene.getGame()
     
     def getScene(self) -> 'Scene':
         return self.__scene
@@ -61,7 +66,9 @@ class WorldGenerator(Executor, abc.ABC):
     def generateChunk(self, chunkPos: tuple[int,int], chunk: 'Chunk', Scene: 'Scene') -> dict[tuple[int,int], 'Block']: pass
     
     def __init__(self, scene: 'Scene') -> None:
+        super().__init__(logParent=ParentForLogs(name="worldGenerator", parent=scene.getLogParent()))
         self.__scene = scene
+        # self.log(logtype.'t')
         
     # idk, how to call it with multiple classes...
     # def __init__(self, executorName: str) -> None:

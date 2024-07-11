@@ -2,6 +2,7 @@ import pygame
 from typing import Any
 import importlib
 import os
+from bin.logger import Loggable, logType, ParentForLogs
 
 # from bin.tiles.dirt import dirt
 # from bin.tiles.stone import stone
@@ -15,7 +16,7 @@ import os
 # from bin.tiles.bedrock import bedrock
 
 class unkownNameSpace(Exception): pass
-class resourceManager:
+class resourceManager(Loggable):
     def getTexture(self, name: str, disableTryingToGet: bool = False):
         if name in self.__resources:
             return self.__resources[name]
@@ -35,7 +36,7 @@ class resourceManager:
         return self.__resources['GAME_NAMESPACE']['blocks'][name]
     
     def loadFromNameSpace(self) -> None:
-        print("reloading namespace...")
+        self.log(logType.INIT, "intializing namespace...")
         self.__resources['intIds'] = {}
         loc = os.path.dirname(os.path.abspath(__file__))
         
@@ -48,7 +49,7 @@ class resourceManager:
         
         GAME_NAMESPACE['environment']['bin_loc'] = loc
         
-        print("[NAMESPACE] Loading tiles...")
+        self.log(logType.INIT, "loading tiles...")
         
         # print(os.listdir(loc_tiles))
         for tile in os.listdir(loc_tiles):
@@ -92,11 +93,14 @@ class resourceManager:
                 else:
                     self.__resources[module.__dict__[name].MAINTEXTURE] = pygame.image.load(module.__dict__[name].MAINTEXTURE).convert()
                 
-                print(f"[NAMESPACE] New block added: {name} (INT ID: {module.__dict__[name].IDInt})")
+                self.log(logType.SUCCESS, f"new block added: {name} (INT ID: {module.__dict__[name].IDInt})")
+                # print(f"[NAMESPACE] New block added: {name} (INT ID: {module.__dict__[name].IDInt})")
             except Exception as e:
-                print(f"[NAMESPACE] unable to load tile of id {name}\nERROR:\n {e}\n")
+                self.log(logType.ERROR, f"unable to block of id {name}\nERROR:\n {e}\n")
+                # print(f"[NAMESPACE] unable to load tile of id {name}\nERROR:\n {e}\n")
                 
-        print("[NAMESPACE] tiles has been loaded successfully")
+        self.log(logType.SUCCESS, "loading blocks has ended...")
+        self.log(logType.SUCCESS, "namespace has been loaded successfully...")
 
         
        
@@ -119,13 +123,17 @@ class resourceManager:
         #                         self.__resources[blockName+".png"] = pygame.image.load(blockName+".png").convert_alpha()
         #                 except Exception as e:
         #                     raise e
-                    
+           
+    def getGame(self) -> 'game':
+        return self.__game         
                     
     def getNameSpace(self) -> dict:
         return GAME_NAMESPACE
     
     def __init__(self, game: 'Game') -> None:
+        super().__init__(logParent=ParentForLogs(name="resourceManager", parent=game.getLogParent()))
         self.__game = game
+        self.log(logType.INIT, "intializing resource Manager...")
         self.__resources = {}
         self.__resources['GAME_NAMESPACE'] = GAME_NAMESPACE
         self.loadFromNameSpace()

@@ -5,6 +5,7 @@ import asyncio
 
 from bin.map import Chunk, Scene, Block
 from bin.abstractClasses import WorldGenerator, Executor, Reason
+from bin.logger import logType, Loggable, ParentForLogs
 
 from typing import Optional
 
@@ -26,7 +27,7 @@ class worldGeneratorNormal(WorldGenerator):
         treesPos = [_recent]
         for _ in range(howMuchTrees):
             _recent = _recent + random.randint(3,4) * random.choice([-1,1])
-            print(_taken, _recent, chunkPos)
+            # print(_taken, _recent, chunkPos)
             if len(set(_taken).intersection([_recent, _recent-1, _recent+1])) != 0: continue
             treesPos.append(_recent)
             _taken.extend([_recent, _recent+1, _recent+2, _recent-1, _recent-2])
@@ -76,7 +77,7 @@ class worldGeneratorNormal(WorldGenerator):
         _final.update(fromRight)
         _final.update({key: item for key, item in newBlocks.items() if key[0] >= 0 and key[0] < Chunk.SIZE.x})
         
-        print('dw', _final, newBlocks)
+        # print('dw', _final, newBlocks)
         for pos, block in _final.items():
             blocks[block] = Block.newBlockByResourceManager(
                 chunk=chunk,
@@ -530,157 +531,162 @@ class worldGeneratorNormal(WorldGenerator):
         
 
     async def generateChunk(self, chunkPos: tuple[int, int], chunk: 'Chunk', Scene: 'Scene') -> dict[tuple[int, int], Block]:
-        blocks: dict[tuple[int,int], Block] = {}
-        
-        
-        random.seed(f"${self.getScene().getSeed()}_CHUNK_{chunkPos}")
-        
-        for x in range(0,int(Chunk.SIZE.x)):
-            height = self.generateHeight(x, list(chunkPos), self.getScene().getSeedInt(), self.__cache['grass_height'], False, min=70, max=80, seedName="height", startPoint=75)
-            blocks[(x,height)] = Block.newBlockByResourceManager(
-                chunk=chunk,
-                name="grass_block",
-                blockPos=(x,height),
-                executor=self,
-                reason=Reason.WorldGenerator
-            )
-            
-            dirtheight = self.generateHeight(x, list(chunkPos), self.getScene().getSeedInt(), self.__cache['dirt_height'], False, startPoint=4, max=5, min=3, seedName="dirtheight")
+        try:
+            # raise Exception('t')
+            blocks: dict[tuple[int,int], Block] = {}
             
             
-            for y in range(0,dirtheight):
-                blocks[(x,height+y+1)] = Block.newBlockByResourceManager(
+            random.seed(f"${self.getScene().getSeed()}_CHUNK_{chunkPos}")
+            
+            for x in range(0,int(Chunk.SIZE.x)):
+                height = self.generateHeight(x, list(chunkPos), self.getScene().getSeedInt(), self.__cache['grass_height'], False, min=70, max=80, seedName="height", startPoint=75)
+                blocks[(x,height)] = Block.newBlockByResourceManager(
                     chunk=chunk,
-                    name="dirt",
-                    blockPos=(x,height + 1 + y),
+                    name="grass_block",
+                    blockPos=(x,height),
                     executor=self,
                     reason=Reason.WorldGenerator
                 )
                 
-            currentHeight = height + dirtheight + 1
-            for y in range(0,200):
-                blocks[(x,y+currentHeight)] = Block.newBlockByResourceManager(
-                    chunk=chunk,
-                    name="stone",
-                    blockPos=(x,y + currentHeight),
-                    executor=self,
-                    reason=Reason.WorldGenerator
-                ) 
-                if y + currentHeight >= 200:   
-                    bedrockHeight = self.generateHeight(x, list(chunkPos), self.getScene().getSeedInt(), self.getScene().heightCache['bedrock_height'], False, startPoint=2, max=2, min=1, probability=20)
-                    
-                    if bedrockHeight == 1:
-                        blocks[(x,y+currentHeight + 1)] = Block.newBlockByResourceManager(
-                            chunk=chunk,
-                            name="stone",
-                            blockPos=(x,y + currentHeight + 1),
-                            executor=self,
-                            reason=Reason.WorldGenerator
-                        )
-                        blocks[(x,y+currentHeight + 2)] = Block.newBlockByResourceManager(
-                            chunk=chunk,
-                            name="bedrock",
-                            blockPos=(x,y + currentHeight + 2),
-                            executor=self,
-                            reason=Reason.WorldGenerator
-                        ) 
-                    else:
-                        blocks[(x,y+currentHeight + 1)] = Block.newBlockByResourceManager(
-                            chunk=chunk,
-                            name="bedrock",
-                            blockPos=(x,y + currentHeight + 1),
-                            executor=self,
-                            reason=Reason.WorldGenerator
-                        )
-                        blocks[(x,y+currentHeight + 2)] = Block.newBlockByResourceManager(
-                            chunk=chunk,
-                            name="bedrock",
-                            blockPos=(x,y + currentHeight + 2),
-                            executor=self,
-                            reason=Reason.WorldGenerator
-                        ) 
-                    break
+                dirtheight = self.generateHeight(x, list(chunkPos), self.getScene().getSeedInt(), self.__cache['dirt_height'], False, startPoint=4, max=5, min=3, seedName="dirtheight")
                 
-        # ores
-        await asyncio.sleep(0.1)
-        self.generateVeins(chunkPos=chunkPos,
-                           chunk=chunk,
-                           blockName="coal_ore",
-                           howMuchVeinsMin=10,
-                           howMuchVeinsMax=16,
-                           minInVein=2,
-                           maxInVein=4,
-                           recursive=True,
-                           fromWhatSide=None,
-                           blocks=blocks,
-                           minY=60,
-                           maxY=170)
-        
-        await asyncio.sleep(0.1)
-        self.generateVeins(chunkPos=chunkPos,
-                           chunk=chunk,
-                           blockName="iron_ore",
-                           howMuchVeinsMin=2,
-                           howMuchVeinsMax=6,
-                           minInVein=2,
-                           maxInVein=4,
-                           recursive=True,
-                           fromWhatSide=None,
-                           blocks=blocks,
-                           minY=90,
-                           maxY=150)
-        
-        await asyncio.sleep(0.1)
-        self.generateVeins(chunkPos=chunkPos,
-                           chunk=chunk,
-                           blockName="iron_ore",
-                           howMuchVeinsMin=2,
-                           howMuchVeinsMax=5,
-                           minInVein=2,
-                           maxInVein=4,
-                           recursive=True,
-                           fromWhatSide=None,
-                           blocks=blocks,
-                           minY=151,
-                           maxY=185)
-        
-        await asyncio.sleep(0.1)
-        self.generateVeins(chunkPos=chunkPos,
-                           chunk=chunk,
-                           blockName="coal_ore",
-                           howMuchVeinsMin=2,
-                           howMuchVeinsMax=4,
-                           minInVein=2,
-                           maxInVein=3,
-                           recursive=True,
-                           fromWhatSide=None,
-                           blocks=blocks,
-                           minY=151,
-                           maxY=190)
-        
-        await asyncio.sleep(0.1)
-        self.generateVeins(chunkPos=chunkPos,
-                           chunk=chunk,
-                           blockName="diamond_ore",
-                           howMuchVeinsMin=1,
-                           howMuchVeinsMax=2,
-                           minInVein=1,
-                           maxInVein=2,
-                           recursive=True,
-                           fromWhatSide=None,
-                           blocks=blocks,
-                           minY=170,
-                           maxY=200)
-        
-        await asyncio.sleep(0.1)
-        self.generateTress(chunkPos, chunk, blocks, 1, 2)
-        
-        # self.generateVeins(chunkPos, chunk, "coal_ore", 1, 1, 6, 6, True, None, blocks, currentHeight+3, 32)
-        
-        global stats
-        
-        # chunk.setBlocks(blocks)
-        return blocks
+                
+                for y in range(0,dirtheight):
+                    blocks[(x,height+y+1)] = Block.newBlockByResourceManager(
+                        chunk=chunk,
+                        name="dirt",
+                        blockPos=(x,height + 1 + y),
+                        executor=self,
+                        reason=Reason.WorldGenerator
+                    )
+                    
+                currentHeight = height + dirtheight + 1
+                for y in range(0,200):
+                    blocks[(x,y+currentHeight)] = Block.newBlockByResourceManager(
+                        chunk=chunk,
+                        name="stone",
+                        blockPos=(x,y + currentHeight),
+                        executor=self,
+                        reason=Reason.WorldGenerator
+                    ) 
+                    if y + currentHeight >= 200:   
+                        bedrockHeight = self.generateHeight(x, list(chunkPos), self.getScene().getSeedInt(), self.getScene().heightCache['bedrock_height'], False, startPoint=2, max=2, min=1, probability=20)
+                        
+                        if bedrockHeight == 1:
+                            blocks[(x,y+currentHeight + 1)] = Block.newBlockByResourceManager(
+                                chunk=chunk,
+                                name="stone",
+                                blockPos=(x,y + currentHeight + 1),
+                                executor=self,
+                                reason=Reason.WorldGenerator
+                            )
+                            blocks[(x,y+currentHeight + 2)] = Block.newBlockByResourceManager(
+                                chunk=chunk,
+                                name="bedrock",
+                                blockPos=(x,y + currentHeight + 2),
+                                executor=self,
+                                reason=Reason.WorldGenerator
+                            ) 
+                        else:
+                            blocks[(x,y+currentHeight + 1)] = Block.newBlockByResourceManager(
+                                chunk=chunk,
+                                name="bedrock",
+                                blockPos=(x,y + currentHeight + 1),
+                                executor=self,
+                                reason=Reason.WorldGenerator
+                            )
+                            blocks[(x,y+currentHeight + 2)] = Block.newBlockByResourceManager(
+                                chunk=chunk,
+                                name="bedrock",
+                                blockPos=(x,y + currentHeight + 2),
+                                executor=self,
+                                reason=Reason.WorldGenerator
+                            ) 
+                        break
+                    
+            # ores
+            await asyncio.sleep(0.1)
+            self.generateVeins(chunkPos=chunkPos,
+                            chunk=chunk,
+                            blockName="coal_ore",
+                            howMuchVeinsMin=10,
+                            howMuchVeinsMax=16,
+                            minInVein=2,
+                            maxInVein=4,
+                            recursive=True,
+                            fromWhatSide=None,
+                            blocks=blocks,
+                            minY=60,
+                            maxY=170)
+            
+            await asyncio.sleep(0.1)
+            self.generateVeins(chunkPos=chunkPos,
+                            chunk=chunk,
+                            blockName="iron_ore",
+                            howMuchVeinsMin=2,
+                            howMuchVeinsMax=6,
+                            minInVein=2,
+                            maxInVein=4,
+                            recursive=True,
+                            fromWhatSide=None,
+                            blocks=blocks,
+                            minY=90,
+                            maxY=150)
+            
+            await asyncio.sleep(0.1)
+            self.generateVeins(chunkPos=chunkPos,
+                            chunk=chunk,
+                            blockName="iron_ore",
+                            howMuchVeinsMin=2,
+                            howMuchVeinsMax=5,
+                            minInVein=2,
+                            maxInVein=4,
+                            recursive=True,
+                            fromWhatSide=None,
+                            blocks=blocks,
+                            minY=151,
+                            maxY=185)
+            
+            await asyncio.sleep(0.1)
+            self.generateVeins(chunkPos=chunkPos,
+                            chunk=chunk,
+                            blockName="coal_ore",
+                            howMuchVeinsMin=2,
+                            howMuchVeinsMax=4,
+                            minInVein=2,
+                            maxInVein=3,
+                            recursive=True,
+                            fromWhatSide=None,
+                            blocks=blocks,
+                            minY=151,
+                            maxY=190)
+            
+            await asyncio.sleep(0.1)
+            self.generateVeins(chunkPos=chunkPos,
+                            chunk=chunk,
+                            blockName="diamond_ore",
+                            howMuchVeinsMin=1,
+                            howMuchVeinsMax=2,
+                            minInVein=1,
+                            maxInVein=2,
+                            recursive=True,
+                            fromWhatSide=None,
+                            blocks=blocks,
+                            minY=170,
+                            maxY=200)
+            
+            await asyncio.sleep(0.1)
+            self.generateTress(chunkPos, chunk, blocks, 1, 2)
+            
+            # self.generateVeins(chunkPos, chunk, "coal_ore", 1, 1, 6, 6, True, None, blocks, currentHeight+3, 32)
+            
+            global stats
+            
+            # chunk.setBlocks(blocks)
+            self.log(logType.SUCCESS, f"chunk {chunkPos} has been generated successfully!")
+            return blocks
+        except Exception as e:
+            self.log(logType.ERROR, f"error has occured while trying to generate chunk {chunkPos}!\nError:\n{e}\n")
         
         # veins = 5
         # while veins > 0:
