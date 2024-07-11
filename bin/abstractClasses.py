@@ -1,5 +1,7 @@
 
 import abc
+from enum import Enum
+from typing import Any, TypeAlias
 
 ENTITIES = [
     "player",
@@ -9,10 +11,15 @@ ENTITIES = [
 class Entity(abc.ABC): pass
 
 
-class Reason:
+class Reason(Enum):
     WorldGenerator = "world_generator"
 
-
+class InputType(Enum):
+    rightClick = "rightClick"
+    leftClick = "leftClick"
+    
+class eventType(Enum):
+    destroyBlock = "destroy_block"
 
 class Executor(abc.ABC):
     __whoami = None
@@ -60,3 +67,5 @@ class WorldGenerator(Executor, abc.ABC):
     # def __init__(self, executorName: str) -> None:
     #     self.__executorName = executorName
         
+        
+inputEventInfo: TypeAlias = dict[str, Any]

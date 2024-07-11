@@ -85,6 +85,8 @@ class Camera:
         # chunkEdges = set([chunk.getStartingPoint() for chunk in sceneToDraw.getActiveChunks().values()].extend(
         #                 [chunk.getEndingPoint() for chunk in sceneToDraw.getActiveChunks().values()]))
         
+        
+        # draw chunkEdges and information
         chunkEdges =  [chunk.getStartingPoint().x for chunk in self.sceneToDraw.getActiveChunks().values()]
         # chunkEdges.extend(
         #     [chunk.getEndingPoint().x for chunk in sceneToDraw.getActiveChunks().values()]
@@ -94,9 +96,19 @@ class Camera:
         for edge in chunkEdgesSet:
             pygame.draw.line(surface, (230,0,20), (edge-self.cords.x, 0-self.cords.y), (edge-self.cords.x, (Chunk.SIZE.y*Block.SIZE.y)-self.cords.y), 2)
 
-
-        
         surface.blit(self.__infoToDraw, (0,0))
+        
+        mousePos = pygame.mouse.get_pos()
+        pointedBlockZ = ((mousePos[0] + self.cords.x) // Block.SIZE.x * Block.SIZE.x - self.cords.x ,
+                        (mousePos[1] + self.cords.y) // Block.SIZE.y * Block.SIZE.y - self.cords.y)
+        
+        # self.cords = Vector2(0,0)
+        
+        self.pointedBlock.topleft = pointedBlockZ
+        pygame.draw.rect(surface, "red", self.pointedBlock, width=2)
+        
+        
+
         
     # @property
     # def cords(self):
@@ -124,6 +136,6 @@ class Camera:
         self.SCREENSIZE = pygame.display.get_surface().get_size()
         self.spritesTodraw = pygame.sprite.Group()
         self.sceneToDraw: Scene = self.__game.getCurrentScene()
-        
+        self.pointedBlock = pygame.rect.Rect((0,0), (Block.SIZE.x, Block.SIZE.y))
         asyncio.create_task(self.__generateInfo(), name="camera_info")
         asyncio.create_task(self.__filterSpritesToDraw(), name="camera_spriteFilter")

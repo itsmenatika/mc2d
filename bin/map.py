@@ -1,5 +1,5 @@
 # from bin import Game
-from typing import Iterable, Optional
+from typing import Iterable, Optional, TypeAlias
 import pygame
 from pygame.math import Vector2
 from pygame.sprite import AbstractGroup
@@ -269,9 +269,34 @@ class Chunk(pygame.sprite.Group, Executor):
         return self.__blocks[(blockPosition[0],blockPosition[1])] if (blockPosition[0],blockPosition[1]) in self.__blocks else None
     
     
-    def setBlock(self, blockPosition: tuple[int,int], block: 'Block') -> None:
-        self.__blocks[blockPosition] = block
-    
+    def setBlock(self, blockPosition: tuple[int,int], block: 'Block | str | None', executor: Optional[Executor] = None, reason: str | None = None) -> None:
+        # print(block, type(block))
+        if type(block) == str:
+            self.__blocks[blockPosition] = Block.newBlockByResourceManager(
+                name=block,
+                blockPos=blockPosition,
+                executor=executor,
+                reason=reason,
+                chunk=self
+            )
+
+        elif block == None or self.checkPositionForBlock(blockPosition):
+                if blockPosition in self.__blocks:
+                    self.__blocks[blockPosition].kill()
+                    del self.__blocks[blockPosition]
+                return
+            
+        else:
+            # print(block, type(block))
+            self.__blocks[blockPosition] = block
+            # print(block)
+            # try:
+                
+            if not self.has(block): self.add(block)
+            if not self.getScene().has(block): self.getScene().add(block)
+            # except Exception:
+            #     print(block, type(block))
+        
     def removeBlock(self, blockPosition: tuple[int,int], notRaiseException: bool = False) -> None:
         if blockPosition not in self.__blocks and not notRaiseException:
             raise Exception("block not Found")
@@ -285,15 +310,19 @@ class Chunk(pygame.sprite.Group, Executor):
     def setBlocks(self, blocks: dict[tuple[int,int], 'Block']) -> None:
         self.__blocks.update(blocks)
         
-    def checkPositionForBlock(self, blockPosition: tuple[int,int], block: Optional['Block'], exactCopy: bool = False) -> bool:
-        if blockPosition not in self.__blocks: return False
+    def checkPositionForBlock(self, blockPosition: tuple[int,int], block: Optional['Block | str'] = None, exactCopy: bool = False) -> bool:
+        '''use 'none' or 'air' if you mean air or absence of block. Otherwise program will treat it as "if there's anything then return True'''
+        if blockPosition not in self.__blocks:
+            return True if block in ['air', 'none'] else False
         
-        if block is None: True
+        
+        if block == None: return True
         
         if exactCopy:
-            return True if self.__blocks[blockPosition] is block else False
-        else:
             return True if self.__blocks[blockPosition] == block else False
+        else:
+            print(blockPosition not in self.__blocks, self.__blocks[blockPosition], block)
+            return True if self.__blocks[blockPosition].ID == block.ID else False
     
     def __init__(self, map: 'Scene', chunkPos: Vector2 = Vector2(0,0)) -> None:
         super().__init__()
@@ -383,9 +412,14 @@ class Block(pygame.sprite.Sprite):
         return (int(self.__cords.x / Block.SIZE.x),
                 int(self.__cords.y / Block.SIZE.y))
         
+        
+        
     '''Create new block using resourceManager'''
     @staticmethod
-    def newBlockByResourceManager(chunk: Chunk, name: str, blockPos: tuple[int,int], executor: Optional[Executor] = None, reason: Optional[str] = None) -> 'Block':
+    def newBlockByResourceManager(name: str, blockPos: tuple[int,int], executor: Optional[Executor] = None, reason: Optional[str] = None, addToEverything: bool = True, chunk: Optional[Chunk] = None) -> 'Block':
+        if chunk == None and addToEverything:
+            raise Exception("you must indicate specified chunk if you want to add this to scene. If you don't want to do that set addToEverything to false")
+        
         rm = chunk.getScene().getGame().getResourceManager()
         
         # if cordsRelative == None:
@@ -393,14 +427,27 @@ class Block(pygame.sprite.Sprite):
             
         blockInfo = rm.getBlockInformation(name)
         
-        _b = blockInfo['class'](
-            image=rm.getTexture(blockInfo['class'].MAINTEXTURE),
-            blockPos=blockPos,
-            chunk=chunk,
-            executor = executor,
-            reason=reason
-        )
-        chunk.setBlock(blockPos, _b)
+        if addToEverything:
+            _b = blockInfo['class'](
+                image=rm.getTexture(blockInfo['class'].MAINTEXTURE),
+                blockPos=blockPos,
+                chunk=chunk,
+                executor = executor,
+                reason=reason,
+                
+            )
+            # print(_b)
+            chunk.setBlock(blockPos, _b)
+            # print(chunk.getBlockByTuple(blockPos))
+        else:
+            _b = blockInfo['class'](
+                image=rm.getTexture(blockInfo['class'].MAINTEXTURE),
+                blockPos=blockPos,
+                chunk=chunk,
+                executor = executor,
+                reason=reason
+            )
+            chunk.setBlock(blockPos, _b)
         
         return _b
         
@@ -411,8 +458,12 @@ class Block(pygame.sprite.Sprite):
     def getScene(self) -> 'Scene':
         return self.__chunk.getScene()
     
-    def __init__(self, image:pygame.surface.Surface, blockPos: tuple[int,int], chunk: Chunk, executor: Optional[Executor] = None, reason: Optional[str] = None) -> None:
-        super().__init__(chunk,chunk.getScene())
+    def __init__(self, image:pygame.surface.Surface, blockPos: tuple[int,int], chunk: Chunk, executor: Optional[Executor] = None, reason: Optional[str] = None, addToEverything: bool = True) -> None:
+        if addToEverything:
+            super().__init__(chunk,chunk.getScene())
+        else:
+            super().__init__()
+            
         self.__chunk = chunk
         self.image = image
         self.__cords: Vector2 = Vector2(blockPos[0] * Block.SIZE.x, blockPos[1] * Block.SIZE.y)
@@ -498,8 +549,24 @@ class Scene(pygame.sprite.Group):
     #     #     chunk.draw(surf)
     #     self.camera.draw(self.get)
             
-    
-    def getBlock(self, cords: Vector2) -> Block:
+    def setBlockByAbsolutePos(self, pos: Vector2 | tuple, block: None|Block, notRaiseErrors: bool = False) -> None:
+        if isinstance(pos, Vector2):
+            pos = tuple(pos)
+        
+        chunkPos = (pos[0] // Chunk.SIZE.x, pos[1] // Chunk.SIZE.y)
+        
+        if chunkPos not in self.__activeChunks:
+            if notRaiseErrors: return
+            raise chunkNotLoaded(f"Trying to access block of position ${pos} which should be located in chunk ${chunkPos}, but that chunk is not loaded!")
+        
+        # previousAmountOfBlocks = ((chunkPos-1) * Chunk.SIZE.x, (chunkPos-1) * Chunk.SIZE.y)
+        # blockPos = (cords[0] // Chunk.SIZE.x, cords[1] // Chunk.SIZE.y)
+        
+        BlockPos = (pos[0] % Chunk.SIZE.x, pos[1] % Chunk.SIZE.y)
+        
+        self.getChunk(chunkPos).setBlock(BlockPos, block)
+        
+    def getBlock(self, cords: Vector2) -> Block | None:
         chunkCords = (cords.x // Chunk.SIZE.x, cords.y // Chunk.SIZE.y)
         chunkStartPoint = (Chunk.SIZE.x * chunkCords[0], Chunk.SIZE.y * chunkCords[1]) 
         RelativeBlockPos = ((cords.x - chunkStartPoint[0]) // Block.SIZE.y, 
@@ -564,4 +631,7 @@ class Scene(pygame.sprite.Group):
         
             
         
-            
+# aliases, should be use only for types  
+currentScene: TypeAlias = Scene
+activeScene: TypeAlias = Scene
+
