@@ -291,15 +291,16 @@ class worldGeneratorNormal(WorldGenerator):
 
         for block in everyVein:
             if block in blocks and blocks[block].ID == "stone":
-                blocks[block].kill()
-                del blocks[block]
-                blocks[block] = Block.newBlockByResourceManager(
-                    chunk=chunk,
-                    name=blockName,
-                    blockPos=block,
-                    executor=self,
-                    reason=Reason.WorldGenerator
-                )
+                chunk.setBlock(block, blockName, executor=self,  reason=Reason.WorldGenerator)
+                # Scene.setBlockByAbsolutePos
+                
+                # blocks[block] = Block.newBlockByResourceManager(
+                #     chunk=chunk,
+                #     name=blockName,
+                #     blockPos=block,
+                #     executor=self,
+                #     reason=Reason.WorldGenerator
+                # )
                 
         # chunk.setBlocks(blocks)
                 

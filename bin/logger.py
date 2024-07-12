@@ -64,6 +64,9 @@ class Logger:
         
         
 class Loggable:
+    def info(self, message: str) -> None:
+        self.log(logType.INFO, message)
+        
     def log(self, logtype: logType, message: str) -> None:
         self.getGame().getLogger().log(logtype, message, self.__logParent)
         
@@ -72,6 +75,12 @@ class Loggable:
     
     def setLogParent(self, parentForLogs: ParentForLogs) -> None:
         self.__logParent = parentForLogs
+        
+    def getGame(self) -> 'game':
+        return self.__game
     
     def __init__(self, *args, **kwargs) -> None:
-        self.__logParent = kwargs['logParent']
+        if "logParent" in kwargs:
+            self.__logParent = kwargs['logParent']
+            if "game" in kwargs:
+                self.__game = kwargs['game']

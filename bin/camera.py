@@ -107,7 +107,11 @@ class Camera:
         self.pointedBlock.topleft = pointedBlockZ
         pygame.draw.rect(surface, "red", self.pointedBlock, width=2)
         
-        
+        surface.blit(self.getGame().getNameSpace()["blocks"][self.getGame().storage['selectedBlockName']]["MAINTEXTURE_object"],
+                     (10,50))
+        surface.blit(
+        self.__font.render(f"{self.getGame().storage['selectedBlockName']} ({self.getGame().storage['selectedBlock']})", False, (100,100,100)),
+        (75,50))
 
         
     # @property

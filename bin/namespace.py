@@ -73,8 +73,16 @@ class resourceManager(Loggable):
                     raise Exception(f"{name} is ambiguous! There's at least two classes with the same id!")
                 
                 # print(GAME_NAMESPACE["IDInts"])
-                if str(module.__dict__[name].IDInt) in GAME_NAMESPACE["IDInts"].keys():
+                if module.__dict__[name].IDInt in GAME_NAMESPACE["IDInts"].keys():
                     raise Exception(f"Int ID of {name} is already claimed (trying to possess ID of {module.__dict__[name].IDInt}!\nThis is claimed by block of id {GAME_NAMESPACE['IDInts'][module.__dict__[name].IDInt]} !")
+                
+                
+                GAME_NAMESPACE["IDInts"][module.__dict__[name].IDInt] = name
+                
+                if module.__dict__[name].MAINTEXTUREISTRANSPARENT:
+                     self.__resources[module.__dict__[name].MAINTEXTURE] = pygame.image.load(module.__dict__[name].MAINTEXTURE).convert_alpha()
+                else:
+                    self.__resources[module.__dict__[name].MAINTEXTURE] = pygame.image.load(module.__dict__[name].MAINTEXTURE).convert()
                 
                 GAME_NAMESPACE["blocks"][name] = {
                     "module": module,
@@ -82,16 +90,11 @@ class resourceManager(Loggable):
                     "type": "block",
                     "class": module.__dict__[name],
                     "idInt": module.__dict__[name].IDInt,
-                    "MAINTEXTURE_LOC": module.__dict__[name].MAINTEXTURE,
-                    "ISMAINTEXTURETRANSPARENT": module.__dict__[name].MAINTEXTUREISTRANSPARENT
+                    "MAINTEXTURE_loc": module.__dict__[name].MAINTEXTURE,
+                    "ISMAINTEXTURETRANSPARENT": module.__dict__[name].MAINTEXTUREISTRANSPARENT,
+                    "MAINTEXTURE_object": self.__resources[module.__dict__[name].MAINTEXTURE],
+                    "MAINTEXTURE_get": lambda: self.getTexture(module.__dict__[name].MAINTEXTURE)
                 }
-                
-                GAME_NAMESPACE["IDInts"][str(module.__dict__[name].IDInt)] = name
-                
-                if module.__dict__[name].MAINTEXTUREISTRANSPARENT:
-                     self.__resources[module.__dict__[name].MAINTEXTURE] = pygame.image.load(module.__dict__[name].MAINTEXTURE).convert_alpha()
-                else:
-                    self.__resources[module.__dict__[name].MAINTEXTURE] = pygame.image.load(module.__dict__[name].MAINTEXTURE).convert()
                 
                 self.log(logType.SUCCESS, f"new block added: {name} (INT ID: {module.__dict__[name].IDInt})")
                 # print(f"[NAMESPACE] New block added: {name} (INT ID: {module.__dict__[name].IDInt})")

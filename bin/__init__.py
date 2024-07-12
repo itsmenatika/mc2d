@@ -1,4 +1,6 @@
 import pygame
+import sys
+import traceback
 import asyncio
 from typing import Optional, Iterable, ItemsView, Union
 
@@ -35,20 +37,50 @@ class Game(Loggable):
         for event in self.__events:
             match event.type:
                 case pygame.QUIT:
+                    self.getLogger().log(logtype=logType.ERROR, message="game is being forcefully closed...")
+                    self.getLogger().log(logtype=logType.ERROR, message="game engine has been forcefully closed by user!", parent=None)
                     self.__isGameOn = False
+                case pygame.KEYUP:
+                    # print(self.__inputEventsList["keyUp"].items())
+                    for eventName, eventTwo in self.__inputEventsList["keyUp"].items():
+                        if eventTwo[1]['key'] == event.key:
+                            try:
+                                if eventTwo[0](self, self.getCurrentScene(), InputType.keyUp, {
+                                    "buttonClicked": event.key,
+                                }, Loggable(game=self,logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
+                            except Exception as e:
+                                self.getLogger().log(logType.ERROR, f"error occured during trying to execute event with name '{eventName}' (eventData: {eventTwo[1]}):\n")
+                                traceback.print_exception(e)
+                                print("")
                 case pygame.KEYDOWN:
-                    if event.key == pygame.K_LEFT:
-                        # self.camera.cords.x -= 200
-                        self.camera.moveBy(Vector2(-200,0))
-                    elif event.key == pygame.K_RIGHT:
-                        # self.camera.cords.x += 200
-                        self.camera.moveBy(Vector2(200,0))
-                    elif event.key == pygame.K_UP:
-                        # self.camera.cords.y -= 200
-                        self.camera.moveBy(Vector2(0,-200))
-                    elif event.key == pygame.K_DOWN:
-                        # self.camera.cords.y += 200
-                        self.camera.moveBy(Vector2(0,200))
+                    for eventName, eventTwo in self.__inputEventsList["keyDown"].items():
+                        # print(event.key, event['key'])
+                        # print(event[1])
+                        try:
+                            if eventTwo[1]['key'] == event.key:
+                                if eventTwo[0](self, self.getCurrentScene(), InputType.keyDown, {
+                                    "buttonClicked": event.key,
+                                }, Loggable(game=self,logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
+                        except Exception as e:
+                            # type, value, traceback = sys.exc_info()
+                            # traceback.print_exception(e)
+                            # print(type,value,traceback)
+                            self.getLogger().log(logType.ERROR, f"error occured during trying to execute event with name '{eventName}' (eventData: {eventTwo[1]}):\n")
+                            traceback.print_exception(e)
+                            print("")
+                    
+                    # if event.key == pygame.K_LEFT:
+                    #     # self.camera.cords.x -= 200
+                    #     self.camera.moveBy(Vector2(-200,0))
+                    # elif event.key == pygame.K_RIGHT:
+                    #     # self.camera.cords.x += 200
+                    #     self.camera.moveBy(Vector2(200,0))
+                    # elif event.key == pygame.K_UP:
+                    #     # self.camera.cords.y -= 200
+                    #     self.camera.moveBy(Vector2(0,-200))
+                    # elif event.key == pygame.K_DOWN:
+                    #     # self.camera.cords.y += 200
+                    #     self.camera.moveBy(Vector2(0,200))
                 case pygame.MOUSEBUTTONDOWN:
                     # callable[['Game', currentScene, InputType,inputEventInfo], bool]
                     buttonsClicked: tuple[bool, bool, bool] = pygame.mouse.get_pressed()
@@ -56,19 +88,29 @@ class Game(Loggable):
                     
                     # print(self.__inputEventsList)
                     if buttonsClicked[0]:
-                        for eventName, event in self.__inputEventsList["leftClick"].items():
-                            if event[1]['enabled']:
-                                if event[0](self, self.getCurrentScene(), InputType.leftClick, {
-                                    "buttonClicked": buttonsClicked,
-                                    "mousePos": mousePos
-                                }): break
+                        for eventName, eventTwo in self.__inputEventsList["leftClick"].items():
+                            if eventTwo[1]['enabled']:
+                                try:
+                                    if eventTwo[0](self, self.getCurrentScene(), InputType.leftClick, {
+                                        "buttonClicked": buttonsClicked,
+                                        "mousePos": mousePos
+                                    }, Loggable(game=self, logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
+                                except Exception as e:
+                                    self.getLogger().log(logType.ERROR, f"error occured during trying to execute event with name '{eventName}' (eventData: {eventTwo[1]}):\n")
+                                    traceback.print_exception(e)
+                                    print("")
                     elif buttonsClicked[2]:
-                        for eventName, event in self.__inputEventsList["rightClick"].items():
-                            if event[1]['enabled']:
-                                if event[0](self, self.getCurrentScene(), InputType.leftClick, {
-                                    "buttonClicked": buttonsClicked,
-                                    "mousePos": mousePos
-                                }): break
+                        for eventName, eventTwo in self.__inputEventsList["rightClick"].items():
+                            if eventTwo[1]['enabled']:
+                                try:
+                                    if eventTwo[0](self, self.getCurrentScene(), InputType.leftClick, {
+                                        "buttonClicked": buttonsClicked,
+                                        "mousePos": mousePos
+                                    }, Loggable(game=self, logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
+                                except Exception as e:
+                                    self.getLogger().log(logType.ERROR, f"error occured during trying to execute event with name '{eventName}' (eventData: {eventTwo[1]}):\n")
+                                    traceback.print_exception(e)
+                                    print("")
                 
                
                     
@@ -78,33 +120,83 @@ class Game(Loggable):
         self.setCurrentScene(t)
         self.camera = Camera(cords=Vector2(0,70), game=self)
         
-        def destroyBlock(game, currentScene: Scene, typeEvent, info):
+        
+        # events
+        def destroyBlock(game, currentScene: Scene, typeEvent, info, loggable):
             blockLocation = Vector2((info['mousePos'][0] + self.camera.cords.x) // Block.SIZE.x,
                                     (info['mousePos'][1] + self.camera.cords.y) // Block.SIZE.y) 
 
             currentScene.setBlockByAbsolutePos(blockLocation, None, notRaiseErrors=True)
             
             
-        def addBlock(game, currentScene: Scene, typeEvent, info):
+        def addBlock(game, currentScene: Scene, typeEvent, info, loggable):
             blockLocation = Vector2((info['mousePos'][0] + self.camera.cords.x) // Block.SIZE.x,
                                     (info['mousePos'][1] + self.camera.cords.y) // Block.SIZE.y) 
 
 
-            currentScene.setBlockByAbsolutePos(blockLocation,"stone",notRaiseErrors=True)
+            currentScene.setBlockByAbsolutePos(blockLocation,self.storage['selectedBlockName'],notRaiseErrors=True)
         
         
         self.addInputEvent("test", InputType.leftClick, destroyBlock)
         self.addInputEvent("test2", InputType.rightClick, addBlock)
+        self.addInputEvent("keyUp", InputType.keyDown, lambda *args, **kwargs: self.camera.moveBy(Vector2(0,-200)), key=pygame.K_UP)
+        self.addInputEvent("keyDown", InputType.keyDown, lambda *args, **kwargs: self.camera.moveBy(Vector2(0,200)), key=pygame.K_DOWN)
+        self.addInputEvent("keyRight", InputType.keyDown, lambda *args, **kwargs: self.camera.moveBy(Vector2(200,0)), key=pygame.K_RIGHT)
+        self.addInputEvent("keyLeft", InputType.keyDown, lambda *args, **kwargs: self.camera.moveBy(Vector2(-200,-0)), key=pygame.K_LEFT)
+        self.addInputEvent("keyOne", InputType.keyDown, lambda *args, **kwargs: 5 / 0, key=pygame.K_1)
+        
+        
+        def handleBlockUp(game, currentScene: Scene, typeEvent, info, loggable: Loggable):
+            idInts = game.getNameSpace()['IDInts']
+            
+            
+            # loggable.log(logType.INFO, idInts)
+            # loggable.info(type(game.storage['selectedBlock']))
+            # loggable.info(idInts.keys())
+            # loggable.info(list(filter(lambda thing: thing > game.storage['selectedBlock'], idInts.keys())))
+            if len(list(filter(lambda thing: thing > game.storage['selectedBlock'], idInts.keys()))) > 0:
+                game.storage['selectedBlock'] += 1
+                while game.storage['selectedBlock'] not in idInts.keys():
+                    game.storage['selectedBlock'] += 1
+                game.storage['selectedBlockName'] = idInts[game.storage['selectedBlock']]
+
+            else:
+                game.storage['selectedBlock'] = 1
+                game.storage['selectedBlockName'] = idInts[1]
+                
+            loggable.info(f"block editor got changed to {game.storage['selectedBlockName']} (intID: {game.storage['selectedBlock']})")
+                
+        def handleBlockDown(game, currentScene: Scene, typeEvent, info, loggable: Loggable):
+            idInts = game.getNameSpace()['IDInts']
+            maxint = max(idInts.keys())
+            
+            if len(list(filter(lambda thing: thing < game.storage['selectedBlock'], idInts.keys()))) > 0:
+                game.storage['selectedBlock'] -= 1
+                while game.storage['selectedBlock'] not in idInts.keys():
+                    game.storage['selectedBlock'] -= 1
+                game.storage['selectedBlockName'] = idInts[game.storage['selectedBlock']]
+
+            else:
+                game.storage['selectedBlock'] = maxint
+                game.storage['selectedBlockName'] = idInts[maxint]
+            
+            loggable.info(f"block editor got changed to {game.storage['selectedBlockName']} (intID: {game.storage['selectedBlock']})")
+        
+        self.addInputEvent("blockUp", InputType.keyDown, handleBlockUp, key=pygame.K_z)
+        self.addInputEvent("blockDown", InputType.keyDown, handleBlockDown, key=pygame.K_x)
         
     
     async def __gameLoop(self) -> None:
+        self.__logger.log(logType.SUCCESS, "loading engine... COMPLETE ")
+        self.__logger.log(logType.INIT, "invoking onrun functions...")               
         await self.__onRun()
+        self.__logger.log(logType.SUCCESS, "invoking onrun functions... DONE")   
         def executeScene(scene: Scene) -> Scene:
             if not scene.idle:
                 scene.tick()
             return scene
             
-        
+        self.__logger.log(logType.INIT, "starting final game loop...")          
         while self.__isGameOn:
             await self.__eventHandler()
             
@@ -184,35 +276,52 @@ class Game(Loggable):
         if name in self.__inputEventsList["leftClick"]:
             if forcedType is None: return True
             elif forcedType == "leftClick": return True
+        if name in self.__inputEventsList["keyUp"]:
+            if forcedType is None: return True
+            elif forcedType == "leftClick": return True
+        if name in self.__inputEventsList["keyDown"]:
+            if forcedType is None: return True
+            elif forcedType == "leftClick": return True
             
         return False
         
     
-    def addInputEvent(self, name: str, typeOfInputTypeEvent: Union[str, InputType], function: callable, key: Optional[int] = None, forcedSceneName: Optional[str] = None, dontRaiseAnyErrors: bool = False, setIfDoExist: bool = False, startAsEnabled: bool = True) -> None:            
+    def addInputEvent(self, name: str, typeOfInputTypeEvent: Union[str, InputType], function: callable, key: Optional[int] = None, forcedSceneName: Optional[str] = None, dontRaiseAnyErrors: bool = True, setIfDoExist: bool = False, startAsEnabled: bool = True) -> None:            
         if typeOfInputTypeEvent != str:
                 typeOfInputTypeEvent = typeOfInputTypeEvent.value
-        # callable[['Game', currentScene, InputType,inputEventInfo], bool]
+        # callable[['Game', currentScene, InputType,inputEventInfo, Loggable], bool]
         # name Checking
         if self.doesInputEventNameDoExist(name):
+            self.getLogger().log(logType.ERROR, f"Trying to set input event of id '{name}' but name was already claimed!")
             if not dontRaiseAnyErrors:
-                raise invalidName(f"name '{name}' is already claimed as name for an event!")
+                raise invalidName(f"name ''{name}'' is already claimed as name for an event!")
             if not setIfDoExist: return
+            self.getLogger().log(logType.INFO, f"f'{name}' will be set anyways, because flag of ignoring that is set!")
+        
+        eventInfo = {'key': key, 'enabled': startAsEnabled, 'forcedSceneName': forcedSceneName, 'type': typeOfInputTypeEvent, 'name': name}
         
         self.__inputEventsList['events'][name] = [function, 
-                                         {'key': key, 'enabled': startAsEnabled, 'forcedSceneName': forcedSceneName, 'type': typeOfInputTypeEvent, 'name': name}]
+                                         eventInfo]
         self.__inputEventsList[typeOfInputTypeEvent][name] = [function, 
-                                                     {'key': key, 'enabled': startAsEnabled, 'forcedSceneName': forcedSceneName, 'type': typeOfInputTypeEvent, 'name': str}]
-            
+                                                     eventInfo]
+        
+        self.getLogger().log(logType.SUCCESS, f"New input event has been added with name of '{name}'. information about this event: {eventInfo}")
+        
             # if forcedSceneName is not None:
                 
-    def removeInputEvent(self, name: str, dontRaiseAnyErrors: bool = False) -> None:
+    def removeInputEvent(self, name: str, dontRaiseAnyErrors: bool = True) -> None:
         if not self.doesInputEventNameDoExist(name):
+            self.getLogger().log(logType.ERROR, f"Trying to remove input event of id '{name}' but name wasnt used!")
             if not dontRaiseAnyErrors:
                 raise invalidName(f"didn't find event of name '{name}'")
             return
             
+        eventInfo = self.__inputEventsList['events'][name][1]
+            
         del self.__inputEventsList[self.__inputEventsList['events'][name][1]['type']][name]
         del self.__inputEventsList['events'][name]
+        
+        self.getLogger().log(logType.SUCCESS, f"Input event of id '{name}' has been deleted. The event info: {eventInfo}")
         
     
     def getInputEvents(self, ofType:Optional[Union[str, InputType]] = None) -> list[tuple[str,list[callable, dict]]]:            
@@ -234,6 +343,10 @@ class Game(Loggable):
                     
                 # },
                 "events": {
+                },
+                "keyDown": {
+                },
+                "keyUp": {
                 },
                 "rightClick": {
                     
@@ -259,6 +372,8 @@ class Game(Loggable):
     #         raise gameEngineError(f"{name} is already taken")
         
     # logger
+    
+    def getGame(self): return self
         
     def getLogger(self) -> Logger:
         return self.__logger
@@ -279,11 +394,19 @@ class Game(Loggable):
         self.__isGameOn: bool = True
         self.__scenes: dict[str,Scene] = {}
         self.__currentScene: None | Scene = None
+        self.storage = {
+            "selectedBlock": 1,
+            "selectedBlockName": "dirt"
+        }
         self.__inputEventsList = {
             # "forcedScenes": {
                 
             # },
             "events": {
+            },
+            "keyDown": {
+            },
+            "keyUp": {
             },
             "rightClick": {
                 
@@ -316,7 +439,6 @@ class Game(Loggable):
         self.__logger.log(logType.INIT, "invoking asyncio main game loop... ")
         asyncio.run(self.__gameLoop())
         
-        self.__logger.log(logType.SUCCESS, "loading engine... COMPLETE")
         
         
         

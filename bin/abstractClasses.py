@@ -19,6 +19,8 @@ class Reason(Enum):
 class InputType(Enum):
     rightClick = "rightClick"
     leftClick = "leftClick"
+    keyDown = "keyDown"
+    keyUp = "keyUp"
     
 class eventType(Enum):
     destroyBlock = "destroy_block"
