@@ -49,7 +49,7 @@ class Game(Loggable):
                                     "buttonClicked": event.key,
                                 }, Loggable(game=self,logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
                             except Exception as e:
-                                self.getLogger().log(logType.ERROR, f"error occured during trying to execute event with name '{eventName}' (eventData: {eventTwo[1]}):\n")
+                                self.getLogger().log(logType.ERROR, f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]}):\n")
                                 traceback.print_exception(e)
                                 print("")
                 case pygame.KEYDOWN:
@@ -65,7 +65,7 @@ class Game(Loggable):
                             # type, value, traceback = sys.exc_info()
                             # traceback.print_exception(e)
                             # print(type,value,traceback)
-                            self.getLogger().log(logType.ERROR, f"error occured during trying to execute event with name '{eventName}' (eventData: {eventTwo[1]}):\n")
+                            self.getLogger().log(logType.ERROR, f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]}):\n")
                             traceback.print_exception(e)
                             print("")
                     
@@ -96,7 +96,7 @@ class Game(Loggable):
                                         "mousePos": mousePos
                                     }, Loggable(game=self, logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
                                 except Exception as e:
-                                    self.getLogger().log(logType.ERROR, f"error occured during trying to execute event with name '{eventName}' (eventData: {eventTwo[1]}):\n")
+                                    self.getLogger().log(logType.ERROR, f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]}):\n")
                                     traceback.print_exception(e)
                                     print("")
                     elif buttonsClicked[2]:
@@ -108,7 +108,7 @@ class Game(Loggable):
                                         "mousePos": mousePos
                                     }, Loggable(game=self, logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
                                 except Exception as e:
-                                    self.getLogger().log(logType.ERROR, f"error occured during trying to execute event with name '{eventName}' (eventData: {eventTwo[1]}):\n")
+                                    self.getLogger().log(logType.ERROR, f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]}):\n")
                                     traceback.print_exception(e)
                                     print("")
                 
