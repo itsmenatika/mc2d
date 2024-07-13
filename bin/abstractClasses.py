@@ -14,18 +14,22 @@ class Entity(abc.ABC): pass
 
 
 class Reason(Enum):
+    '''reason to perform specified action'''
     WorldGenerator = "world_generator"
 
 class InputType(Enum):
+    '''type of input that was given by user'''
     rightClick = "rightClick"
     leftClick = "leftClick"
     keyDown = "keyDown"
     keyUp = "keyUp"
     
 class eventType(Enum):
+    '''type of event'''
     destroyBlock = "destroy_block"
 
 class Executor(abc.ABC):
+    '''class that can execute something'''
     __whoami = None
 
     def isWorldGenerator(self) -> bool:
@@ -47,6 +51,7 @@ class Executor(abc.ABC):
         self.__executorName = executorName
     
 class WorldGenerator(Executor, abc.ABC, Loggable):
+    '''world generator that can be used to generate worlds'''
     __whoami = "worldGenerator"
     
     def getGame(self) -> 'game':
@@ -65,7 +70,9 @@ class WorldGenerator(Executor, abc.ABC, Loggable):
         return self.__scene.getSeed()
     
     @abc.abstractmethod
-    def generateChunk(self, chunkPos: tuple[int,int], chunk: 'Chunk', Scene: 'Scene') -> dict[tuple[int,int], 'Block']: pass
+    def generateChunk(self, chunkPos: tuple[int,int], chunk: 'Chunk', Scene: 'Scene') -> dict[tuple[int,int], 'Block']:
+        '''function that will be execute every time when world want new chunk'''
+        pass
     
     def __init__(self, scene: 'Scene') -> None:
         super().__init__(logParent=ParentForLogs(name="worldGenerator", parent=scene.getLogParent()))
