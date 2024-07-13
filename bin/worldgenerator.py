@@ -2,6 +2,7 @@ import pygame
 from pygame.math import Vector2
 import random
 import asyncio
+import traceback
 
 from bin.map import Chunk, Scene, Block
 from bin.abstractClasses import WorldGenerator, Executor, Reason
@@ -681,13 +682,19 @@ class worldGeneratorNormal(WorldGenerator):
             
             # self.generateVeins(chunkPos, chunk, "coal_ore", 1, 1, 6, 6, True, None, blocks, currentHeight+3, 32)
             
-            global stats
+            # global stats
             
             # chunk.setBlocks(blocks)
+            # 5 / 0
             self.log(logType.SUCCESS, f"chunk {chunkPos} has been generated successfully!")
-            return blocks
+           
         except Exception as e:
-            self.log(logType.ERROR, f"error has occured while trying to generate chunk {chunkPos}!\nError:\n{e}\n")
+            # self.log(logType.ERROR, f"error has occured while trying to generate chunk {chunkPos}!\nError:\n")
+            # traceback.print_exc()
+            # print()
+            self.errorWithTraceback(f"error has occured while trying to generate chunk {chunkPos}!", e)
+        finally:
+            return blocks
         
         # veins = 5
         # while veins > 0:

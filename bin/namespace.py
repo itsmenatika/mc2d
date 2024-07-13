@@ -99,7 +99,8 @@ class resourceManager(Loggable):
                 self.log(logType.SUCCESS, f"new block added: {name} (INT ID: {module.__dict__[name].IDInt})")
                 # print(f"[NAMESPACE] New block added: {name} (INT ID: {module.__dict__[name].IDInt})")
             except Exception as e:
-                self.log(logType.ERROR, f"unable to block of id {name}\nERROR:\n {e}\n")
+                # self.log(logType.ERROR, f"unable to block of id {name}\nERROR:\n {e}\n")
+                self.errorWithTraceback(f"unable to block of id {name}\n", e)
                 # print(f"[NAMESPACE] unable to load tile of id {name}\nERROR:\n {e}\n")
                 
         self.log(logType.SUCCESS, "loading blocks has ended...")

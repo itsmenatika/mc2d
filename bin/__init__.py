@@ -49,9 +49,10 @@ class Game(Loggable):
                                     "buttonClicked": event.key,
                                 }, Loggable(game=self,logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
                             except Exception as e:
-                                self.getLogger().log(logType.ERROR, f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]}):\n")
-                                traceback.print_exception(e)
-                                print("")
+                                # self.getLogger().log(logType.ERROR, f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]}):\n")
+                                # traceback.print_exception(e)
+                                # print("")
+                                self.getLogger().errorWithTraceBack("An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
                 case pygame.KEYDOWN:
                     for eventName, eventTwo in self.__inputEventsList["keyDown"].items():
                         # print(event.key, event['key'])
@@ -65,9 +66,10 @@ class Game(Loggable):
                             # type, value, traceback = sys.exc_info()
                             # traceback.print_exception(e)
                             # print(type,value,traceback)
-                            self.getLogger().log(logType.ERROR, f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]}):\n")
-                            traceback.print_exception(e)
-                            print("")
+                            # self.getLogger().log(logType.ERROR, f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]}):\n")
+                            # traceback.print_exception(e)
+                            # print("")
+                            self.getLogger().errorWithTraceback("An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
                     
                     # if event.key == pygame.K_LEFT:
                     #     # self.camera.cords.x -= 200
@@ -96,9 +98,9 @@ class Game(Loggable):
                                         "mousePos": mousePos
                                     }, Loggable(game=self, logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
                                 except Exception as e:
-                                    self.getLogger().log(logType.ERROR, f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]}):\n")
-                                    traceback.print_exception(e)
-                                    print("")
+                                    self.getLogger().errorWithTraceback("An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
+                                    # traceback.print_exception(e)
+                                    # print("")
                     elif buttonsClicked[2]:
                         for eventName, eventTwo in self.__inputEventsList["rightClick"].items():
                             if eventTwo[1]['enabled']:
@@ -108,9 +110,10 @@ class Game(Loggable):
                                         "mousePos": mousePos
                                     }, Loggable(game=self, logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
                                 except Exception as e:
-                                    self.getLogger().log(logType.ERROR, f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]}):\n")
-                                    traceback.print_exception(e)
-                                    print("")
+                                    # self.getLogger().log(logType.ERROR, f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]}):\n")
+                                    # traceback.print_exception(e)
+                                    # print("")
+                                    self.getLogger().errorWithTraceback("An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
                 
                
                     
@@ -145,6 +148,7 @@ class Game(Loggable):
         self.addInputEvent("keyLeft", InputType.keyDown, lambda *args, **kwargs: self.camera.moveBy(Vector2(-200,-0)), key=pygame.K_LEFT)
         self.addInputEvent("keyOne", InputType.keyDown, lambda *args, **kwargs: 5 / 0, key=pygame.K_1)
         
+    #  self.getCurrentScene().__   
         
         def handleBlockUp(game, currentScene: Scene, typeEvent, info, loggable: Loggable):
             idInts = game.getNameSpace()['IDInts']
