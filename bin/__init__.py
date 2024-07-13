@@ -421,11 +421,11 @@ class Game(Loggable):
         
         # handling situation if there was already event with that name
         if self.doesInputEventNameDoExist(name):
-            self.getLogger().log(logType.ERROR, f"Trying to set input event of id '{name}' but name was already claimed!")
+            self.getLogger().log(logType.ERROR, f"Trying to set a input event of id '{name}' but the name was already claimed!")
             if not dontRaiseAnyErrors:
                 raise invalidName(f"name ''{name}'' is already claimed as name for an event!")
             if not setIfDoExist: return
-            self.getLogger().log(logType.INFO, f"f'{name}' will be set anyways, because flag of ignoring that is set!")
+            self.getLogger().log(logType.INFO, f"f'{name}' will be set anyways, because a flag of ignoring that is set!")
         
         # setting event
         eventInfo = {'key': key, 'enabled': startAsEnabled, 'forcedSceneName': forcedSceneName, 'type': typeOfInputTypeEvent, 'name': name}
@@ -434,7 +434,7 @@ class Game(Loggable):
         self.__inputEventsList[typeOfInputTypeEvent][name] = [function, eventInfo]
         
         # logs
-        self.getLogger().log(logType.SUCCESS, f"New input event has been added with name of '{name}'. information about this event: {eventInfo}")
+        self.getLogger().log(logType.SUCCESS, f"A new input event has been added with the name of '{name}'. information about this event: {eventInfo}")
         
             # if forcedSceneName is not None:
                 
@@ -448,9 +448,9 @@ class Game(Loggable):
                 
         # check if name exist
         if not self.doesInputEventNameDoExist(name):
-            self.getLogger().log(logType.ERROR, f"Trying to remove input event of id '{name}' but name wasnt used!")
+            self.getLogger().log(logType.ERROR, f"Trying to remove a input event of the name '{name}' but the name wasnt used!")
             if not dontRaiseAnyErrors:
-                raise invalidName(f"didn't find event of name '{name}'")
+                raise invalidName(f"Didn't find an event of the name '{name}'")
             return
             
         # deleting event
@@ -460,7 +460,7 @@ class Game(Loggable):
         del self.__inputEventsList['events'][name]
         
         # logs
-        self.getLogger().log(logType.SUCCESS, f"Input event of id '{name}' has been deleted. The event info: {eventInfo}")
+        self.getLogger().log(logType.SUCCESS, f"An input event of the name '{name}' has been deleted. The event info: {eventInfo}")
         
     
     def getInputEvents(self, ofType:Optional[Union[str, InputType]] = None) -> list[tuple[str,list[callable, dict]]]:   
