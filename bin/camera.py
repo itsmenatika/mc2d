@@ -6,18 +6,57 @@ import asyncio
 
 
 class Camera:
+
+    # Metoda prywatna do uzyskania dostępnych sprite'ów do renderowania
+    def __get_available_sprites_to_render(self, camera_end_points: tuple[int, int]) -> list:
+        # Lista do przechowania dostępnych sprite'ów 
+        available_sprites = []
+
+        # Pierwszy końcowy punkt kamery
+        ft_cam_endpoint = camera_end_points[0]
+        # Ostatni końcowy punkt kamery
+        lt_cam_endpoint = camera_end_points[1]
+
+        # Rozmiar horyzontalny bloku
+        block_sz_x = Block.SIZE.x
+        # Rozmiar wertykalny bloku
+        block_sz_y = Block.SIZE.y
+
+        # Podfunkcja, która przefiltruje sprite'y do renderowania według ustawionych kryteriów
+        def filter_sprite(sprite) -> bool:
+            # Tupla pozycji sprite'a
+            sprite_xy = sprite.getCords()
+
+            # Kordynat na osi Y
+            cord_y = self.cords.y
+            # Kordynat na osi X
+            cord_x = self.cords.x
+
+            # Zwróć informacje czy spełnia sprite poniższe warunki
+            return sprite_xy[0] > (cord_x - block_sz_x) and sprite_xy[0] < (ft_cam_endpoint + block_sz_x) \
+                    and (sprite_xy[1] + block_sz_y) > cord_y and sprite_xy[1] < (lt_cam_endpoint + block_sz_y)
+
+        # Przefiltrowane sprite'y
+        filtered_sprites = filter(filter_sprite, self.sceneToDraw.sprites())
+        
+        # Przypisz skonwertowane na listę przefiltrowane sprite'y do listy dostępnych sprite'ów
+        available_sprites = list(filtered_sprites)
+
+        # Zwróć dostępnę sprite'y do renderu
+        return available_sprites
+        
     def __filterSpritesToDrawNonAsync(self) -> None:
         cameraEndPoint = (self.SCREENSIZE[0] + self.cords.x,
         self.SCREENSIZE[1] + self.cords.y)
         
-        self.spritesTodraw = list(filter(lambda sprite: sprite.getCords().x > self.cords.x - Block.SIZE.x and sprite.getCords().x < cameraEndPoint[0] + Block.SIZE.x and sprite.getCords().y + Block.SIZE.y > self.cords.y and sprite.getCords().y < cameraEndPoint[1] + Block.SIZE.y, self.sceneToDraw.sprites()))
+        self.spritesTodraw = self.__get_available_sprites_to_render(cameraEndPoint)
     async def __filterSpritesToDraw(self):
         while True:
             
             cameraEndPoint = (self.SCREENSIZE[0] + self.cords.x,
             self.SCREENSIZE[1] + self.cords.y)
             
-            self.spritesTodraw = list(filter(lambda sprite: sprite.getCords().x > self.cords.x - Block.SIZE.x and sprite.getCords().x < cameraEndPoint[0] + Block.SIZE.x and sprite.getCords().y + Block.SIZE.y > self.cords.y and sprite.getCords().y < cameraEndPoint[1] + Block.SIZE.y, self.sceneToDraw.sprites()))
+            self.spritesTodraw = self.__get_available_sprites_to_render(cameraEndPoint)
             await asyncio.sleep(0.1)
     async def __generateInfo(self):
         while True:
