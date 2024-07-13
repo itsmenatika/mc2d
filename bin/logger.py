@@ -5,6 +5,7 @@ import traceback
 import sys
 
 class logType(Enum):
+    '''type of log message'''
     Warning = "warning"
     ERROR = "error"
     INFO = "info"
@@ -14,11 +15,13 @@ class logType(Enum):
     SUCCESS = "success"
     
 class ParentForLogs:
-
+    '''This is node which indicates where you are (this will as indicator in logs (name will be between dots))'''
     def getParent(self) -> 'ParentForLogs':
+        '''returns parent of this node'''
         return self.__parent
     
     def getFull(self) -> str:
+        '''get full indicator'''
         final = self.name
         parent = self.getParent()
         
@@ -37,11 +40,25 @@ class ParentForLogs:
     
 
 class Logger:
+    '''Logger is used to loging stuff. Only one with intialized during the game.'''
     def errorWithTraceback(self, message: str, error: Exception) -> None:
-            tb = traceback.format_exc()
-            self.log(logType.ERROR, message + '\n' + str(tb))
+        '''logs error with traceback\n
+            Args:\n
+                * message: str -> message about why that has happen
+                * error: Exception -> exception
+            Returns:\n
+                None'''
+        tb = traceback.format_exc()
+        self.log(logType.ERROR, message + '\n' + str(tb))
         
     def log(self, logtype: logType, message: str, parent: Optional[ParentForLogs] = None):
+        '''function which should be used to logging stuff\n
+            Args:\n
+                * logtype: logType -> type of log
+                * message: str -> message about why that has happen
+                * parent: Optional[ParentForLogs] -> optional argument. That is where you indicates "path for error"
+            Returns:\n
+                None'''
         if parent:
             fromWhere = str(parent)
         else:
@@ -54,15 +71,19 @@ class Logger:
         print(finalMessage)
         
     def clear(self) -> None:
+        '''clear all logs'''
         self.__logs.clear()
         
     def getLogs(self) -> list[str]:
+        '''Returns all logs'''
         return self.__logs
     
     def getGame(self) -> 'Game':
+        '''just gives you the game'''
         return self.__game
     
     def getCurrentScene(self) -> 'Scene':
+        '''gives you the current main scene that is running in the game'''
         return self.__game.getCurrentScene()
     
     def __init__(self, game: 'Game') -> None:
@@ -71,7 +92,10 @@ class Logger:
         
         
 class Loggable:
+    '''this class should be inherited by every class that want to be Loggable. That class provides you with useful pack of functions to logging your self'''
+    
     def info(self, message: str) -> None:
+        '''shortcut for self.log(logType.INFO, message)'''
         self.log(logType.INFO, message)
         
     def log(self, logtype: logType, message: str) -> None:
