@@ -174,9 +174,9 @@ class Game(Loggable):
                 while game.storage['selectedBlock'] not in idInts.keys():
                     game.storage['selectedBlock'] += 1
                 game.storage['selectedBlockName'] = idInts[game.storage['selectedBlock']]
-
-            game.storage['selectedBlock'] = 1
-            game.storage['selectedBlockName'] = idInts[1]
+            else:
+                game.storage['selectedBlock'] = 1
+                game.storage['selectedBlockName'] = idInts[1]
                 
             loggable.info(f"block editor got changed to {game.storage['selectedBlockName']} (intID: {game.storage['selectedBlock']})")
                 
@@ -189,9 +189,9 @@ class Game(Loggable):
                 while game.storage['selectedBlock'] not in idInts.keys():
                     game.storage['selectedBlock'] -= 1
                 game.storage['selectedBlockName'] = idInts[game.storage['selectedBlock']]
-
-            game.storage['selectedBlock'] = maxint
-            game.storage['selectedBlockName'] = idInts[maxint]
+            else:
+                game.storage['selectedBlock'] = maxint
+                game.storage['selectedBlockName'] = idInts[maxint]
             
             loggable.info(f"block editor got changed to {game.storage['selectedBlockName']} (intID: {game.storage['selectedBlock']})")
         
