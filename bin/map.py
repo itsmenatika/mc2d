@@ -52,6 +52,7 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
     def getChunkPos(self) -> tuple[int,int]:
         return self.__chunkPos
     
+    # OLD GENERATOR, DONT TOUCH IT (FIRST VERSION OF GENERATOR)
     
     # def generateHeight(self, x, chunkPos: list[int,int], seedInt: int,  cache: dict, fromLeft: bool = False, startPoint: int = 10,
     #                    max: Optional[int] = None, min: Optional[int] = None, probability: int = 60, seedName: str = "global") -> int:  
@@ -117,6 +118,8 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
     
     # def generateChunk(self) -> None:
     #     random.seed(f"${self.getScene().getSeed()}_CHUNK_{self.getChunkPos()}")
+
+    #     global_reason = "world_generator"
         
     #     for x in range(0,int(Chunk.SIZE.x)):
     #         height = self.generateHeight(x, list(self.getChunkPos()), self.getScene().getSeedInt(), self.getScene().heightCache['grass_height'], False, min=6, max=16, seedName="height")
@@ -125,65 +128,70 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
     #             name="grass_block",
     #             cordsRelative=Vector2(x * Block.SIZE.x,height * Block.SIZE.y),
     #             executor=self,
-    #             reason="world_generator"
+    #             reason=global_reason
     #         )
             
     #         dirtheight = self.generateHeight(x, list(self.getChunkPos()), self.getScene().getSeedInt(), self.getScene().heightCache['dirt_height'], False, startPoint=4, max=5, min=3, seedName="dirtheight")
             
 
             
-    #         for y in range(0,dirtheight):
-    #             self.__blocks[(x,height+y+1)] = Block.newBlockByResourceManager(
-    #                 chunk=self,
-    #                 name="dirt",
-    #                 cordsRelative=Vector2(x * Block.SIZE.x,(height + 1 + y) * Block.SIZE.y),
-    #                 executor=self,
-    #                 reason="world_generator"
-    #             )
+            # for y in range(0,dirtheight):
+            #     self.__blocks[(x,height+y+1)] = Block.newBlockByResourceManager(
+            #         chunk=self,
+            #         name="dirt",
+            #         cordsRelative=Vector2(x * Block.SIZE.x,(height + 1 + y) * Block.SIZE.y),
+            #         executor=self,
+            #         reason=global_reason
+            #     )
                 
-    #         currentHeight = height + dirtheight + 1
-    #         for y in range(0,30):
-    #             self.__blocks[(x,y+currentHeight)] = Block.newBlockByResourceManager(
-    #                 chunk=self,
-    #                 name="stone",
-    #                 cordsRelative=Vector2(x * Block.SIZE.x,(y + currentHeight) * Block.SIZE.y),
-    #                 executor=self,
-    #                 reason="world_generator"
-    #             ) 
-    #             if y + currentHeight >= 32:   
-    #                 bedrockHeight = self.generateHeight(x, list(self.getChunkPos()), self.getScene().getSeedInt(), self.getScene().heightCache['bedrock_height'], False, startPoint=2, max=2, min=1, probability=20)
+            # currentHeight = height + dirtheight + 1
+            # for y in range(0,30):
+            #     self.__blocks[(x,y+currentHeight)] = Block.newBlockByResourceManager(
+            #         chunk=self,
+            #         name="stone",
+            #         cordsRelative=Vector2(x * Block.SIZE.x,(y + currentHeight) * Block.SIZE.y),
+            #         executor=self,
+            #         reason=global_reason
+            #     ) 
+            #     if y + currentHeight >= 32:   
+            #         bedrockHeight = self.generateHeight(x, list(self.getChunkPos()), self.getScene().getSeedInt(), self.getScene().heightCache['bedrock_height'], False, startPoint=2, max=2, min=1, probability=20)
                     
-    #                 if bedrockHeight == 1:
-    #                     self.__blocks[(x,y+currentHeight + 1)] = Block.newBlockByResourceManager(
-    #                         chunk=self,
-    #                         name="stone",
-    #                         cordsRelative=Vector2(x * Block.SIZE.x,(y + currentHeight + 1) * Block.SIZE.y),
-    #                         executor=self,
-    #                         reason="world_generator"
-    #                     )
-    #                     self.__blocks[(x,y+currentHeight + 2)] = Block.newBlockByResourceManager(
-    #                         chunk=self,
-    #                         name="bedrock",
-    #                         cordsRelative=Vector2(x * Block.SIZE.x,(y + currentHeight + 2) * Block.SIZE.y),
-    #                         executor=self,
-    #                         reason="world_generator"
-    #                     ) 
-    #                 else:
-    #                     self.__blocks[(x,y+currentHeight + 1)] = Block.newBlockByResourceManager(
-    #                         chunk=self,
-    #                         name="bedrock",
-    #                         cordsRelative=Vector2(x * Block.SIZE.x,(y + currentHeight + 1) * Block.SIZE.y),
-    #                         executor=self,
-    #                         reason="world_generator"
-    #                     )
-    #                     self.__blocks[(x,y+currentHeight + 2)] = Block.newBlockByResourceManager(
-    #                         chunk=self,
-    #                         name="bedrock",
-    #                         cordsRelative=Vector2(x * Block.SIZE.x,(y + currentHeight + 2) * Block.SIZE.y),
-    #                         executor=self,
-    #                         reason="world_generator"
-    #                     ) 
-    #                 break
+            #         tmp_curr_height1 = y + currentHeight + 1
+            #         tmp_curr_height2 = y + currentHeight + 2
+
+            #         tmp_rel_cords1 = Vector2(x * Block.SIZE.x, tmp_curr_height1 * Block.SIZE.y)
+            #         tmp_rel_cords2 = Vector2(x * Block.SIZE.x, tmp_curr_height2 * Block.SIZE.y)
+
+            #         if bedrockHeight == 1:
+            #             self.__blocks[(x, tmp_curr_height1)] = Block.newBlockByResourceManager(
+            #                 chunk=self,
+            #                 name="stone",
+            #                 cordsRelative=tmp_rel_cords1,
+            #                 executor=self,
+            #                 reason=global_reason
+            #             )
+            #             self.__blocks[(x, tmp_curr_height2)] = Block.newBlockByResourceManager(
+            #                 chunk=self,
+            #                 name="bedrock",
+            #                 cordsRelative=tmp_rel_cords2,
+            #                 executor=self,
+            #                 reason=global_reason
+            #             ) 
+            #         self.__blocks[(x, tmp_curr_height1)] = Block.newBlockByResourceManager(
+            #             chunk=self,
+            #             name="bedrock",
+            #             cordsRelative=tmp_rel_cords1,
+            #             executor=self,
+            #             reason=global_reason
+            #         )
+            #         self.__blocks[(x, tmp_curr_height2)] = Block.newBlockByResourceManager(
+            #             chunk=self,
+            #             name="bedrock",
+            #             cordsRelative=tmp_rel_cords2,
+            #             executor=self,
+            #             reason=global_reason
+            #         ) 
+            #         break
         
     #     veins = 5
     #     while veins > 0:
@@ -191,13 +199,14 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
     #         x = random.randint(0,Chunk.SIZE.x)
     #         y = random.randint(currentHeight+3, 32)
             
-    #         self.__blocks[(x,y)] = Block.newBlockByResourceManager(
-    #             chunk=self,
-    #             name="coal_ore",
-    #             cordsRelative=Vector2(x * Block.SIZE.x,y * Block.SIZE.y),
-    #             executor=self,
-    #             reason="world_generator"
-    #         ) 
+            # self.__blocks[(x,y)] = Block.newBlockByResourceManager(
+            #     chunk=self,
+            #     name="coal_ore",
+            #     cordsRelative=Vector2(x * Block.SIZE.x,y * Block.SIZE.y),
+            #     executor=self,
+            #     reason=global_reason
+            # ) 
+
             
     #         howmuch = random.randint(0,3)
             
@@ -205,47 +214,39 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
     #         while howmuch > 0:
     #             if len(choices) == 0: break
                 
-    #             addx, addy = random.choice(choices)
-    #             choices.remove([addx,addy])
-    #             if x+addx > 16:
-    #                 self.getScene().blockToNextCache((self.getChunkPos()[0]+1, self.getChunkPos()[1]))
-    #                 howmuch -= 1
-    #                 continue
-    #             elif x+addx < 0:
-    #                 self.getScene().blockToNextCache((self.getChunkPos()[0]-1, self.getChunkPos()[1]))
-    #                 howmuch -= 1
-    #                 continue
+                # addx, addy = random.choice(choices)
+
+                # tmp_addx = x + addx
+                # tmp_addy = y + addy
+
+                # choices.remove([addx,addy])
+                # if tmp_addx > 16:
+                #     self.getScene().blockToNextCache((self.getChunkPos()[0]+1, self.getChunkPos()[1]))
+                #     howmuch -= 1
+                #     continue
+                # elif tmp_addx < 0:
+                #     self.getScene().blockToNextCache((self.getChunkPos()[0]-1, self.getChunkPos()[1]))
+                #     howmuch -= 1
+                #     continue
                 
-    #             if (x+addx, y+addy) in self.__blocks:
-    #                 if self.__blocks[(x+addx, y+addy)].ID != "stone": continue
+                # if (tmp_addx, tmp_addy) in self.__blocks:
+                #     if self.__blocks[(tmp_addx, tmp_addy)].ID != "stone": continue
                     
-    #                 self.__blocks[(x+addx,y+addy)] = Block.newBlockByResourceManager(
-    #                     chunk=self,
-    #                     name="coal_ore",
-    #                     cordsRelative=Vector2(x * Block.SIZE.x,y * Block.SIZE.y),
-    #                     executor=self,
-    #                     reason="world_generator"
-    #                 ) 
+                #     self.__blocks[(tmp_addx, tmp_addy)] = Block.newBlockByResourceManager(
+                #         chunk=self,
+                #         name="coal_ore",
+                #         cordsRelative=Vector2(x * Block.SIZE.x,y * Block.SIZE.y),
+                #         executor=self,
+                #         reason=global_reason
+                #     ) 
                     
     #                 x += addx
     #                 y += addy
                     
-    #                 howmuch -= 1
+
+                    # howmuch -= 1 
                     
-            
-            
-                
-
-            
-            
-                
-                
-                
-            
-        
-    
-
-    # NOT USED (BUT WORKS, BUT SLOW)
+    # not used but works, but very slow (NEED TO BE RECREATED!)
     def loadChunkFromCsv(self, csvSource: str) -> None:
         with open(csvSource) as csvFile:
             data = csv.reader(csvFile, delimiter=",")
@@ -625,14 +626,11 @@ class Block(pygame.sprite.Sprite):
         
         # reason handling
         if reason=="world_generator":
-            inChunkPosition = (int(self.__cords.x / Block.SIZE.x),
-                               int(self.__cords.y / Block.SIZE.y))
-            self.onGenerate(cordsAbsolute=self.cordsAbsolute,cordsRelative=self.__cords, inChunkPosition=inChunkPosition, chunk=chunk)
+            self.onGenerate(cordsAbsolute=self.cordsAbsolute,cordsRelative=self.__cords, inChunkPosition=blockPos, chunk=chunk)
         elif reason == "chunk_load":
-            inChunkPosition = (int(self.__cords.x / Block.SIZE.x),
-                               int(self.__cords.y / Block.SIZE.y))
-            self.onLoad(cordsAbsolute=self.cordsAbsolute,cordsRelative=self.__cords, inChunkPosition=inChunkPosition, chunk=chunk)
-            
+            self.onLoad(cordsAbsolute=self.cordsAbsolute,cordsRelative=self.__cords, inChunkPosition=blockPos, chunk=chunk)
+        
+        del chunk_position
 
 # class dupa(): pass
 class Scene(pygame.sprite.Group, Executor, Loggable):   

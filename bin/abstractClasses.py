@@ -1,5 +1,5 @@
 
-import abc
+from abc import abstractmethod, ABC
 from enum import Enum
 from typing import Any, TypeAlias
 
@@ -10,8 +10,11 @@ ENTITIES = [
     ""
 ]
 
-class Entity(abc.ABC): pass
 
+inputEventInfo: TypeAlias = dict[str, Any]
+
+
+class Entity(ABC): pass
 
 class Reason(Enum):
     '''reason to perform specified action'''
@@ -28,8 +31,7 @@ class eventType(Enum):
     '''type of event'''
     destroyBlock = "destroy_block"
 
-class Executor(abc.ABC):
-    '''class that can execute something'''
+class Executor(ABC):
     __whoami = None
 
     def isWorldGenerator(self) -> bool:
@@ -39,7 +41,7 @@ class Executor(abc.ABC):
         return self.__executorName == "chunk"
     
     def isScene(self) -> bool:
-        return self.__executorName == "scene" or self.__executorName == "map"
+        return self.__executorName in ["scene", "map"]
   
     def isPlayer(self) -> bool:
         return self.__executorName == "player"  
@@ -50,8 +52,7 @@ class Executor(abc.ABC):
     def setExecutorName(self, executorName: str) -> None:
         self.__executorName = executorName
     
-class WorldGenerator(Executor, abc.ABC, Loggable):
-    '''world generator that can be used to generate worlds'''
+class WorldGenerator(Executor, ABC, Loggable):
     __whoami = "worldGenerator"
     
     def getGame(self) -> 'game':
@@ -69,10 +70,8 @@ class WorldGenerator(Executor, abc.ABC, Loggable):
     def getSeedOrginal(self) -> str:
         return self.__scene.getSeed()
     
-    @abc.abstractmethod
-    def generateChunk(self, chunkPos: tuple[int,int], chunk: 'Chunk', Scene: 'Scene') -> dict[tuple[int,int], 'Block']:
-        '''function that will be execute every time when world want new chunk'''
-        pass
+    @abstractmethod
+    def generateChunk(self, chunkPos: tuple[int,int], chunk: 'Chunk', Scene: 'Scene') -> dict[tuple[int,int], 'Block']: pass
     
     def __init__(self, scene: 'Scene') -> None:
         super().__init__(logParent=ParentForLogs(name="worldGenerator", parent=scene.getLogParent()))
@@ -82,6 +81,3 @@ class WorldGenerator(Executor, abc.ABC, Loggable):
     # idk, how to call it with multiple classes...
     # def __init__(self, executorName: str) -> None:
     #     self.__executorName = executorName
-        
-        
-inputEventInfo: TypeAlias = dict[str, Any]
