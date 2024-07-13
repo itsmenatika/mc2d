@@ -630,7 +630,8 @@ class Block(pygame.sprite.Sprite):
         elif reason == "chunk_load":
             self.onLoad(cordsAbsolute=self.cordsAbsolute,cordsRelative=self.__cords, inChunkPosition=blockPos, chunk=chunk)
         
-        del chunk_position
+        # ???? co skąd to coś tu jest
+        # del chunk_position
 
 # class dupa(): pass
 class Scene(pygame.sprite.Group, Executor, Loggable):   
