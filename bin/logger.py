@@ -99,6 +99,10 @@ class Loggable:
         '''shortcut for self.log(logType.INFO, message)'''
         self.log(logType.INFO, message)
         
+    def logErr(self, message: str) -> None:
+        '''shortcut for self.log(logType.ERROR, message)'''
+        self.log(logType.ERROR, message)
+        
     def log(self, logtype: logType, message: str) -> None:
 
         self.getGame().getLogger().log(logtype, message, self.__logParent)
