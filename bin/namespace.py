@@ -52,6 +52,10 @@ class resourceManager(Loggable):
         self.log(logType.INIT, "loading tiles...")
         
         # print(os.listdir(loc_tiles))
+        loadedBlocks = 0
+        totalBlocks = 0
+        errorBlocks = 0
+        
         for tile in os.listdir(loc_tiles):
             name = "".join(tile.split(".")[:-1])
             if name == "__pycache__" or name == "": continue
@@ -80,9 +84,9 @@ class resourceManager(Loggable):
                 GAME_NAMESPACE["IDInts"][module.__dict__[name].IDInt] = name
                 
                 if module.__dict__[name].MAINTEXTUREISTRANSPARENT:
-                     self.__resources[module.__dict__[name].MAINTEXTURE] = pygame.image.load(module.__dict__[name].MAINTEXTURE).convert_alpha()
+                     self.__resources[module.__dict__[name].MAINTEXTURE] = pygame.image.load(r"resources/"+module.__dict__[name].MAINTEXTURE).convert_alpha()
                 else:
-                    self.__resources[module.__dict__[name].MAINTEXTURE] = pygame.image.load(module.__dict__[name].MAINTEXTURE).convert()
+                    self.__resources[module.__dict__[name].MAINTEXTURE] = pygame.image.load(r"resources/"+module.__dict__[name].MAINTEXTURE).convert()
                 
                 GAME_NAMESPACE["blocks"][name] = {
                     "module": module,
@@ -97,13 +101,17 @@ class resourceManager(Loggable):
                 }
                 
                 self.log(logType.SUCCESS, f"new block added: {name} (INT ID: {module.__dict__[name].IDInt})")
+                loadedBlocks+=1
+                totalBlocks+=1
                 # print(f"[NAMESPACE] New block added: {name} (INT ID: {module.__dict__[name].IDInt})")
             except Exception as e:
                 # self.log(logType.ERROR, f"unable to block of id {name}\nERROR:\n {e}\n")
-                self.errorWithTraceback(f"unable to block of id {name}\n", e)
+                self.errorWithTraceback(f"unable to block of id {name}", e)
                 # print(f"[NAMESPACE] unable to load tile of id {name}\nERROR:\n {e}\n")
+                errorBlocks += 1
+                totalBlocks += 1
                 
-        self.log(logType.SUCCESS, "loading blocks has ended...")
+        self.log(logType.SUCCESS, f"loading blocks has ended! LOADED BLOCKS: {loadedBlocks}/{totalBlocks} (failed: {errorBlocks})")
         self.log(logType.SUCCESS, "namespace has been loaded successfully...")
 
         

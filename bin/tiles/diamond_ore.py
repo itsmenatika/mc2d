@@ -5,7 +5,7 @@ from bin.abstractClasses import Executor
 
 
 class diamond_ore(Block):
-    MAINTEXTURE = "diamond.png"
+    MAINTEXTURE = "tiles/diamond.png"
     MAINTEXTUREISTRANSPARENT = False
     ID = "diamond_ore"
     IDInt = 9

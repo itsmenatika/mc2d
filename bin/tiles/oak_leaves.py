@@ -5,7 +5,7 @@ from bin.abstractClasses import Executor
 
 
 class oak_leaves(Block):
-    MAINTEXTURE = "oak_leaves.png"
+    MAINTEXTURE = "tiles/oak_leaves.png"
     MAINTEXTUREISTRANSPARENT = True
     ID = "oak_leaves"
     IDInt = 11

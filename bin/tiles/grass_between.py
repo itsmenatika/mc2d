@@ -6,7 +6,7 @@ from bin.abstractClasses import Executor
 
 
 class grass_between(Block):
-    MAINTEXTURE = "grass_between.png"
+    MAINTEXTURE = "tiles/grass_between.png"
     MAINTEXTUREISTRANSPARENT = False
     ID = "grass_between"
     IDInt = 4

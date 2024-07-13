@@ -5,7 +5,7 @@ from bin.abstractClasses import Executor
 
 
 class bedrock(Block):
-    MAINTEXTURE = "bedrock.png"
+    MAINTEXTURE = "tiles/bedrock.png"
     MAINTEXTUREISTRANSPARENT = False
     ID = "bedrock"
     IDInt = 8

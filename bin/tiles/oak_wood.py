@@ -6,7 +6,7 @@ from bin.abstractClasses import Executor
 
 
 class oak_wood(Block):
-    MAINTEXTURE = "oak_wood.png"
+    MAINTEXTURE = "tiles/oak_wood.png"
     MAINTEXTUREISTRANSPARENT = False
     ID = "oak_wood"
     IDInt = 7

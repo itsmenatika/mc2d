@@ -5,7 +5,7 @@ from bin.abstractClasses import Executor
 
 
 class dirt(Block):
-    MAINTEXTURE = "dirt.png"
+    MAINTEXTURE = "tiles/dirt.png"
     MAINTEXTUREISTRANSPARENT = False
     ID = "dirt"
     IDInt = 1

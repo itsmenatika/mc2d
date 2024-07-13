@@ -6,7 +6,7 @@ from bin.abstractClasses import Executor
 
 
 class stone_between(Block):
-    MAINTEXTURE = "stone_between.png"
+    MAINTEXTURE = "tiles/stone_between.png"
     MAINTEXTUREISTRANSPARENT = False
     ID = "stone_between"
     IDInt = 5

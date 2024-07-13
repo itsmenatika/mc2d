@@ -5,7 +5,7 @@ from bin.abstractClasses import Executor
 
 
 class coal_ore(Block):
-    MAINTEXTURE = "coal.png"
+    MAINTEXTURE = "tiles/coal.png"
     MAINTEXTUREISTRANSPARENT = False
     ID = "coal_ore"
     IDInt = 6
