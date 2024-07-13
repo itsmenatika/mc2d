@@ -1,6 +1,9 @@
 from enum import Enum
 from typing import Optional
 
+import traceback
+import sys
+
 class logType(Enum):
     Warning = "warning"
     ERROR = "error"
@@ -34,6 +37,10 @@ class ParentForLogs:
     
 
 class Logger:
+    def errorWithTraceback(self, message: str, error: Exception) -> None:
+            tb = traceback.format_exc()
+            self.log(logType.ERROR, message + '\n' + str(tb))
+        
     def log(self, logtype: logType, message: str, parent: Optional[ParentForLogs] = None):
         if parent:
             fromWhere = str(parent)
@@ -68,7 +75,19 @@ class Loggable:
         self.log(logType.INFO, message)
         
     def log(self, logtype: logType, message: str) -> None:
+
         self.getGame().getLogger().log(logtype, message, self.__logParent)
+        
+    def errorWithTraceback(self, message: str, error: Exception) -> None:
+        # tb = sys.exc_info()
+        # self.log(logType.ERROR, message + '\n' + str(error.with_traceback(tb[2])) + "\n")
+        tb = traceback.format_exc()
+        self.log(logType.ERROR, message + '\n' + str(tb))
+        # tb = sys.exc_info()[2]
+        # # traceback.print_exc()
+        # # self.getGame().getLogger().log(logType.ERROR, message, self.__logParent)
+        # # print( message + "\n" + error.with_traceback(tb) + "\n")
+        # self.log(logType.ERROR, message + "\n" + error.with_traceback(tb) + "\n")
         
     def getLogParent(self) -> ParentForLogs:
         return self.__logParent
