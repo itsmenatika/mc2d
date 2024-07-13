@@ -1,5 +1,5 @@
 # from bin import Game
-from typing import Iterable, Optional, TypeAlias
+from typing import Iterable, Optional, TypeAlias, Union, NoReturn
 import pygame
 from pygame.math import Vector2
 from pygame.sprite import AbstractGroup
@@ -9,16 +9,17 @@ import asyncio
 import random
 # from bin.camera import Camera
 from functools import reduce
-from bin.abstractClasses import Executor, WorldGenerator
+from bin.abstractClasses import Executor, WorldGenerator, Reason
 from bin.logger import Loggable, logType, ParentForLogs
 
 class chunkNotLoaded(Exception): pass
 
 class Chunk(pygame.sprite.Group, Executor, Loggable):
+    '''portion of the world of the size (16,360)'''
     SIZE = Vector2(16,360)
-    
-    '''You have to also remove this chunk from list of actived chunks (python reasons). If you don't wanna mess with this just use map.unloadChunk(chunk) instead!'''
-    def unload(self) -> None:
+
+    def unload(self) -> None:  
+        '''You have to also remove this chunk from list of actived chunks (python reasons). If you don't wanna mess with this just use map.unloadChunk(self) or self.getScene().unloadChunk(self) instead!''' 
         self.log(logType.INFO, f"unloading chunk {self.getChunkPos()}...")
         self.save()
         self.getScene().remove(self.sprites())
@@ -26,6 +27,8 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
         self.log(logType.SUCCESS, f"unloading chunk {self.getChunkPos()}... SUCCESS")
         
     def save(self) -> None:
+        '''just saving chunk'''
+        
         self.log(logType.INFO, f"saving chunk {self.getChunkPos()}... (NOT DONE YET)")
         self.log(logType.SUCCESS, f"saving chunk {self.getChunkPos()}... SUCCESS")
         # self.getScene().chunkCache[self.getChunkPos()] = self
@@ -36,7 +39,8 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
     def getGame(self) -> 'game':
         return self.__scene.getGame()
     
-    def iterateByBlock(self): 
+    def iterateByBlock(self) -> enumerate[tuple[int,int], 'Block']: 
+        '''allows you to enumarate by blocks. That will option to use loop with tuple of (blockPos, block) per block'''
         return enumerate(self.__blocks)
     
     def getStartingPoint(self) -> Vector2:
@@ -108,125 +112,125 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
       
             
     
-    def height(self, x, chunkPos: tuple[int,int], seedInt: int) -> int:
-        print(seedInt)
+    # def height(self, x, chunkPos: tuple[int,int], seedInt: int) -> int:
+    #     print(seedInt)
     
-    def generateChunk(self) -> None:
-        random.seed(f"${self.getScene().getSeed()}_CHUNK_{self.getChunkPos()}")
+    # def generateChunk(self) -> None:
+    #     random.seed(f"${self.getScene().getSeed()}_CHUNK_{self.getChunkPos()}")
         
-        for x in range(0,int(Chunk.SIZE.x)):
-            height = self.generateHeight(x, list(self.getChunkPos()), self.getScene().getSeedInt(), self.getScene().heightCache['grass_height'], False, min=6, max=16, seedName="height")
-            self.__blocks[(x,height)] = Block.newBlockByResourceManager(
-                chunk=self,
-                name="grass_block",
-                cordsRelative=Vector2(x * Block.SIZE.x,height * Block.SIZE.y),
-                executor=self,
-                reason="world_generator"
-            )
+    #     for x in range(0,int(Chunk.SIZE.x)):
+    #         height = self.generateHeight(x, list(self.getChunkPos()), self.getScene().getSeedInt(), self.getScene().heightCache['grass_height'], False, min=6, max=16, seedName="height")
+    #         self.__blocks[(x,height)] = Block.newBlockByResourceManager(
+    #             chunk=self,
+    #             name="grass_block",
+    #             cordsRelative=Vector2(x * Block.SIZE.x,height * Block.SIZE.y),
+    #             executor=self,
+    #             reason="world_generator"
+    #         )
             
-            dirtheight = self.generateHeight(x, list(self.getChunkPos()), self.getScene().getSeedInt(), self.getScene().heightCache['dirt_height'], False, startPoint=4, max=5, min=3, seedName="dirtheight")
+    #         dirtheight = self.generateHeight(x, list(self.getChunkPos()), self.getScene().getSeedInt(), self.getScene().heightCache['dirt_height'], False, startPoint=4, max=5, min=3, seedName="dirtheight")
             
 
             
-            for y in range(0,dirtheight):
-                self.__blocks[(x,height+y+1)] = Block.newBlockByResourceManager(
-                    chunk=self,
-                    name="dirt",
-                    cordsRelative=Vector2(x * Block.SIZE.x,(height + 1 + y) * Block.SIZE.y),
-                    executor=self,
-                    reason="world_generator"
-                )
+    #         for y in range(0,dirtheight):
+    #             self.__blocks[(x,height+y+1)] = Block.newBlockByResourceManager(
+    #                 chunk=self,
+    #                 name="dirt",
+    #                 cordsRelative=Vector2(x * Block.SIZE.x,(height + 1 + y) * Block.SIZE.y),
+    #                 executor=self,
+    #                 reason="world_generator"
+    #             )
                 
-            currentHeight = height + dirtheight + 1
-            for y in range(0,30):
-                self.__blocks[(x,y+currentHeight)] = Block.newBlockByResourceManager(
-                    chunk=self,
-                    name="stone",
-                    cordsRelative=Vector2(x * Block.SIZE.x,(y + currentHeight) * Block.SIZE.y),
-                    executor=self,
-                    reason="world_generator"
-                ) 
-                if y + currentHeight >= 32:   
-                    bedrockHeight = self.generateHeight(x, list(self.getChunkPos()), self.getScene().getSeedInt(), self.getScene().heightCache['bedrock_height'], False, startPoint=2, max=2, min=1, probability=20)
+    #         currentHeight = height + dirtheight + 1
+    #         for y in range(0,30):
+    #             self.__blocks[(x,y+currentHeight)] = Block.newBlockByResourceManager(
+    #                 chunk=self,
+    #                 name="stone",
+    #                 cordsRelative=Vector2(x * Block.SIZE.x,(y + currentHeight) * Block.SIZE.y),
+    #                 executor=self,
+    #                 reason="world_generator"
+    #             ) 
+    #             if y + currentHeight >= 32:   
+    #                 bedrockHeight = self.generateHeight(x, list(self.getChunkPos()), self.getScene().getSeedInt(), self.getScene().heightCache['bedrock_height'], False, startPoint=2, max=2, min=1, probability=20)
                     
-                    if bedrockHeight == 1:
-                        self.__blocks[(x,y+currentHeight + 1)] = Block.newBlockByResourceManager(
-                            chunk=self,
-                            name="stone",
-                            cordsRelative=Vector2(x * Block.SIZE.x,(y + currentHeight + 1) * Block.SIZE.y),
-                            executor=self,
-                            reason="world_generator"
-                        )
-                        self.__blocks[(x,y+currentHeight + 2)] = Block.newBlockByResourceManager(
-                            chunk=self,
-                            name="bedrock",
-                            cordsRelative=Vector2(x * Block.SIZE.x,(y + currentHeight + 2) * Block.SIZE.y),
-                            executor=self,
-                            reason="world_generator"
-                        ) 
-                    else:
-                        self.__blocks[(x,y+currentHeight + 1)] = Block.newBlockByResourceManager(
-                            chunk=self,
-                            name="bedrock",
-                            cordsRelative=Vector2(x * Block.SIZE.x,(y + currentHeight + 1) * Block.SIZE.y),
-                            executor=self,
-                            reason="world_generator"
-                        )
-                        self.__blocks[(x,y+currentHeight + 2)] = Block.newBlockByResourceManager(
-                            chunk=self,
-                            name="bedrock",
-                            cordsRelative=Vector2(x * Block.SIZE.x,(y + currentHeight + 2) * Block.SIZE.y),
-                            executor=self,
-                            reason="world_generator"
-                        ) 
-                    break
+    #                 if bedrockHeight == 1:
+    #                     self.__blocks[(x,y+currentHeight + 1)] = Block.newBlockByResourceManager(
+    #                         chunk=self,
+    #                         name="stone",
+    #                         cordsRelative=Vector2(x * Block.SIZE.x,(y + currentHeight + 1) * Block.SIZE.y),
+    #                         executor=self,
+    #                         reason="world_generator"
+    #                     )
+    #                     self.__blocks[(x,y+currentHeight + 2)] = Block.newBlockByResourceManager(
+    #                         chunk=self,
+    #                         name="bedrock",
+    #                         cordsRelative=Vector2(x * Block.SIZE.x,(y + currentHeight + 2) * Block.SIZE.y),
+    #                         executor=self,
+    #                         reason="world_generator"
+    #                     ) 
+    #                 else:
+    #                     self.__blocks[(x,y+currentHeight + 1)] = Block.newBlockByResourceManager(
+    #                         chunk=self,
+    #                         name="bedrock",
+    #                         cordsRelative=Vector2(x * Block.SIZE.x,(y + currentHeight + 1) * Block.SIZE.y),
+    #                         executor=self,
+    #                         reason="world_generator"
+    #                     )
+    #                     self.__blocks[(x,y+currentHeight + 2)] = Block.newBlockByResourceManager(
+    #                         chunk=self,
+    #                         name="bedrock",
+    #                         cordsRelative=Vector2(x * Block.SIZE.x,(y + currentHeight + 2) * Block.SIZE.y),
+    #                         executor=self,
+    #                         reason="world_generator"
+    #                     ) 
+    #                 break
         
-        veins = 5
-        while veins > 0:
-            veins -= 1
-            x = random.randint(0,Chunk.SIZE.x)
-            y = random.randint(currentHeight+3, 32)
+    #     veins = 5
+    #     while veins > 0:
+    #         veins -= 1
+    #         x = random.randint(0,Chunk.SIZE.x)
+    #         y = random.randint(currentHeight+3, 32)
             
-            self.__blocks[(x,y)] = Block.newBlockByResourceManager(
-                chunk=self,
-                name="coal_ore",
-                cordsRelative=Vector2(x * Block.SIZE.x,y * Block.SIZE.y),
-                executor=self,
-                reason="world_generator"
-            ) 
+    #         self.__blocks[(x,y)] = Block.newBlockByResourceManager(
+    #             chunk=self,
+    #             name="coal_ore",
+    #             cordsRelative=Vector2(x * Block.SIZE.x,y * Block.SIZE.y),
+    #             executor=self,
+    #             reason="world_generator"
+    #         ) 
             
-            howmuch = random.randint(0,3)
+    #         howmuch = random.randint(0,3)
             
-            choices = [[1,0], [-1,0], [0,1], [0,-1]]
-            while howmuch > 0:
-                if len(choices) == 0: break
+    #         choices = [[1,0], [-1,0], [0,1], [0,-1]]
+    #         while howmuch > 0:
+    #             if len(choices) == 0: break
                 
-                addx, addy = random.choice(choices)
-                choices.remove([addx,addy])
-                if x+addx > 16:
-                    self.getScene().blockToNextCache((self.getChunkPos()[0]+1, self.getChunkPos()[1]))
-                    howmuch -= 1
-                    continue
-                elif x+addx < 0:
-                    self.getScene().blockToNextCache((self.getChunkPos()[0]-1, self.getChunkPos()[1]))
-                    howmuch -= 1
-                    continue
+    #             addx, addy = random.choice(choices)
+    #             choices.remove([addx,addy])
+    #             if x+addx > 16:
+    #                 self.getScene().blockToNextCache((self.getChunkPos()[0]+1, self.getChunkPos()[1]))
+    #                 howmuch -= 1
+    #                 continue
+    #             elif x+addx < 0:
+    #                 self.getScene().blockToNextCache((self.getChunkPos()[0]-1, self.getChunkPos()[1]))
+    #                 howmuch -= 1
+    #                 continue
                 
-                if (x+addx, y+addy) in self.__blocks:
-                    if self.__blocks[(x+addx, y+addy)].ID != "stone": continue
+    #             if (x+addx, y+addy) in self.__blocks:
+    #                 if self.__blocks[(x+addx, y+addy)].ID != "stone": continue
                     
-                    self.__blocks[(x+addx,y+addy)] = Block.newBlockByResourceManager(
-                        chunk=self,
-                        name="coal_ore",
-                        cordsRelative=Vector2(x * Block.SIZE.x,y * Block.SIZE.y),
-                        executor=self,
-                        reason="world_generator"
-                    ) 
+    #                 self.__blocks[(x+addx,y+addy)] = Block.newBlockByResourceManager(
+    #                     chunk=self,
+    #                     name="coal_ore",
+    #                     cordsRelative=Vector2(x * Block.SIZE.x,y * Block.SIZE.y),
+    #                     executor=self,
+    #                     reason="world_generator"
+    #                 ) 
                     
-                    x += addx
-                    y += addy
+    #                 x += addx
+    #                 y += addy
                     
-                    howmuch -= 1
+    #                 howmuch -= 1
                     
             
             
@@ -241,7 +245,7 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
         
     
 
-
+    # NOT USED (BUT WORKS, BUT SLOW)
     def loadChunkFromCsv(self, csvSource: str) -> None:
         with open(csvSource) as csvFile:
             data = csv.reader(csvFile, delimiter=",")
@@ -268,77 +272,136 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
                                 
                         
                     
-    
-    def getBlockByVector(self, blockPosition: Vector2) -> 'Block':
+    # i've tried either Union['Block', None] and 'block, None' and none of them was working. I don't know why. I leave it for python to figure out what type it would return
+    def getBlockByVector(self, blockPosition: Vector2):
+        '''allows you to get block by block Position relative to chunk (by Vector)\n
+            Args:\n
+                * blockPosition: pygame.math.Vector2 -> that vector2
+            Returns:\n
+                None | Block: result (None if no block found)'''
         return self.__blocks[(blockPosition.x,blockPosition.y)] if (blockPosition.x,blockPosition.y) in self.__blocks else None
-    
-    def getBlockByTuple(self, blockPosition: tuple | list) -> 'Block':
+ 
+    # i've tried either Union['Block', None] and 'block, None' and none of them was working. I don't know why. I leave it for python to figure out what type it would return   
+    def getBlockByTuple(self, blockPosition: tuple[int,int]):
+        '''allows you to get block by block Position relative to chunk (by tuple))\n
+            Args:\n
+                * blockPosition: tuple[int,int] -> that block position
+            Returns:\n
+                None | Block: result (None if no block found)'''
         return self.__blocks[(blockPosition[0],blockPosition[1])] if (blockPosition[0],blockPosition[1]) in self.__blocks else None
     
     
-    def setBlock(self, blockPosition: tuple[int,int], block: 'Block | str | None', executor: Optional[Executor] = None, reason: str | None = None) -> None:
-        # print(block, type(block))
+    def setBlock(self, blockPosition: tuple[int,int], block: 'Block | str | None', executor: Optional[Executor] = None, reason: Optional[str] = None) -> None:
+        '''allows you to set block in specified chunk\n
+            Args:\n
+                * blockPosition: tuple -> block location relative to chunk
+                * block: Block | str | None -> block. None = air (absence of block). giving string will result in using resource manager
+                * executor: Optional[Executor] -> autor of this action (instance)
+                * reason: Optional[str] -> reason why block will be set
+            Returns:\n
+                None | Block: result (None if no block found)'''
+             
+        # deleting previous
+        if blockPosition in self.__blocks:
+            self.__blocks[blockPosition].kill()
+            del self.__blocks[blockPosition]
+                
+        if block == None: return
+                
+        # if using resource manager
         if type(block) == str:
-            self.__blocks[blockPosition] = Block.newBlockByResourceManager(
+            block = self.__blocks[blockPosition] = Block.newBlockByResourceManager(
                 name=block,
                 blockPos=blockPosition,
                 executor=executor,
                 reason=reason,
                 chunk=self
             )
-
-        elif block == None or self.checkPositionForBlock(blockPosition):
-                if blockPosition in self.__blocks:
-                    self.__blocks[blockPosition].kill()
-                    del self.__blocks[blockPosition]
-                return
-            
         else:
-            # print(block, type(block))
+            # if was provided exact block
             self.__blocks[blockPosition] = block
-            # print(block)
-            # try:
-                
-            if not self.has(block): self.add(block)
-            if not self.getScene().has(block): self.getScene().add(block)
-            # except Exception:
-            #     print(block, type(block))
+            
+        # for security reasons
+        if not self.has(block): self.add(block)
+        if not self.getScene().has(block): self.getScene().add(block)
+
+        # deleting block if that will be replace with something else or just should be deleted
+        # elif block == None or self.checkPositionForBlock(blockPosition):
+        #         if blockPosition in self.__blocks:
+        #             self.__blocks[blockPosition].kill()
+        #             del self.__blocks[blockPosition]
+        #         if block == None: return
+           
+        # setting block
+         
+        # print(block, type(block))
+        # self.__blocks[blockPosition] = block
+        # print(block)
+        # try:
+            
+        # if not self.has(block): self.add(block)
+        # if not self.getScene().has(block): self.getScene().add(block)
+        # except Exception:
+        #     print(block, type(block))
         
-    def removeBlock(self, blockPosition: tuple[int,int], notRaiseException: bool = False) -> None:
-        if blockPosition not in self.__blocks and not notRaiseException:
-            raise Exception("block not Found")
+    def removeBlock(self, blockPosition: tuple[int,int], dontRaiseException: bool = False) -> None | NoReturn:
+        '''allows you to remove block\n
+            Args:\n
+                * blockPosition: tuple -> block location relative to chunk
+                * dontRaiseException: bool = False, 
+            Returns:\n
+                None | NoReturn'''
+        if blockPosition not in self.__blocks:
+            self.log(logType.ERROR, message=f"Couldn't find block {blockPosition} in the chunk of chunkPos {self.__chunkPos}!")
+            if not dontRaiseException:
+                raise Exception(f"Block wasn't found! {blockPosition} (chunkPos: {self.__chunkPos})")
+
         
         self.__blocks[blockPosition].kill()
         del self.__blocks[blockPosition]
         
     def setBlocksAbsolute(self, blocks: dict[tuple[int,int], 'Block']) -> None:
+        '''allows to change all blocks at once. You should avoid using it at all costs!'''
         self.__blocks = blocks
         
     def setBlocks(self, blocks: dict[tuple[int,int], 'Block']) -> None:
+        '''similar function to self.setBlockAbsolute() but more safe, because that only updates blocks'''
         self.__blocks.update(blocks)
         
-    def checkPositionForBlock(self, blockPosition: tuple[int,int], block: Optional['Block | str'] = None, exactCopy: bool = False) -> bool:
-        '''use 'none' or 'air' if you mean air or absence of block. Otherwise program will treat it as "if there's anything then return True'''
+    def checkPositionForBlock(self, blockPosition: tuple[int,int], block: Optional['Block | str'] = None, exactCopy: bool = False, nbtData: Optional[dict] = None) -> bool:
+        '''check specified blockPos\n
+            Args:\n
+                * blockPosition: tuple -> specify block Position
+                * block: Optional[Block | str] -> Block or block ID (optional). Use it if you want to check for specified block
+                * exactCopy: bool = False -> require exact copy
+                * nbtData: Optional[dict] -> check for specified nbt data (not implemented yet and idk when it would be or if it wil be)
+            Returns:\n
+                None | Block: result (None if no block found)'''
+        
+        # checking basics
         if blockPosition not in self.__blocks:
             return True if block in ['air', 'none'] else False
-        
-        
         if block == None: return True
         
+        # exact copy
         if exactCopy:
             return True if self.__blocks[blockPosition] == block else False
         else:
-            print(blockPosition not in self.__blocks, self.__blocks[blockPosition], block)
+            # the final logic
+            # print(blockPosition not in self.__blocks, self.__blocks[blockPosition], block)
             return True if self.__blocks[blockPosition].ID == block.ID else False
     
     def __init__(self, scene: 'Scene', chunkPos: Vector2 = Vector2(0,0)) -> None:
+        # basics
         self.__scene = scene
         self.setLogParent(ParentForLogs(name=f"chunk_{chunkPos}", parent=self.getScene().getLogParent()))
         
         super().__init__()
         
+        # logs
         self.log(logType.INIT, "The chunk is being intialized...")
         
+        # basic informations
         self.__chunkPos = chunkPos
         self.__startPoint = Vector2(
             chunkPos[0] * Chunk.SIZE.x * Block.SIZE.x,
@@ -354,9 +417,12 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
         
         # self.loadChunkFromCsv("test.csv")
         # self.generateChunk()
+        
+        # intialize blocks 
         self.__blocks: dict[tuple[int,int], Block] = {}
         
         
+        # chunk generation
         self.log(logType.INIT, "starting world generation for a chunk...")
         asyncio.create_task(self.getScene().getWorldGenerator().generateChunk(
             chunkPos=self.__chunkPos,
@@ -370,14 +436,61 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
 
 
 class Block(pygame.sprite.Sprite):
-    MAINTEXTURE: str | None = None
-    MAINTEXTUREISTRANSPARENT: bool = False
-    ID: str | None = None
-    IDInt: int|None = None
+    '''just block :3'''
+    
+    # informations for every block
+    SIZE = Vector2(32,32) # SIZE OF ALL BLOCKS
+    
+    # basic information about block (info that can be changed in every block)
+    MAINTEXTURE: str | None = None  # texture that will be used
+    MAINTEXTUREISTRANSPARENT: bool = False # if texture is transparent (that is only for pygame optimization)
+    ID: str | None = None   # string ID (UNIQUE, MAIN ID)
+    IDInt: int|None = None  # int ID (UNIQUE)
+    
+    # advanced information about block (info that can be changed in every block)
+    listenToMe: bool = False # should game look out for this block to update it necessary (useful for crops or another things like that, that doesn't affect any updates that are caused by other blocks or entities. that's auto updates) {NOT IMPLEMENTED YET}
+    listenPriority: int = 1 # priority of listening. The higher the better. {NOT IMPLEMENTED YET}
     
     
-    SIZE = Vector2(32,32)
-    SCREENSIZE = (1280,720)
+    # SCREENSIZE = (1280,720) # SIZE OF SCREEN (IDK IF THAT WAS USED ANYWHERE BUT ILL KEEP IT FOR SECURITY REASONS)
+    
+    # functions to changed in every block:
+    
+    def onGenerate(self, cordsRelative: Vector2, cordsAbsolute: Vector2, inChunkPosition: tuple[int,int], chunk: Chunk):
+        '''Method executed when chunk is generated, can be changed in every block'''
+        pass
+    
+    def onLoad(self, cordsRelative: Vector2, cordsAbsolute: Vector2, inChunkPosition: tuple[int,int], chunk: Chunk):  
+        '''Method executed when chunk is loaded, can be changed in every block'''
+        pass
+    
+    # changing block
+    
+    def changeBlockTo(self, block: 'Block | str | None', executor: Optional[Executor] = None, reason: Optional[Reason|str] = None) -> None:
+        self.getChunk().setBlock(self.getBlockPos(), block, executor, reason)
+    
+    def setToAir(self, executor: Optional[Executor] = None, reason: Optional[Reason|str] = None) -> None:
+        '''setting THIS block to air\n
+            Args:\n
+                * executor: Optional[Executor] -> autor of this action (instance)
+                * reason: Optional[str] -> reason why block will be set
+            Returns:\n
+                None'''
+        self.getChunk().setBlock(self.getBlockPos(), None, executor, reason)
+         
+    def removeBlock(self) -> None:
+        '''same as self.setToAir() but doesn't have neither executor or reason and use removeBlock function instead of setBlock in the chunk'''
+        self.getChunk().removeBlock(self.getCords())
+        
+    
+    # getting something
+    
+    
+    def getChunk(self) -> Chunk:
+        return self.__chunk
+    
+    def getScene(self) -> 'Scene':
+        return self.__chunk.getScene()
     
     def getGame(self) -> 'Game':
         return self.__chunk.getScene().getGame()
@@ -385,12 +498,13 @@ class Block(pygame.sprite.Sprite):
     def getMainCamera(self) -> 'camera':
         return self.__chunk.getScene().getGame().camera
     
-    def changeBlockTo(self, block: 'Block') -> None:
-        chunk = self.getChunk()
-        cords = self.getCords()
+    
+    # def changeBlockTo(self, block: 'Block') -> None:
+    #     chunk = self.getChunk()
+    #     cords = self.getCords()
         
-        chunk.removeBlock(cords)
-        chunk.setBlock(cords, block)
+    #     chunk.removeBlock(cords)
+    #     chunk.setBlock(cords, block)
         
     # def update(self, surface) -> None:
     #     camera = self.getMainCamera()  
@@ -400,33 +514,33 @@ class Block(pygame.sprite.Sprite):
     #                     self.cords - camera.cords)
             
          
-    
-    '''delete this from chunk and map'''
-    def removeBlock(self) -> None:
-        self.getChunk().removeBlock(self.getCords())
-        
-    
-    '''Method executed when chunk is generated'''
-    def onGenerate(self, cordsRelative: Vector2, cordsAbsolute: Vector2, inChunkPosition: tuple[int,int], chunk: Chunk):
-        pass
 
-    '''Method executed when chunk is loaded'''
-    def onLoad(self, cordsRelative: Vector2, cordsAbsolute: Vector2, inChunkPosition: tuple[int,int], chunk: Chunk):
-        pass
+        
     
     '''Returns cords relative to chunk starting Points'''
     def getCordsRelative(self) -> Vector2:
+        '''gives you cords of left top corner of the block, but relative to chunk.'''   
         return self.__cords
     
     '''Returns cords'''
     def getCords(self) -> Vector2:
+        '''gives you cords of left top corner of the block'''
         return self.cordsAbsolute
     
+    def getBlockPos(self) -> tuple[int,int]:
+        '''That's the same as self.getInChunkPosition()'''
+        # return (int(self.__cords.x / Block.SIZE.x),
+        #     int(self.__cords.y / Block.SIZE.y)) 
+        return self.__inChunkPos      
+    
     def getInChunkPosition(self) -> tuple[int,int]:
-        return (int(self.__cords.x / Block.SIZE.x),
-                int(self.__cords.y / Block.SIZE.y))
+        '''gives you blockPos relative to chunk'''
+        # return (int(self.__cords.x / Block.SIZE.x),
+        #         int(self.__cords.y / Block.SIZE.y))
+        return self.__inChunkPos
         
         
+    # methods of creating blocks
         
     '''Create new block using resourceManager'''
     @staticmethod
@@ -440,45 +554,64 @@ class Block(pygame.sprite.Sprite):
         #     cords = Vector2(0,0)
             
         blockInfo = rm.getBlockInformation(name)
+
+
+        _b = blockInfo['class'](
+            image=rm.getTexture(blockInfo['class'].MAINTEXTURE),
+            blockPos=blockPos,
+            chunk=chunk,
+            executor = executor,
+            reason=reason,
+            addToEverything=addToEverything
+        )
         
-        if addToEverything:
-            _b = blockInfo['class'](
-                image=rm.getTexture(blockInfo['class'].MAINTEXTURE),
-                blockPos=blockPos,
-                chunk=chunk,
-                executor = executor,
-                reason=reason,
+        chunk.setBlock(blockPos, _b)
+        
+        # if addToEverything:
+        #     _b = blockInfo['class'](
+        #         image=rm.getTexture(blockInfo['class'].MAINTEXTURE),
+        #         blockPos=blockPos,
+        #         chunk=chunk,
+        #         executor = executor,
+        #         reason=reason,
                 
-            )
-            # print(_b)
-            chunk.setBlock(blockPos, _b)
-            # print(chunk.getBlockByTuple(blockPos))
-        else:
-            _b = blockInfo['class'](
-                image=rm.getTexture(blockInfo['class'].MAINTEXTURE),
-                blockPos=blockPos,
-                chunk=chunk,
-                executor = executor,
-                reason=reason
-            )
-            chunk.setBlock(blockPos, _b)
+        #     )
+        #     # print(_b)
+        #     chunk.setBlock(blockPos, _b)
+        #     # print(chunk.getBlockByTuple(blockPos))
+        # else:
+        #     _b = blockInfo['class'](
+        #         image=rm.getTexture(blockInfo['class'].MAINTEXTURE),
+        #         blockPos=blockPos,
+        #         chunk=chunk,
+        #         executor = executor,
+        #         reason=reason
+        #     )
+        #     chunk.setBlock(blockPos, _b)
         
         return _b
         
     
-    def getChunk(self) -> Chunk:
-        return self.__chunk
-    
-    def getScene(self) -> 'Scene':
-        return self.__chunk.getScene()
     
     def __init__(self, image:pygame.surface.Surface, blockPos: tuple[int,int], chunk: Chunk, executor: Optional[Executor] = None, reason: Optional[str] = None, addToEverything: bool = True) -> None:
+        '''creating block (TRY TO NOT USE IT!, USE another methods like Block.newBlockByResourceManager() or chunk.setBlock() or scene.setBlock(), using this method is very risky! using this will cause a lot of problems, especially because you have to use relative position! there's no guarantee that everything will work just fine!)\n
+            Args:\n
+                * image: pygame.surface.Surface -> image
+                * blockPos: tuple[int,int] -> position of this block relative to chunk
+                * chunk: Chunk -> chunk where this block is located
+                * executor: Optional[Executor] -> autor of this action (instance)
+                * reason: Optional[str] -> reason why block will be set
+            Returns:\n
+                None'''
+        # just super()
         if addToEverything:
             super().__init__(chunk,chunk.getScene())
         else:
             super().__init__()
             
+        # basics
         self.__chunk = chunk
+        self.__inChunkPos = blockPos
         self.image = image
         self.__cords: Vector2 = Vector2(blockPos[0] * Block.SIZE.x, blockPos[1] * Block.SIZE.y)
         # print(self.__cords)
@@ -490,6 +623,7 @@ class Block(pygame.sprite.Sprite):
         
         self.doRender = True
         
+        # reason handling
         if reason=="world_generator":
             inChunkPosition = (int(self.__cords.x / Block.SIZE.x),
                                int(self.__cords.y / Block.SIZE.y))
@@ -501,15 +635,44 @@ class Block(pygame.sprite.Sprite):
             
 
 # class dupa(): pass
-class Scene(pygame.sprite.Group, Executor, Loggable):    
-    RENDERDISTANCE = 3
+class Scene(pygame.sprite.Group, Executor, Loggable):   
+    '''just scene''' 
+    RENDERDISTANCE = 3 # SIMULATION DISTANCE
+    
+    # getting
+    def getGame(self) -> 'Game':
+        return self.__game
+    
+    def getName(self, forceGettingFromEngine: bool = False) -> str | None:
+        if self.__name is not None and not forceGettingFromEngine:
+            return self.__name
+        else:
+            if not self.__game.isSceneAdded(Scene):
+                return None
+            
+            return self.__game.findNameOfScene(self)
+        
+            
+    def getSeed(self) -> str:
+        return self.__seed
+    
+    def getSeedInt(self) -> int:
+        return self.__seedInt
+    
+    def getWorldGenerator(self) -> WorldGenerator:
+        return self.__worldGenerator
+    
+    
+    
     
     async def tick(self) -> None:
+        '''thing that happens every tick'''
         # aha = dupa()
         # aha.rect = pygame.rect.Rect(pygame.mouse.get_pos()[0]-self.getGame().camera.cords.x,pygame.mouse.get_pos()[1]-self.getGame().camera.cords.y,1,1)
         # print(pygame.sprite.spritecollide(aha, self.sprites(), False))
         
         
+        # checking for chunks that should be loaded/unloaded
         surfSize = pygame.display.get_surface().get_size()
         centerChunkPos = ((self.getGame().camera.cords.x + surfSize[0]) // Block.SIZE.x // Chunk.SIZE.x,
                      (self.getGame().camera.cords.y + surfSize[1]) // Block.SIZE.y // Chunk.SIZE.y)
@@ -537,40 +700,43 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
         # pygame.time.Clock.ge
             
     def loadChunk(self, chunkPos: tuple[int,int]):
-         self.__activeChunks[chunkPos] = Chunk(scene=self, chunkPos=chunkPos) 
+        '''just loading chunk by chunkPos. Requires chunkPos of type tuple[int,int]'''
+        self.__activeChunks[chunkPos] = Chunk(scene=self, chunkPos=chunkPos) 
     
     def isChunkActive(self, chunkPos: tuple[int,int]) -> bool:
+        '''check if chunk is active. Requires chunkPos of type tuple[int,int] and returns bool'''
         return chunkPos in self.__activeChunks.keys()
-    
-    def getGame(self) -> 'Game':
-        return self.__game
-    
-    def getName(self, forceGettingFromEngine: bool = False) -> str | None:
-        if self.__name is not None and not forceGettingFromEngine:
-            return self.__name
-        else:
-            if not self.__game.isSceneAdded(Scene):
-                return None
-            
-            return self.__game.findNameOfScene(self)
+
         
     def getActiveChunks(self) -> dict[tuple[int,int], Chunk]:
         return self.__activeChunks
+    
+    def getChunk(self, chunkPos: tuple[int,int]) -> Chunk:
+        if chunkPos not in self.__activeChunks:
+            raise chunkNotLoaded(f"Chunk of cords ${chunkPos} is not loaded, can't access that chunk")
+        return self.__activeChunks[chunkPos]
+        
+    def unloadChunk(self, chunk: Chunk) -> None:
+        chunk.unload()
+        del self.__activeChunks[chunk.getChunkPos()]
         
     # def draw(self):
     #     surf = self.__game.getDisplayOrginal()
     #     # for chunk in self.__activeChunks.values():
     #     #     chunk.draw(surf)
     #     self.camera.draw(self.get)
+    
+    # blocks handling
             
-    def setBlockByAbsolutePos(self, pos: Vector2 | tuple, block: None|Block, notRaiseErrors: bool = False) -> None:
+    def setBlockByAbsolutePos(self, pos: Vector2 | tuple, block: None|Block, dontRaiseErrors: bool = False) -> None:
         if isinstance(pos, Vector2):
             pos = tuple(pos)
         
         chunkPos = (pos[0] // Chunk.SIZE.x, pos[1] // Chunk.SIZE.y)
         
         if chunkPos not in self.__activeChunks:
-            if notRaiseErrors: return
+            self.log(logType.ERROR, f"Trying to access block of position ${pos} which should be located in chunk ${chunkPos}, but that chunk is not loaded!")
+            if dontRaiseErrors: return
             raise chunkNotLoaded(f"Trying to access block of position ${pos} which should be located in chunk ${chunkPos}, but that chunk is not loaded!")
         
         # previousAmountOfBlocks = ((chunkPos-1) * Chunk.SIZE.x, (chunkPos-1) * Chunk.SIZE.y)
@@ -593,24 +759,7 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
         
         return self.__activeChunks[chunkCords].getBlockByTuple(RelativeBlockPos)
              
-        
-    def getChunk(self, chunkPos: tuple[int,int]) -> Chunk:
-        if chunkPos not in self.__activeChunks:
-            raise chunkNotLoaded(f"Chunk of cords ${chunkPos} is not loaded, can't access that chunk")
-        return self.__activeChunks[chunkPos]
-        
-    def unloadChunk(self, chunk: Chunk) -> None:
-        chunk.unload()
-        del self.__activeChunks[chunk.getChunkPos()]
-        
-    def getSeed(self) -> str:
-        return self.__seed
     
-    def getSeedInt(self) -> int:
-        return self.__seedInt
-    
-    def getWorldGenerator(self) -> WorldGenerator:
-        return self.__worldGenerator
     
     def __init__(self, game: 'Game', name: str, worldGenerator: WorldGenerator, autoAdd: bool = True, inIdle: bool = False, seed: str = "uwusa") -> None:
         self.__game: 'Game' = game
@@ -638,7 +787,9 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
         
         self.__activeChunks: dict[tuple[int,int], Chunk] = {}
         
-        for x in range(3):
+        # generating basic chunks
+        
+        for x in range(4):
             self.__activeChunks[(x,0)] = Chunk(scene=self, chunkPos=(x,0)) 
                  
         if autoAdd:

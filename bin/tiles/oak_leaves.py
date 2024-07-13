@@ -9,5 +9,5 @@ class oak_leaves(Block):
     MAINTEXTUREISTRANSPARENT = True
     ID = "oak_leaves"
     IDInt = 11
-    def __init__(self, image: Surface, blockPos: Vector2, chunk: Chunk, executor: Executor | None = None, reason: str | None = None) -> None:
-        super().__init__(image, blockPos, chunk, executor, reason)
+    def __init__(self, image: Surface, blockPos: Vector2, chunk: Chunk, executor: Executor | None = None, reason: str | None = None, addToEverything: bool = True) -> None:
+        super().__init__(image, blockPos, chunk, executor, reason, addToEverything)

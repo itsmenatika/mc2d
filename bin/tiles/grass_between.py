@@ -4,10 +4,11 @@ from bin.map import Chunk
 from bin.abstractClasses import Executor
 
 
-class iron_ore(Block):
-    MAINTEXTURE = "iron_ore.png"
+
+class grass_between(Block):
+    MAINTEXTURE = "grass_between.png"
     MAINTEXTUREISTRANSPARENT = False
-    ID = "iron_ore"
-    IDInt = 10
+    ID = "grass_between"
+    IDInt = 4
     def __init__(self, image: Surface, blockPos: Vector2, chunk: Chunk, executor: Executor | None = None, reason: str | None = None, addToEverything: bool = True) -> None:
         super().__init__(image, blockPos, chunk, executor, reason, addToEverything)

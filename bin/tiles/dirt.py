@@ -9,5 +9,5 @@ class dirt(Block):
     MAINTEXTUREISTRANSPARENT = False
     ID = "dirt"
     IDInt = 1
-    def __init__(self, image: Surface, blockPos: Vector2, chunk: Chunk, executor: Executor | None = None, reason: str | None = None) -> None:
-        super().__init__(image, blockPos, chunk, executor, reason)
+    def __init__(self, image: Surface, blockPos: Vector2, chunk: Chunk, executor: Executor | None = None, reason: str | None = None, addToEverything: bool = True) -> None:
+        super().__init__(image, blockPos, chunk, executor, reason, addToEverything)
