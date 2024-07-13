@@ -134,41 +134,49 @@ class Game(Loggable):
         self.setCurrentScene(t)
         self.camera = Camera(cords=Vector2(0,70), game=self)
         
-        
         # functions for adding and destroying blocks
         def destroyBlock(game, currentScene: Scene, typeEvent, info, loggable):
-            blockLocation = Vector2((info['mousePos'][0] + self.camera.cords.x) // Block.SIZE.x,
-                                    (info['mousePos'][1] + self.camera.cords.y) // Block.SIZE.y) 
+            block_loc_x = (info['mousePos'][0] + self.camera.cords.x) // Block.SIZE.x
+            block_loc_y = (info['mousePos'][1] + self.camera.cords.y) // Block.SIZE.y
+
+            blockLocation = Vector2((block_loc_x, block_loc_y)) 
 
             currentScene.setBlockByAbsolutePos(blockLocation, None, notRaiseErrors=True)
             
             
         def addBlock(game, currentScene: Scene, typeEvent, info, loggable):
-            blockLocation = Vector2((info['mousePos'][0] + self.camera.cords.x) // Block.SIZE.x,
-                                    (info['mousePos'][1] + self.camera.cords.y) // Block.SIZE.y) 
+            block_loc_x = (info['mousePos'][0] + self.camera.cords.x) // Block.SIZE.x
+            block_loc_y = (info['mousePos'][1] + self.camera.cords.y) // Block.SIZE.y
+
+            blockLocation = Vector2((block_loc_x, block_loc_y)) 
 
 
-            currentScene.setBlockByAbsolutePos(blockLocation,self.storage['selectedBlockName'],notRaiseErrors=True)
+            currentScene.setBlockByAbsolutePos(blockLocation, self.storage['selectedBlockName'], notRaiseErrors=True)
         
         
         # functions for changing block
         def handleBlockUp(game, currentScene: Scene, typeEvent, info, loggable: Loggable):
             idInts = game.getNameSpace()['IDInts']
+
+            list_of_blocks = []
+
+            filtered_blocks = filter(lambda key: key > game.storage['selectedBlock'], idInts.keys())
+
+            list_of_blocks = list(filtered_blocks)
             
-            
+
             # loggable.log(logType.INFO, idInts)
             # loggable.info(type(game.storage['selectedBlock']))
             # loggable.info(idInts.keys())
             # loggable.info(list(filter(lambda thing: thing > game.storage['selectedBlock'], idInts.keys())))
-            if len(list(filter(lambda thing: thing > game.storage['selectedBlock'], idInts.keys()))) > 0:
+            if len(list_of_blocks) > 0:
                 game.storage['selectedBlock'] += 1
                 while game.storage['selectedBlock'] not in idInts.keys():
                     game.storage['selectedBlock'] += 1
                 game.storage['selectedBlockName'] = idInts[game.storage['selectedBlock']]
 
-            else:
-                game.storage['selectedBlock'] = 1
-                game.storage['selectedBlockName'] = idInts[1]
+            game.storage['selectedBlock'] = 1
+            game.storage['selectedBlockName'] = idInts[1]
                 
             loggable.info(f"block editor got changed to {game.storage['selectedBlockName']} (intID: {game.storage['selectedBlock']})")
                 
@@ -182,9 +190,8 @@ class Game(Loggable):
                     game.storage['selectedBlock'] -= 1
                 game.storage['selectedBlockName'] = idInts[game.storage['selectedBlock']]
 
-            else:
-                game.storage['selectedBlock'] = maxint
-                game.storage['selectedBlockName'] = idInts[maxint]
+            game.storage['selectedBlock'] = maxint
+            game.storage['selectedBlockName'] = idInts[maxint]
             
             loggable.info(f"block editor got changed to {game.storage['selectedBlockName']} (intID: {game.storage['selectedBlock']})")
         
@@ -254,10 +261,11 @@ class Game(Loggable):
                 * name: str -> name of the scene (recommended, default name: 'scene')
             Returns:\n
                 None'''
-        if name not in self.__scenes:
-            self.__scenes[name] = scene
-        else:
+        if name in self.__scenes:
             raise gameEngineError(f"scene of name ${name} already do exist!")
+          
+        self.__scenes[name] = scene
+            
         
     def removeScene(self, name: str) -> None:
         '''removing scene\n
@@ -265,12 +273,13 @@ class Game(Loggable):
                 * name: str -> name of the scene (recommended, default name: 'scene')
             Returns:\n
                 None'''
-        if name in self.__scenes:
-            if self.__currentScene == self.__scenes[name]:
-                self.__currentScene = None
-            del self.__scenes[name]
-        else:
+        if name not in self.__scenes:
             raise gameEngineError(f"scene of name ${name} doesnt exist!")
+        
+        if self.__currentScene == self.__scenes[name]:
+            self.__currentScene = None
+            del self.__scenes[name]
+            
         
     def findNameOfScene(self, scene: Scene) -> str | None:
         '''find scene by object\n
@@ -290,7 +299,7 @@ class Game(Loggable):
                 * scene: Scene -> that scene
             Returns:\n
                 bool: result'''
-        return True if scene in self.__scenes.values() else False
+        return scene in self.__scenes.values()
 
     
     def isSceneAddedByName(self, name: str) -> bool:
@@ -299,9 +308,9 @@ class Game(Loggable):
                 * name: str -> name of the scene
             Returns:\n
                 bool: result'''
-        return True if name in self.__scenes.keys() else False
+        return name in self.__scenes.keys()
     
-    def getScene(self, name: str) -> None | Scene:
+    def getScene(self, name: str) -> Optional[Scene]:
         '''returns scene object using a name of this scene. returns none if there's no scene with that name\n
             Args:\n
                 * name: str -> name of the scene
@@ -338,32 +347,45 @@ class Game(Loggable):
     # input events management
     # ------
     
-    def doesInputEventNameDoExist(self, name: str, forcedType: Optional[InputType|str] = None) -> bool:
+    def doesInputEventNameDoExist(self, name: str, forcedType: Optional[Union[InputType, str]] = None) -> bool:
         '''check if input event does exist\n
             Args:\n
                 * name: str -> Name
                 * forcedType: Optional[InputType|str] -> only count if this was of specified type
             Returns:\n
-                bool: result'''  
+                bool: result'''
+
+        def is_in(target: str, key: str, in_dict: dict) -> bool:
+            if not target in in_dict:
+                return False
+            
+            return forcedType is None or forcedType == key
                 
         # get value from enum      
         if forcedType != None and forcedType != str:
-                forcedType = forcedType.value
-                
+            forcedType = forcedType.value
+        
+        key_bindings: list[str] = ["rightClick", "leftClick", "keyUp", "keyDown"]
+
+        for key in key_bindings:
+            input_key_events = self.__inputEventsList[key]
+
+            return is_in(name, key, input_key_events)
+
         # just checking
         # i need to optimize this someday...
-        if name in self.__inputEventsList["rightClick"]:
-            if forcedType is None: return True
-            elif forcedType == "rightClick": return True
-        if name in self.__inputEventsList["leftClick"]:
-            if forcedType is None: return True
-            elif forcedType == "leftClick": return True
-        if name in self.__inputEventsList["keyUp"]:
-            if forcedType is None: return True
-            elif forcedType == "leftClick": return True
-        if name in self.__inputEventsList["keyDown"]:
-            if forcedType is None: return True
-            elif forcedType == "leftClick": return True
+        # if name in self.__inputEventsList["rightClick"]:
+        #     if forcedType is None: return True
+        #     elif forcedType == "rightClick": return True
+        # if name in self.__inputEventsList["leftClick"]:
+        #     if forcedType is None: return True
+        #     elif forcedType == "leftClick": return True
+        # if name in self.__inputEventsList["keyUp"]:
+        #     if forcedType is None: return True
+        #     elif forcedType == "leftClick": return True
+        # if name in self.__inputEventsList["keyDown"]:
+        #     if forcedType is None: return True
+        #     elif forcedType == "leftClick": return True
             
         return False
         
@@ -392,7 +414,7 @@ class Game(Loggable):
             
         # get value from enum
         if typeOfInputTypeEvent != str:
-                typeOfInputTypeEvent = typeOfInputTypeEvent.value
+            typeOfInputTypeEvent = typeOfInputTypeEvent.value
                 
         # callable[['Game', currentScene, InputType,inputEventInfo, Loggable], bool]
         # name Checking
@@ -408,10 +430,8 @@ class Game(Loggable):
         # setting event
         eventInfo = {'key': key, 'enabled': startAsEnabled, 'forcedSceneName': forcedSceneName, 'type': typeOfInputTypeEvent, 'name': name}
         
-        self.__inputEventsList['events'][name] = [function, 
-                                         eventInfo]
-        self.__inputEventsList[typeOfInputTypeEvent][name] = [function, 
-                                                     eventInfo]
+        self.__inputEventsList['events'][name] = [function, eventInfo]
+        self.__inputEventsList[typeOfInputTypeEvent][name] = [function, eventInfo]
         
         # logs
         self.getLogger().log(logType.SUCCESS, f"New input event has been added with name of '{name}'. information about this event: {eventInfo}")
@@ -436,7 +456,7 @@ class Game(Loggable):
         # deleting event
         eventInfo = self.__inputEventsList['events'][name][1]
             
-        del self.__inputEventsList[self.__inputEventsList['events'][name][1]['type']][name]
+        del self.__inputEventsList[eventInfo['type']][name]
         del self.__inputEventsList['events'][name]
         
         # logs
@@ -452,10 +472,11 @@ class Game(Loggable):
                        
         if ofType == None:
             return self.__events['events'].items()
-        else:
-            if ofType != None and ofType != str:
-                ofType = ofType.value
-            return self.__inputEventsList[ofType].items()
+        
+        if ofType != None and ofType != str:
+            ofType = ofType.value
+            
+        return self.__inputEventsList[ofType].items()
             
         
     def clearInputEvents(self, ofType: Optional[Union[str, InputType]] = None) -> None:
@@ -485,13 +506,15 @@ class Game(Loggable):
                     
                 }
             }
-        else:
-            # creating copy just because python can create errors about changing size of dictionary during iteration
-            # that's just to avoid feature errors
-            eventNamesToDelete = [eventName for eventName in self.__inputEventsList[ofType].keys()]
-            self.__inputEventsList[ofType] = {}
-            for name in eventNamesToDelete:
-                del self.__inputEventsList['events'][name]
+                
+        # creating copy just because python can create errors about changing size of dictionary during iteration
+        # that's just to avoid feature errors
+        eventNamesToDelete = [eventName for eventName in self.__inputEventsList[ofType].keys()]
+
+        self.__inputEventsList[ofType] = {}
+
+        for name in eventNamesToDelete:
+            del self.__inputEventsList['events'][name]
                 
         
         
@@ -531,18 +554,17 @@ class Game(Loggable):
     #     self.__logger.log(logtype, message, self.__logParent)
         
     def __init__(self, resolution: tuple[int,int]) -> None:
+        super().__init__(logParent=ParentForLogs("game"))
         # logger
         self.__logger: Logger = Logger(self)
         
         self.__logger.log(logType.INIT, "loading engine...")
         
-        
-        super().__init__(logParent=ParentForLogs("game"))
         # basics
         self.__resolution = resolution
         self.__isGameOn: bool = True
         self.__scenes: dict[str,Scene] = {}
-        self.__currentScene: None | Scene = None
+        self.__currentScene: Optional[Scene] = None
         self.storage = {
             "selectedBlock": 1,
             "selectedBlockName": "dirt"

@@ -59,10 +59,11 @@ class Logger:
                 * parent: Optional[ParentForLogs] -> optional argument. That is where you indicates "path for error"
             Returns:\n
                 None'''
+
+        fromWhere = "gameEngine"
+
         if parent:
-            fromWhere = str(parent)
-        else:
-            fromWhere = "gameEngine"
+            fromWhere = str(parent) 
             
             
         finalMessage = f"[{fromWhere}/{logtype.value}]: {message}"
