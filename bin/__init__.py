@@ -141,7 +141,7 @@ class Game(Loggable):
 
             blockLocation = Vector2((block_loc_x, block_loc_y)) 
 
-            currentScene.setBlockByAbsolutePos(blockLocation, None, notRaiseErrors=True)
+            currentScene.setBlockByAbsolutePos(blockLocation, None, dontRaiseErrors=True)
             
             
         def addBlock(game, currentScene: Scene, typeEvent, info, loggable):
@@ -151,7 +151,7 @@ class Game(Loggable):
             blockLocation = Vector2((block_loc_x, block_loc_y)) 
 
 
-            currentScene.setBlockByAbsolutePos(blockLocation, self.storage['selectedBlockName'], notRaiseErrors=True)
+            currentScene.setBlockByAbsolutePos(blockLocation, self.storage['selectedBlockName'], dontRaiseErrors=True)
         
         
         # functions for changing block
