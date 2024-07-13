@@ -17,15 +17,18 @@ inputEventInfo: TypeAlias = dict[str, Any]
 class Entity(ABC): pass
 
 class Reason(Enum):
+    '''reason to perform specified action'''
     WorldGenerator = "world_generator"
 
 class InputType(Enum):
+    '''type of input that was given by user'''
     rightClick = "rightClick"
     leftClick = "leftClick"
     keyDown = "keyDown"
     keyUp = "keyUp"
     
 class eventType(Enum):
+    '''type of event'''
     destroyBlock = "destroy_block"
 
 class Executor(ABC):
