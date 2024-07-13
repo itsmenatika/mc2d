@@ -18,30 +18,34 @@ class invalidName(gameEngineError): pass
 
 
 class Game(Loggable):
-    '''That get your just display that is used to display game'''
-    def getDisplayOrginal(self) -> pygame.surface.Surface:
-        return self.__display
+    '''main class'''
     
-    '''Get events from pygame'''
-    def getEvents(self) -> list[pygame.event.Event]:
-        return self.__events
     
     async def __drawLoop(self) -> None:
+        '''main draw loop'''
         # self.__currentScene.draw()
         self.__display.fill((0,0,0))
         self.camera.draw(self.getDisplayOrginal())
         pygame.display.flip()
         
     async def __eventHandler(self) -> None:
+        '''a function that are used with handling with events'''
+        
+        # getting all events
         self.__events = pygame.event.get()
+        
+        # example of function that could be passed here: callable[['Game', currentScene, InputType,inputEventInfo], bool]
+        
+        # looping through them
         for event in self.__events:
             match event.type:
                 case pygame.QUIT:
+                    # handling when user want to force quit by pressing "X" on their window
                     self.getLogger().log(logtype=logType.ERROR, message="game is being forcefully closed...")
                     self.getLogger().log(logtype=logType.ERROR, message="game engine has been forcefully closed by user!", parent=None)
                     self.__isGameOn = False
                 case pygame.KEYUP:
-                    # print(self.__inputEventsList["keyUp"].items())
+                    # handling events when user stop pressing key
                     for eventName, eventTwo in self.__inputEventsList["keyUp"].items():
                         if eventTwo[1]['key'] == event.key:
                             try:
@@ -54,6 +58,7 @@ class Game(Loggable):
                                 # print("")
                                 self.getLogger().errorWithTraceBack("An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
                 case pygame.KEYDOWN:
+                    # handling events when user start pressing key
                     for eventName, eventTwo in self.__inputEventsList["keyDown"].items():
                         # print(event.key, event['key'])
                         # print(event[1])
@@ -84,7 +89,9 @@ class Game(Loggable):
                     #     # self.camera.cords.y += 200
                     #     self.camera.moveBy(Vector2(0,200))
                 case pygame.MOUSEBUTTONDOWN:
-                    # callable[['Game', currentScene, InputType,inputEventInfo], bool]
+                    # handling events when user clicks something on their mouse
+                    
+                    # getting basic info
                     buttonsClicked: tuple[bool, bool, bool] = pygame.mouse.get_pressed()
                     mousePos = pygame.mouse.get_pos()
                     
@@ -119,12 +126,16 @@ class Game(Loggable):
                     
             
     async def __onRun(self) -> None:
+        '''a function that will be run once at the beginning'''
+        # be careful with everything here. that was written fastly on 3 am
+        
+        # basics
         t = Scene(self, name="test", worldGenerator=worldGeneratorNormal)
         self.setCurrentScene(t)
         self.camera = Camera(cords=Vector2(0,70), game=self)
         
         
-        # events
+        # functions for adding and destroying blocks
         def destroyBlock(game, currentScene: Scene, typeEvent, info, loggable):
             blockLocation = Vector2((info['mousePos'][0] + self.camera.cords.x) // Block.SIZE.x,
                                     (info['mousePos'][1] + self.camera.cords.y) // Block.SIZE.y) 
@@ -140,16 +151,7 @@ class Game(Loggable):
             currentScene.setBlockByAbsolutePos(blockLocation,self.storage['selectedBlockName'],notRaiseErrors=True)
         
         
-        self.addInputEvent("test", InputType.leftClick, destroyBlock)
-        self.addInputEvent("test2", InputType.rightClick, addBlock)
-        self.addInputEvent("keyUp", InputType.keyDown, lambda *args, **kwargs: self.camera.moveBy(Vector2(0,-200)), key=pygame.K_UP)
-        self.addInputEvent("keyDown", InputType.keyDown, lambda *args, **kwargs: self.camera.moveBy(Vector2(0,200)), key=pygame.K_DOWN)
-        self.addInputEvent("keyRight", InputType.keyDown, lambda *args, **kwargs: self.camera.moveBy(Vector2(200,0)), key=pygame.K_RIGHT)
-        self.addInputEvent("keyLeft", InputType.keyDown, lambda *args, **kwargs: self.camera.moveBy(Vector2(-200,-0)), key=pygame.K_LEFT)
-        self.addInputEvent("keyOne", InputType.keyDown, lambda *args, **kwargs: 5 / 0, key=pygame.K_1)
-        
-    #  self.getCurrentScene().__   
-        
+        # functions for changing block
         def handleBlockUp(game, currentScene: Scene, typeEvent, info, loggable: Loggable):
             idInts = game.getNameSpace()['IDInts']
             
@@ -186,20 +188,39 @@ class Game(Loggable):
             
             loggable.info(f"block editor got changed to {game.storage['selectedBlockName']} (intID: {game.storage['selectedBlock']})")
         
+  
+        # binding events
+        self.addInputEvent("test", InputType.leftClick, destroyBlock)
+        self.addInputEvent("test2", InputType.rightClick, addBlock)
+        self.addInputEvent("keyUp", InputType.keyDown, lambda *args, **kwargs: self.camera.moveBy(Vector2(0,-200)), key=pygame.K_UP)
+        self.addInputEvent("keyDown", InputType.keyDown, lambda *args, **kwargs: self.camera.moveBy(Vector2(0,200)), key=pygame.K_DOWN)
+        self.addInputEvent("keyRight", InputType.keyDown, lambda *args, **kwargs: self.camera.moveBy(Vector2(200,0)), key=pygame.K_RIGHT)
+        self.addInputEvent("keyLeft", InputType.keyDown, lambda *args, **kwargs: self.camera.moveBy(Vector2(-200,-0)), key=pygame.K_LEFT)
+        
+        self.addInputEvent("keyOne", InputType.keyDown, lambda *args, **kwargs: 5 / 0, key=pygame.K_1)
+        
         self.addInputEvent("blockUp", InputType.keyDown, handleBlockUp, key=pygame.K_z)
         self.addInputEvent("blockDown", InputType.keyDown, handleBlockDown, key=pygame.K_x)
         
     
     async def __gameLoop(self) -> None:
-        self.__logger.log(logType.SUCCESS, "loading engine... COMPLETE ")
-        self.__logger.log(logType.INIT, "invoking onrun functions...")               
+        '''a main loop that is run once every frame'''
+        
+        # info for logger
+        self.__logger.log(logType.SUCCESS, "loading engine... COMPLETE ")  
+        
+        # await onrun function 
+        self.__logger.log(logType.INIT, "invoking onrun functions...")            
         await self.__onRun()
         self.__logger.log(logType.SUCCESS, "invoking onrun functions... DONE")   
+        
+        # giving tick time for every scene for scene specific events
         def executeScene(scene: Scene) -> Scene:
             if not scene.idle:
                 scene.tick()
             return scene
             
+        # final main loop
         self.__logger.log(logType.INIT, "starting final game loop...")          
         while self.__isGameOn:
             await self.__eventHandler()
@@ -207,7 +228,7 @@ class Game(Loggable):
             for scene in self.__scenes.values():
                 if not scene.idle: await scene.tick()
             
-            await self.__functionToGetAnotherMoreSpace()
+            await asyncio.sleep(0.01)
             await self.__drawLoop()
             self.clock.tick(120)
             # self.clock.get_rawtime()
@@ -218,17 +239,32 @@ class Game(Loggable):
         
     
     async def __functionToGetAnotherMoreSpace(self) -> None:
+        '''function that does nothing but is just to give time another async functions, because i need to await something.\n
+            You can use just await asyncio.sleep(0.01) if you really want.'''
         await asyncio.sleep(0.01)
     
     
     
+    # SCENE MANAGING
+    
     def addScene(self, scene: Scene, name: str = "scene") -> None:
+        '''adding scene\n
+            Args:\n
+                * scene: Scene -> that scene
+                * name: str -> name of the scene (recommended, default name: 'scene')
+            Returns:\n
+                None'''
         if name not in self.__scenes:
             self.__scenes[name] = scene
         else:
             raise gameEngineError(f"scene of name ${name} already do exist!")
         
     def removeScene(self, name: str) -> None:
+        '''removing scene\n
+            Args:\n
+                * name: str -> name of the scene (recommended, default name: 'scene')
+            Returns:\n
+                None'''
         if name in self.__scenes:
             if self.__currentScene == self.__scenes[name]:
                 self.__currentScene = None
@@ -237,6 +273,11 @@ class Game(Loggable):
             raise gameEngineError(f"scene of name ${name} doesnt exist!")
         
     def findNameOfScene(self, scene: Scene) -> str | None:
+        '''find scene by object\n
+            Args:\n
+                * scene: Scene -> that scene
+            Returns:\n
+                str: name of the scene'''
         for name, sceneT in self.__scenes:
             if scene == sceneT:
                 return name
@@ -244,36 +285,73 @@ class Game(Loggable):
     
     
     def isSceneAdded(self, scene: Scene) -> bool:
+        '''checking if scene has been added (by object)\n
+            Args:\n
+                * scene: Scene -> that scene
+            Returns:\n
+                bool: result'''
         return True if scene in self.__scenes.values() else False
+
+    
+    def isSceneAddedByName(self, name: str) -> bool:
+        '''checking if scene has been added (by name)\n
+            Args:\n
+                * name: str -> name of the scene
+            Returns:\n
+                bool: result'''
+        return True if name in self.__scenes.keys() else False
     
     def getScene(self, name: str) -> None | Scene:
+        '''returns scene object using a name of this scene. returns none if there's no scene with that name\n
+            Args:\n
+                * name: str -> name of the scene
+            Returns:\n
+                bool | None: result'''
         return self.__scenes.get(name, default=None)
     
             
         
             
-    
     def setCurrentScene(self, scene: Scene) -> None:
+        '''setting current scene\n
+            Args:\n
+                * scene: Scene -> that scene
+            Returns:\n
+                None'''
         self.__currentScene = scene
         
     def getCurrentScene(self) -> Scene:
+        '''get you current scene'''
         return self.__currentScene
+    
+    # resource managing stuff
         
     def getResourceManager(self) -> resourceManager:
+        '''allows you to get resource manager'''
         return self.__resourceManager
 
     def getNameSpace(self) -> dict:
+        '''allows you to extract namespace from resource manager'''
         return self.__resourceManager.getNameSpace()
     
     # ------
     # input events management
     # ------
     
-    def doesInputEventNameDoExist(self, name: str, forcedType: Optional[InputType] = None) -> bool:
-        '''Check if event name do exist of any type'''
+    def doesInputEventNameDoExist(self, name: str, forcedType: Optional[InputType|str] = None) -> bool:
+        '''check if input event does exist\n
+            Args:\n
+                * name: str -> Name
+                * forcedType: Optional[InputType|str] -> only count if this was of specified type
+            Returns:\n
+                bool: result'''  
+                
+        # get value from enum      
         if forcedType != None and forcedType != str:
                 forcedType = forcedType.value
                 
+        # just checking
+        # i need to optimize this someday...
         if name in self.__inputEventsList["rightClick"]:
             if forcedType is None: return True
             elif forcedType == "rightClick": return True
@@ -291,10 +369,35 @@ class Game(Loggable):
         
     
     def addInputEvent(self, name: str, typeOfInputTypeEvent: Union[str, InputType], function: callable, key: Optional[int] = None, forcedSceneName: Optional[str] = None, dontRaiseAnyErrors: bool = True, setIfDoExist: bool = False, startAsEnabled: bool = True) -> None:            
+        '''adding new input event\n
+        Args:\n
+            * name: str -> unique identificator of this new input event
+            * typeOfInputTypeEvent: str | InputType -> type of this event
+            * function: callable: function that will be called when this event occures, function must returns bool (bool will indicate if game engine have to still look for another functions for the same event). Game engine will provide to functions this type of data:
+                - game: Game -> main object of the game
+                - currentScene: Scene -> current scene of the game
+                - inputtype: inputType -> type of the input that has been triggered
+                - inputEventInfo: dict -> detail information about event
+            * key: Optional[int] -> key. (for example like pygame.K_0)
+            * forcedSceneName: Optional[str] -> force this to only works if current name scene has specified name (doesnt work)
+            * dontRaiseAnyErrors: bool = True -> dont raise any errors if name is claimed
+            * setIfDoExist: bool = False -> set even if exists
+            * startAsEnabled: bool = True -> start as enabled event
+        Returns:\n
+            None'''
+            
+        # i couldn't put that type into working, idk why
+        #callable[['Game', currentScene, InputType,inputEventInfo], bool]
+            
+            
+        # get value from enum
         if typeOfInputTypeEvent != str:
                 typeOfInputTypeEvent = typeOfInputTypeEvent.value
+                
         # callable[['Game', currentScene, InputType,inputEventInfo, Loggable], bool]
         # name Checking
+        
+        # handling situation if there was already event with that name
         if self.doesInputEventNameDoExist(name):
             self.getLogger().log(logType.ERROR, f"Trying to set input event of id '{name}' but name was already claimed!")
             if not dontRaiseAnyErrors:
@@ -302,6 +405,7 @@ class Game(Loggable):
             if not setIfDoExist: return
             self.getLogger().log(logType.INFO, f"f'{name}' will be set anyways, because flag of ignoring that is set!")
         
+        # setting event
         eventInfo = {'key': key, 'enabled': startAsEnabled, 'forcedSceneName': forcedSceneName, 'type': typeOfInputTypeEvent, 'name': name}
         
         self.__inputEventsList['events'][name] = [function, 
@@ -309,26 +413,43 @@ class Game(Loggable):
         self.__inputEventsList[typeOfInputTypeEvent][name] = [function, 
                                                      eventInfo]
         
+        # logs
         self.getLogger().log(logType.SUCCESS, f"New input event has been added with name of '{name}'. information about this event: {eventInfo}")
         
             # if forcedSceneName is not None:
                 
     def removeInputEvent(self, name: str, dontRaiseAnyErrors: bool = True) -> None:
+        '''removes input event\n
+            Args:\n
+                * name: str -> Name
+                * dontRaiseAnyErrors: bool = True -> dont raise any errors if name is not claimed
+            Returns:\n
+                None''' 
+                
+        # check if name exist
         if not self.doesInputEventNameDoExist(name):
             self.getLogger().log(logType.ERROR, f"Trying to remove input event of id '{name}' but name wasnt used!")
             if not dontRaiseAnyErrors:
                 raise invalidName(f"didn't find event of name '{name}'")
             return
             
+        # deleting event
         eventInfo = self.__inputEventsList['events'][name][1]
             
         del self.__inputEventsList[self.__inputEventsList['events'][name][1]['type']][name]
         del self.__inputEventsList['events'][name]
         
+        # logs
         self.getLogger().log(logType.SUCCESS, f"Input event of id '{name}' has been deleted. The event info: {eventInfo}")
         
     
-    def getInputEvents(self, ofType:Optional[Union[str, InputType]] = None) -> list[tuple[str,list[callable, dict]]]:            
+    def getInputEvents(self, ofType:Optional[Union[str, InputType]] = None) -> list[tuple[str,list[callable, dict]]]:   
+        '''get all input events\n
+            Args:\n
+                * ofType: Optional[Union[str|InputType]] -> only of specified type. That is optional
+            Returns:\n
+                list[tuple[str,list[callable, dict]]]'''   
+                       
         if ofType == None:
             return self.__events['events'].items()
         else:
@@ -338,6 +459,11 @@ class Game(Loggable):
             
         
     def clearInputEvents(self, ofType: Optional[Union[str, InputType]] = None) -> None:
+        '''removes all input events\n
+            Args:\n
+                * ofType: Optional[Union[str|InputType]] -> only of specified type. That is optional
+            Returns:\n
+                None'''   
         if ofType != None and ofType != str:
             ofType = ofType.value
         
@@ -375,25 +501,44 @@ class Game(Loggable):
     #     if name in self.__events or name in self.__events[''])and not DontRaiseAnyErrors:
     #         raise gameEngineError(f"{name} is already taken")
         
+
     # logger
+    
+    def getLogger(self) -> Logger:
+        return self.__logger
+    
+    def clearLogger(self) -> None:
+        self.__logger.clear()
+    
+    
+    # anothet getting
+    
+    
     
     def getGame(self): return self
         
-    def getLogger(self) -> Logger:
-        return self.__logger
+
+    def getDisplayOrginal(self) -> pygame.surface.Surface:
+        '''allows you to get orginal display that is used with handling with pygame'''
+        return self.__display
+    
+    def getEvents(self) -> list[pygame.event.Event]:
+        '''Get events from pygame'''
+        return self.__events
 
     # already implemented in Loggable    
     # def log(self, logtype: logType, message: str) -> None:
     #     self.__logger.log(logtype, message, self.__logParent)
         
     def __init__(self, resolution: tuple[int,int]) -> None:
+        # logger
         self.__logger: Logger = Logger(self)
         
         self.__logger.log(logType.INIT, "loading engine...")
         
         
         super().__init__(logParent=ParentForLogs("game"))
-        # save data
+        # basics
         self.__resolution = resolution
         self.__isGameOn: bool = True
         self.__scenes: dict[str,Scene] = {}
@@ -424,6 +569,8 @@ class Game(Loggable):
         
         
         self.__logger.log(logType.INIT, "loading engine... (loading pygame stuff)")
+        
+        
         # pygame issues
         pygame.init()
         pygame.font.init()
@@ -439,6 +586,9 @@ class Game(Loggable):
         # self.__eventLoop = asyncio.new_event_loop()
         # asyncio.set_event_loop(self.__eventLoop)
         # asyncio.create_task(self.__gameLoop(), name="gameLoop")
+        
+        
+        # main loop
         
         self.__logger.log(logType.INIT, "invoking asyncio main game loop... ")
         asyncio.run(self.__gameLoop())
