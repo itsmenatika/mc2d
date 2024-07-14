@@ -70,8 +70,8 @@ class Camera:
             chunkPos = int((chunkPos + self.cords.x) // Block.SIZE.x // Chunk.SIZE.x)
             # chunkPos.y = int((chunkPos.y + self.cords.y) // Block.SIZE.y // Chunk.SIZE.y)
             
-            absoluteBlockPos.x = round(absoluteBlockPos.x // Block.SIZE.x * 100) / 100
-            absoluteBlockPos.y = round(absoluteBlockPos.y // Block.SIZE.y * 100) / 100
+            absoluteBlockPos.x = round((absoluteBlockPos.x + self.cords.x) // Block.SIZE.x * 100) / 100
+            absoluteBlockPos.y = round((absoluteBlockPos.y + self.cords.y)// Block.SIZE.y * 100) / 100
             # absoluteBlockPos.x = round(AbsolutePos.x // Block.SIZE.x)
 
             scene_game_clock = self.sceneToDraw.getGame().clock
