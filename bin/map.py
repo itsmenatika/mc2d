@@ -1,16 +1,18 @@
 # from bin import Game
-from typing import Iterable, Optional, TypeAlias, Union, NoReturn
+from typing import Optional, TypeAlias, NoReturn
 import pygame
 from pygame.math import Vector2
 from pygame.sprite import AbstractGroup
 import csv
 import os
 import asyncio
+import json
 import random
 # from bin.camera import Camera
-from functools import reduce
 from bin.abstractClasses import Executor, WorldGenerator, Reason
 from bin.logger import Loggable, logType, ParentForLogs
+
+
 
 class chunkNotLoaded(Exception): pass
 
@@ -768,13 +770,38 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
         return self.__activeChunks[chunkCords].getBlockByTuple(RelativeBlockPos)
              
     
+    # save managing
+    @staticmethod
+    def restoreMapFromSave(self, game: 'Game', saveData: dict) -> 'Scene':
+        return Scene(game=game,
+                name=saveData['worldName'],
+                seed=saveData['worldSeed'],
+                saveData=saveData)
     
-    def __init__(self, game: 'Game', name: str, worldGenerator: WorldGenerator, autoAdd: bool = True, inIdle: bool = False, seed: str = "uwusa") -> None:
+ 
+    def __init__(self, game: 'Game', name: str, worldGenerator: WorldGenerator, autoAdd: bool = True, inIdle: bool = False, seed: str = "uwusa", saveData: Optional[dict] = None) -> None:
+        # basics (required to even basic logging :<)
         self.__game: 'Game' = game
         super().__init__()
         self.setLogParent(ParentForLogs(name=f"scene_{name}", parent=self.getGame().getLogParent()))
-        
         self.log(logType.INIT, "The scene is being intialized...")
+        
+        
+        # save loading
+        if saveData == None:
+            try:
+                with open("bin/json/saveStartData.json") as f:
+                    self.__forSaving = json.load(f)
+                    self.info("scene will be run on a new save!")
+            except Exception as e:
+                self.errorWithTraceback("couldn't open json file with save starting point!",e)
+        else: 
+            self.info("scene will be run on an existing save!")
+            self.__forSaving = saveData
+        
+
+        
+
         self.heightCache = {
             "grass_height": {},
             "dirt_height": {},
@@ -797,8 +824,8 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
         
         # generating basic chunks
         
-        for x in range(4):
-            self.__activeChunks[(x,0)] = Chunk(scene=self, chunkPos=(x,0)) 
+        # for x in range(4):
+        #     self.__activeChunks[(x,0)] = Chunk(scene=self, chunkPos=(x,0)) 
                  
         if autoAdd:
             self.__game.addScene(scene=self, name=self.__name)

@@ -61,7 +61,7 @@ class resourceManager(Loggable):
         
         for tile in tile_modules_name:
             name = "".join(tile.split(".")[:-1])
-            if name == "__pycache__" or name == "": continue
+            if name == "__pycache__" or name == "" or name == "_example": continue
             try:
                 totalBlocks += 1
                 

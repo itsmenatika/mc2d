@@ -9,7 +9,7 @@ from bin.camera import Camera
 
 from pygame.math import Vector2
 from bin.namespace import resourceManager
-from bin.worldgenerator import worldGeneratorNormal
+from bin.worldGenerator.overworld import worldGeneratorNormal
 from bin.abstractClasses import InputType, inputEventInfo
 from bin.logger import Logger, Loggable, logType, ParentForLogs
 
