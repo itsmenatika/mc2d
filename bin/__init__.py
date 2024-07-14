@@ -108,7 +108,19 @@ class Game(Loggable):
                                     self.getLogger().errorWithTraceback("An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
                                     # traceback.print_exception(e)
                                     # print("")
-                    elif buttonsClicked[2]:
+                    if buttonsClicked[1]:
+                        for eventName, eventTwo in self.__inputEventsList["wheelClick"].items():
+                            if eventTwo[1]['enabled']:
+                                try:
+                                    if eventTwo[0](self, self.getCurrentScene(), InputType.leftClick, {
+                                        "buttonClicked": buttonsClicked,
+                                        "mousePos": mousePos
+                                    }, Loggable(game=self, logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
+                                except Exception as e:
+                                    self.getLogger().errorWithTraceback("An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
+                                    # traceback.print_exception(e)
+                                    # print("")
+                    if buttonsClicked[2]:
                         for eventName, eventTwo in self.__inputEventsList["rightClick"].items():
                             if eventTwo[1]['enabled']:
                                 try:
@@ -195,7 +207,15 @@ class Game(Loggable):
             
             loggable.info(f"block editor got changed to {game.storage['selectedBlockName']} (intID: {game.storage['selectedBlock']})")
         
-  
+        
+        def getBlock(game, currentScene: Scene, typeEvent, info, loggable: Loggable):
+            pos = Vector2(info['mousePos'][0]+self.camera.cords.x, info['mousePos'][1]+self.camera.cords.y)
+            block = self.getCurrentScene().getBlock(pos)
+            if block != None:
+                game.storage['selectedBlock'] = block.IDInt
+                game.storage['selectedBlockName'] = block.ID
+                loggable.info(f"block editor got changed to {game.storage['selectedBlockName']} (intID: {game.storage['selectedBlock']})")
+                
         # binding events
         self.addInputEvent("test", InputType.leftClick, destroyBlock)
         self.addInputEvent("test2", InputType.rightClick, addBlock)
@@ -207,7 +227,8 @@ class Game(Loggable):
         self.addInputEvent("keyOne", InputType.keyDown, lambda *args, **kwargs: 5 / 0, key=pygame.K_1)
         
         self.addInputEvent("blockUp", InputType.keyDown, handleBlockUp, key=pygame.K_z)
-        self.addInputEvent("blockDown", InputType.keyDown, handleBlockDown, key=pygame.K_x)
+        self.addInputEvent("blockDown", InputType.keyDown, handleBlockDown, key=pygame.K_x)  
+        self.addInputEvent("blockGet", InputType.wheelClick, getBlock)
         
     
     async def __gameLoop(self) -> None:
@@ -504,6 +525,9 @@ class Game(Loggable):
                 },
                 "leftClick": {
                     
+                },
+                "wheelClick": {
+                    
                 }
             }
                 
@@ -583,6 +607,9 @@ class Game(Loggable):
                 
             },
             "leftClick": {
+                
+            },
+            "wheelClick": {
                 
             }
         }

@@ -24,6 +24,7 @@ class InputType(Enum):
     '''type of input that was given by user'''
     rightClick = "rightClick"
     leftClick = "leftClick"
+    wheelClick = "wheelClick"
     keyDown = "keyDown"
     keyUp = "keyUp"
     

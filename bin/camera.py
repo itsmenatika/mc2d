@@ -80,9 +80,10 @@ class Camera:
             try:
                 current_scene = self.getGame().getCurrentScene()
 
-                chunk: Chunk = current_scene.getChunk((chunkPos[0], chunkPos[1]))
+                chunk: Chunk = current_scene.getChunk(chunkPos  )
                 # print(chunk.__dict__.keys())
                 # print(chunk._Chunk__blocks, BlockPos)
+        
                 blockID = chunk.getBlockByTuple((BlockPos[0], BlockPos[1])).ID
             except Exception as e: pass
                 # print(e)

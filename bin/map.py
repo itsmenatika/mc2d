@@ -11,6 +11,7 @@ import random
 # from bin.camera import Camera
 from bin.abstractClasses import Executor, WorldGenerator, Reason
 from bin.logger import Loggable, logType, ParentForLogs
+# from bin.tools import getChunkPosFromCords
 
 
 
@@ -611,10 +612,10 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
         
     def getBlockByAbsPos(self, absolutePos: tuple[int,int]) -> Block | None:
         '''Get block by absolute blockPos'''
-        chunkCords = (absolutePos[0] // Chunk.SIZE.x, absolutePos[1] // Chunk.SIZE.y)
-        chunkStartPoint = (Chunk.SIZE.x * chunkCords[0], Chunk.SIZE.y * chunkCords[1]) 
-        RelativeBlockPos = ((absolutePos[0] - chunkStartPoint[0]) // Block.SIZE.y, 
-                            (absolutePos[1] - chunkStartPoint[1]) // Block.SIZE.x)
+        chunkCords = absolutePos[0] // Chunk.SIZE.x
+        # chunkStartPoint = (Chunk.SIZE.x * chunkCords, 0) 
+        RelativeBlockPos = (absolutePos[0]  // Block.SIZE.x % Chunk.SIZE.x, 
+                            absolutePos[1] // Block.SIZE.y)
         
         
         if chunkCords not in self.__activeChunks:
@@ -626,11 +627,15 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
     def getBlock(self, cords: Vector2) -> Block | None:
         '''Get block by absolute cords'''
         # for some reason in the first line diving by block SIZE is unnecessary (even tho it should be), but that is blocking readability...
-        chunkCords = (cords.x // Block.SIZE.x // Chunk.SIZE.x, cords.y // Block.SIZE.y // Chunk.SIZE.y)
-        chunkStartPoint = (Chunk.SIZE.x * chunkCords[0], Chunk.SIZE.y * chunkCords[1]) 
-        RelativeBlockPos = ((cords.x - chunkStartPoint[0]) // Block.SIZE.y, 
-                            (cords.y - chunkStartPoint[1]) // Block.SIZE.x)
+        # chunkCords = (cords.x // Block.SIZE.x // Chunk.SIZE.x, cords.y // Block.SIZE.y // Chunk.SIZE.y)
+        # print(self.getChunkPosFromCords(cords))
+        chunkCords = cords.x // Block.SIZE.x // Chunk.SIZE.x
+        # print(chunkCords)
+        # chunkStartPoint = (Chunk.SIZE.x * chunkCords, 0) 
+        RelativeBlockPos = (cords.x // Block.SIZE.x % Chunk.SIZE.x, 
+                            cords.y // Block.SIZE.x)
         
+        if RelativeBlockPos[0] < 0: RelativeBlockPos[0] += Chunk.SIZE.x
         
         if chunkCords not in self.__activeChunks:
             raise chunkNotLoaded(f"Trying to access block of cords ${cords} which should be located in chunk ${chunkCords}, but that chunk is not loaded!")
@@ -638,6 +643,14 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
         
         return self.__activeChunks[chunkCords].getBlockByTuple(RelativeBlockPos)
              
+    
+    @staticmethod
+    def getChunkPosFromCords(cords: Vector2) -> int:
+        return cords.x // Block.SIZE.x // Chunk.SIZE.x
+        
+    @staticmethod
+    def getChunkPosFromAbsPos(cords: tuple[int,int]) -> int:
+        return cords[0] // Chunk.SIZE.x
     
     # save managing
     @staticmethod
