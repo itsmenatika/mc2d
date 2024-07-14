@@ -23,7 +23,7 @@ class worldGeneratorNormal(WorldGenerator):
         howMuchTrees: int = random.randint(howMuchMin, howMuchMax)
         
         _taken = []
-        _recent = random.randint(0, Chunk.SIZE.x-1)
+        _recent = random.randint(0, int(Chunk.SIZE.x)-1)
         _taken.extend([_recent, _recent+1, _recent+2, _recent-1, _recent-2])
         treesPos = [_recent]
         for _ in range(howMuchTrees):
@@ -60,7 +60,7 @@ class worldGeneratorNormal(WorldGenerator):
             # print(newBlocks)
         if get == "left":
             return {(key[0]-Chunk.SIZE.x, key[1]): item for key, item in newBlocks.items() if key[0] >= Chunk.SIZE.x}
-        elif get == "right":
+        if get == "right":
             return {(Chunk.SIZE.x+key[0], key[1]): item for key, item in newBlocks.items() if key[0] < 0}
         # if get == "right": 
         #     # _f = dict(filter(lambda pos: pos.keys()[0] < 0, newBlocks))
@@ -129,6 +129,8 @@ class worldGeneratorNormal(WorldGenerator):
                        max: Optional[int] = None, min: Optional[int] = None, probability: int = 60, seedName: str = "global") -> int:  
         _s = seedInt % 10
         _xAbsolute = x + chunkPos[0] * Chunk.SIZE.x
+
+        scene_seed = self.getScene().getSeed()
         
         if _xAbsolute in cache: return cache[_xAbsolute]
         if _xAbsolute == 0: return startPoint
@@ -137,12 +139,12 @@ class worldGeneratorNormal(WorldGenerator):
             return self.generateHeight(x, chunkPos, seedInt, cache, True, startPoint=startPoint, max=max, min=min, probability=probability, seedName=seedName)
         
         
-        random.seed(f"${self.getScene().getSeed()}_CHUNK_{chunkPos}_h{seedName}_${x}")
+        random.seed(f"${scene_seed}_CHUNK_{chunkPos}_h{seedName}_${x}")
         
         wannabe = random.randint(0,100)
         howmuch = random.randint(-1,1)
         
-        random.seed(f"${self.getScene().getSeed()}_CHUNK_{chunkPos}")
+        random.seed(f"${scene_seed}_CHUNK_{chunkPos}")
         
         if fromLeft:
             if x < 0:
@@ -206,23 +208,30 @@ class worldGeneratorNormal(WorldGenerator):
             fromRight = self.generateVeins(chunkPos=(chunkPos[0]+1, chunkPos[1]), chunk=chunk, blockName=blockName, howMuchVeinsMin=howMuchVeinsMin, howMuchVeinsMax=howMuchVeinsMax, minInVein=minInVein, maxInVein=maxInVein, recursive=False, fromWhatSide='right', blocks=blocks, minY=minY,maxY=maxY)
         
         # setting seed
-        random.seed(f"${self.getScene().getSeed()}_CHUNK_{int(chunkPos[0])}_VEINS_{blockName}")    
+        random.seed(f"${self.getScene().getSeed()}_CHUNK_{int(chunkPos[0])}_VEINS_{blockName}")
+
+        veins_range = (howMuchVeinsMin, howMuchVeinsMax)
+        in_vein_range = (minInVein, maxInVein)
+        posy_range = (minY, maxY)
         
-        howManyVeins: int = random.randint(howMuchVeinsMin, howMuchVeinsMax)
+        howManyVeins: int = random.randint(*veins_range)
         everyVein: list[tuple[int,int]] = []
         
         # moles
         for veinNumber in range(0, howManyVeins):
             # intialize mole
             blocksMole: list[tuple[int,int]] = []
-            howManyInThisVein = random.randint(minInVein, maxInVein)
+            howManyInThisVein = random.randint(*in_vein_range)
             choices: list[list[int,int]] = [[1, 0], [-1, 0], [0, 1], [0, -1]] 
-            # choices: list[list[int,int]] = [[1, 0]] 
+            # choices: list[list[int,int]] = [[1, 0]]
+
+            current_block_x = random.randint(0, int(Chunk.SIZE.x) - 1)
+            current_block_y = random.randint(*posy_range)
             
             # first block
-            currentBlock: tuple[int,int] = (random.randint(0, Chunk.SIZE.x-1), random.randint(minY, maxY))
+            currentBlock: tuple[int,int] = (current_block_x, current_block_y)
         
-            blocksMole.append((currentBlock[0], currentBlock[1]))
+            blocksMole.append(currentBlock)
             
             while True:                
                 # end if no choices
@@ -232,16 +241,21 @@ class worldGeneratorNormal(WorldGenerator):
                 
                 # go forward
                 addx, addy = random.choice(choices)
+
+                temp_addx = currentBlock[0] + addx
+                temp_addy = currentBlock[1] + addy
+
+                temp_addxy = (temp_addx, temp_addy)
                 
                 # if there was block already here
-                if (currentBlock[0]+addx, currentBlock[1]+addy) in blocksMole:
+                if temp_addxy in blocksMole:
                     choices.remove([addx,addy])
                     continue
                 
                 # if succeeded
-                blocksMole.append((currentBlock[0]+addx, currentBlock[1]+addy))
+                blocksMole.append(temp_addxy)
                 choices: list[list[int,int]] = [[1, 0], [-1, 0], [0, 1], [0, -1]] 
-                currentBlock: tuple[int,int] = (currentBlock[0]+addx, currentBlock[1]+addy)
+                currentBlock: tuple[int,int] = temp_addxy
                 
                 # if enough blocks
                 if len(blocksMole) >= howManyInThisVein:
@@ -252,7 +266,7 @@ class worldGeneratorNormal(WorldGenerator):
         if fromWhatSide is not None:
             if fromWhatSide == "right":
                 return list(filter(lambda block: block[0] < 0, everyVein))
-            elif fromWhatSide == "left":
+            if fromWhatSide == "left":
                 return list(filter(lambda block: block[0] >= Chunk.SIZE.x, everyVein))
             
 
@@ -541,7 +555,10 @@ class worldGeneratorNormal(WorldGenerator):
             random.seed(f"${self.getScene().getSeed()}_CHUNK_{chunkPos}")
             
             for x in range(0,int(Chunk.SIZE.x)):
-                height = self.generateHeight(x, list(chunkPos), self.getScene().getSeedInt(), self.__cache['grass_height'], False, min=70, max=80, seedName="height", startPoint=75)
+                scene_seed = self.getScene().getSeedInt()
+                chunk_position = list(chunkPos)
+
+                height = self.generateHeight(x, chunk_position, scene_seed, self.__cache['grass_height'], False, min=70, max=80, seedName="height", startPoint=75)
                 blocks[(x,height)] = Block.newBlockByResourceManager(
                     chunk=chunk,
                     name="grass_block",
@@ -550,7 +567,7 @@ class worldGeneratorNormal(WorldGenerator):
                     reason=Reason.WorldGenerator
                 )
                 
-                dirtheight = self.generateHeight(x, list(chunkPos), self.getScene().getSeedInt(), self.__cache['dirt_height'], False, startPoint=4, max=5, min=3, seedName="dirtheight")
+                dirtheight = self.generateHeight(x, chunk_position, scene_seed, self.__cache['dirt_height'], False, startPoint=4, max=5, min=3, seedName="dirtheight")
                 
                 
                 for y in range(0,dirtheight):
@@ -572,35 +589,38 @@ class worldGeneratorNormal(WorldGenerator):
                         reason=Reason.WorldGenerator
                     ) 
                     if y + currentHeight >= 200:   
-                        bedrockHeight = self.generateHeight(x, list(chunkPos), self.getScene().getSeedInt(), self.getScene().heightCache['bedrock_height'], False, startPoint=2, max=2, min=1, probability=20)
+                        bedrockHeight = self.generateHeight(x, chunk_position, scene_seed, self.getScene().heightCache['bedrock_height'], False, startPoint=2, max=2, min=1, probability=20)
                         
+                        block_position1 = (x, y + currentHeight + 1)
+                        block_position2 = (x, y + currentHeight + 2)
+
                         if bedrockHeight == 1:
-                            blocks[(x,y+currentHeight + 1)] = Block.newBlockByResourceManager(
+                            blocks[block_position1] = Block.newBlockByResourceManager(
                                 chunk=chunk,
                                 name="stone",
-                                blockPos=(x,y + currentHeight + 1),
+                                blockPos=block_position1,
                                 executor=self,
                                 reason=Reason.WorldGenerator
                             )
-                            blocks[(x,y+currentHeight + 2)] = Block.newBlockByResourceManager(
+                            blocks[block_position2] = Block.newBlockByResourceManager(
                                 chunk=chunk,
                                 name="bedrock",
-                                blockPos=(x,y + currentHeight + 2),
+                                blockPos=block_position2,
                                 executor=self,
                                 reason=Reason.WorldGenerator
-                            ) 
+                            )
                         else:
-                            blocks[(x,y+currentHeight + 1)] = Block.newBlockByResourceManager(
+                            blocks[block_position1] = Block.newBlockByResourceManager(
                                 chunk=chunk,
                                 name="bedrock",
-                                blockPos=(x,y + currentHeight + 1),
+                                blockPos=block_position1,
                                 executor=self,
                                 reason=Reason.WorldGenerator
                             )
-                            blocks[(x,y+currentHeight + 2)] = Block.newBlockByResourceManager(
+                            blocks[block_position2] = Block.newBlockByResourceManager(
                                 chunk=chunk,
                                 name="bedrock",
-                                blockPos=(x,y + currentHeight + 2),
+                                blockPos=block_position2,
                                 executor=self,
                                 reason=Reason.WorldGenerator
                             ) 
