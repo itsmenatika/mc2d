@@ -60,17 +60,19 @@ class Camera:
             
             BlockPos = Vector2(pygame.mouse.get_pos())
 
-            chunkPos = BlockPos.copy()
+            chunkPos: int = int(BlockPos[0])
             AbsolutePos = BlockPos.copy()
+            absoluteBlockPos = BlockPos.copy()
             
             BlockPos.x = int(( (BlockPos.x + self.cords.x) / Block.SIZE.x ) % Chunk.SIZE.x)
             BlockPos.y = int(( (BlockPos.y + self.cords.y) / Block.SIZE.y ) % Chunk.SIZE.y)
             
-            chunkPos.x = int((chunkPos.x + self.cords.x) // Block.SIZE.x // Chunk.SIZE.x)
-            chunkPos.y = int((chunkPos.y + self.cords.y) // Block.SIZE.y // Chunk.SIZE.y)
+            chunkPos = int((chunkPos + self.cords.x) // Block.SIZE.x // Chunk.SIZE.x)
+            # chunkPos.y = int((chunkPos.y + self.cords.y) // Block.SIZE.y // Chunk.SIZE.y)
             
-            AbsolutePos.x = round(AbsolutePos.x + self.cords.x * 100) / 100
-            AbsolutePos.y = round(AbsolutePos.y + self.cords.y * 100) / 100
+            absoluteBlockPos.x = round(absoluteBlockPos.x // Block.SIZE.x * 100) / 100
+            absoluteBlockPos.y = round(absoluteBlockPos.y // Block.SIZE.y * 100) / 100
+            # absoluteBlockPos.x = round(AbsolutePos.x // Block.SIZE.x)
 
             scene_game_clock = self.sceneToDraw.getGame().clock
             
@@ -86,7 +88,7 @@ class Camera:
                 # print(e)
             # blockID = blockID.getBlockByTuple((chunkPos[0], chunkPos[1]))
 
-            temp_info = f"BlockPos: {BlockPos} Chunk: {chunkPos} {round(scene_game_clock.get_fps())}FPS {scene_game_clock.get_rawtime()}MS AbsPOS: {AbsolutePos} BlockID: {blockID}"
+            temp_info = f"BlockPos: {BlockPos} AbsBlockPos: {absoluteBlockPos} Chunk: {chunkPos} cords: {AbsolutePos} | {round(scene_game_clock.get_fps())}FPS {scene_game_clock.get_rawtime()}MS | BlockID: {blockID}"
             
             self.__infoToDraw = self.__font.render(temp_info, False, (100, 100, 100))
 

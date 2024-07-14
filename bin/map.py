@@ -59,12 +59,12 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
     # def generateHeight(self, x, chunkPos: list[int,int], seedInt: int,  cache: dict, fromLeft: bool = False, startPoint: int = 10,
     #                    max: Optional[int] = None, min: Optional[int] = None, probability: int = 60, seedName: str = "global") -> int:  
     #     _s = seedInt % 10
-    #     _xAbsolute = x + chunkPos[0] * Chunk.SIZE.x
+    #     _xAbsolute = x + chunkPos * Chunk.SIZE.x
         
     #     if _xAbsolute in cache: return cache[_xAbsolute]
     #     if _xAbsolute == 0: return startPoint
         
-    #     if x + (chunkPos[0] + 1) * Chunk.SIZE.x not in cache and not fromLeft:
+    #     if x + (chunkPos + 1) * Chunk.SIZE.x not in cache and not fromLeft:
     #         return self.generateHeight(x, chunkPos, seedInt, cache, True, startPoint=startPoint, max=max, min=min, probability=probability, seedName=seedName)
         
         
@@ -77,7 +77,7 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
         
     #     if fromLeft:
     #         if x < 0:
-    #             chunkPos[0] += 1
+    #             chunkPos += 1
     #             return self.generateHeight(x, chunkPos, seedInt, cache, True, startPoint=startPoint, max=max, min=min, probability=probability, seedName=seedName)
             
     #         _n = self.generateHeight(x - 1, chunkPos, seedInt, cache, True, startPoint=startPoint, max=max, min=min, probability=probability, seedName=seedName)
@@ -98,7 +98,7 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
         
     #     while x > Chunk.SIZE.x:
     #         x -= Chunk.SIZE.x
-    #         chunkPos[0] += 1
+    #         chunkPos += 1
         
     #     _n = self.generateHeight(x + 1, chunkPos, seedInt, cache, False,  startPoint=startPoint, max=max, min=min, probability=probability, seedName=seedName)
     #     if(wannabe > probability):
@@ -402,7 +402,7 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
         except Exception as e:
             print('gada', e)
     
-    def __init__(self, scene: 'Scene', chunkPos: Vector2 = Vector2(0,0)) -> None:
+    def __init__(self, scene: 'Scene', chunkPos: int = 0) -> None:
         # basics
         self.__scene = scene
         self.setLogParent(ParentForLogs(name=f"chunk_{chunkPos}", parent=self.getScene().getLogParent()))
@@ -415,8 +415,9 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
         # basic informations
         self.__chunkPos = chunkPos
         self.__startPoint = Vector2(
-            chunkPos[0] * Chunk.SIZE.x * Block.SIZE.x,
-            chunkPos[1] * Chunk.SIZE.y * Block.SIZE.y
+            chunkPos * Chunk.SIZE.x * Block.SIZE.x,
+            # chunkPos[1] * Chunk.SIZE.y * Block.SIZE.y
+            0
         )
         
         self.__endPoint = self.__startPoint + Chunk.SIZE
@@ -682,15 +683,13 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
         # print(pygame.sprite.spritecollide(aha, self.sprites(), False))
         
         
-        # checking for chunks that should be loaded/unloaded
         surfSize = pygame.display.get_surface().get_size()
-        centerChunkPos = ((self.getGame().camera.cords.x + surfSize[0]) // Block.SIZE.x // Chunk.SIZE.x,
-                     (self.getGame().camera.cords.y + surfSize[1]) // Block.SIZE.y // Chunk.SIZE.y)
+        centerChunkPos: int = (self.getGame().camera.cords.x + surfSize[0]) // Block.SIZE.x // Chunk.SIZE.x
         
         
         ChunksToBeLoaded: list[Chunk] = []
         
-        ChunksToBeLoaded.extend([(x+centerChunkPos[0],0) for x in range(-self.RENDERDISTANCE, self.RENDERDISTANCE+1)])
+        ChunksToBeLoaded.extend([x+centerChunkPos for x in range(-self.RENDERDISTANCE, self.RENDERDISTANCE+1)])
         
        
         
@@ -705,23 +704,48 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
         # for newChunk in [chunk for chunk in ChunksToBeLoaded if chunk not in self.__activeChunks]: 
         for newChunkPos in [chunkPos for chunkPos in ChunksToBeLoaded if not self.isChunkActive(chunkPos)]:
             self.loadChunk(newChunkPos)
+        
+        
+        # checking for chunks that should be loaded/unloaded
+        # surfSize = pygame.display.get_surface().get_size()
+        # centerChunkPos = ((self.getGame().camera.cords.x + surfSize[0]) // Block.SIZE.x // Chunk.SIZE.x,
+        #              (self.getGame().camera.cords.y + surfSize[1]) // Block.SIZE.y // Chunk.SIZE.y)
+        
+        
+        # ChunksToBeLoaded: list[Chunk] = []
+        
+        # ChunksToBeLoaded.extend([(x+centerChunkPos,0) for x in range(-self.RENDERDISTANCE, self.RENDERDISTANCE+1)])
+        
+       
+        
+        # chunk: Chunk = None
+        
+        # # unload chunks
+        # for chunkPos, chunk in self.__activeChunks.copy().items():
+        #     if chunkPos not in ChunksToBeLoaded:
+        #         self.unloadChunk(chunk)
+        
+        # # load chunks
+        # # for newChunk in [chunk for chunk in ChunksToBeLoaded if chunk not in self.__activeChunks]: 
+        # for newChunkPos in [chunkPos for chunkPos in ChunksToBeLoaded if not self.isChunkActive(chunkPos)]:
+        #     self.loadChunk(newChunkPos)
             
         # print(self.getGame().clock.get_fps(),len(self.__activeChunks), centerChunkPos, ChunksToBeLoaded)
         # pygame.time.Clock.ge
             
-    def loadChunk(self, chunkPos: tuple[int,int]):
-        '''just loading chunk by chunkPos. Requires chunkPos of type tuple[int,int]'''
+    def loadChunk(self, chunkPos: int):
+        '''just loading chunk by chunkPos. Requires chunkPos of type int'''
         self.__activeChunks[chunkPos] = Chunk(scene=self, chunkPos=chunkPos) 
     
-    def isChunkActive(self, chunkPos: tuple[int,int]) -> bool:
-        '''check if chunk is active. Requires chunkPos of type tuple[int,int] and returns bool'''
+    def isChunkActive(self, chunkPos: int) -> bool:
+        '''check if chunk is active. Requires chunkPos of type int and returns bool'''
         return chunkPos in self.__activeChunks.keys()
 
         
-    def getActiveChunks(self) -> dict[tuple[int,int], Chunk]:
+    def getActiveChunks(self) -> dict[int, Chunk]:
         return self.__activeChunks
     
-    def getChunk(self, chunkPos: tuple[int,int]) -> Chunk:
+    def getChunk(self, chunkPos: int) -> Chunk:
         if chunkPos not in self.__activeChunks:
             raise chunkNotLoaded(f"Chunk of cords ${chunkPos} is not loaded, can't access that chunk")
         return self.__activeChunks[chunkPos]
@@ -738,11 +762,12 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
     
     # blocks handling
             
-    def setBlockByAbsolutePos(self, pos: Vector2 | tuple, block: None|Block, dontRaiseErrors: bool = False) -> None:
-        if isinstance(pos, Vector2):
-            pos = tuple(pos)
+    def setBlockByAbsolutePos(self, pos: tuple[int,int], block: None|Block, dontRaiseErrors: bool = False) -> None:
+        # if isinstance(pos, Vector2):
+        #     pos = tuple(pos)
         
-        chunkPos = (pos[0] // Chunk.SIZE.x, pos[1] // Chunk.SIZE.y)
+        # chunkPos = (pos[0] // Chunk.SIZE.x, pos[1] // Chunk.SIZE.y)
+        chunkPos = pos[0] // Chunk.SIZE.x
         
         if chunkPos not in self.__activeChunks:
             self.log(logType.ERROR, f"Trying to access block of position ${pos} which should be located in chunk ${chunkPos}, but that chunk is not loaded!")
@@ -757,6 +782,7 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
         self.getChunk(chunkPos).setBlock(BlockPos, block)
         
     def getBlock(self, cords: Vector2) -> Block | None:
+        '''Get block by absolute cords'''
         chunkCords = (cords.x // Chunk.SIZE.x, cords.y // Chunk.SIZE.y)
         chunkStartPoint = (Chunk.SIZE.x * chunkCords[0], Chunk.SIZE.y * chunkCords[1]) 
         RelativeBlockPos = ((cords.x - chunkStartPoint[0]) // Block.SIZE.y, 
@@ -820,7 +846,7 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
         self.__worldGenerator = worldGenerator(self)
        
         
-        self.__activeChunks: dict[tuple[int,int], Chunk] = {}
+        self.__activeChunks: dict[int, Chunk] = {}
         
         # generating basic chunks
         

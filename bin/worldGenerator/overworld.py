@@ -14,11 +14,13 @@ from typing import Optional
 stats = []
 
 class worldGeneratorNormal(WorldGenerator):
-    def generateTress(self, chunkPos: list[int,int], chunk: Chunk, blocks: dict[tuple[int, int], Block], howMuchMin: int, howMuchMax: int, get: Optional[str] = None) -> dict[tuple[int, int], Block]:
+    def generateTrees(self, chunkPos: int, chunk: Chunk, blocks: dict[tuple[int, int], Block], howMuchMin: int, howMuchMax: int, get: Optional[str] = None) -> dict[tuple[int, int], Block]:
+        # chunkPos = int(chunkPos)
+        
         if get is None:
-            fromLeft = self.generateTress((chunkPos[0]-1,chunkPos[1]), chunk, blocks, 1, 2, get="left")
-            fromRight = self.generateTress((chunkPos[0]+1,chunkPos[1]), chunk, blocks, 1, 2, get="right")
-        random.seed(f"${self.getScene().getSeed()}_CHUNK_{chunkPos[0]}_trees")
+            fromLeft = self.generateTrees(chunkPos-1, chunk, blocks, 1, 2, get="left")
+            fromRight = self.generateTrees(chunkPos+1, chunk, blocks, 1, 2, get="right")
+        random.seed(f"${self.getScene().getSeed()}_CHUNK_{chunkPos}_trees")
         
         howMuchTrees: int = random.randint(howMuchMin, howMuchMax)
         
@@ -43,7 +45,7 @@ class worldGeneratorNormal(WorldGenerator):
         
         newBlocks = {}
         for pos in treesPos:
-            heightTree = self.generateHeight(pos, list(chunkPos), self.getScene().getSeedInt(), self.__cache['grass_height'], False, min=70, max=80, seedName="height", startPoint=75)
+            heightTree = self.generateHeight(pos, chunkPos, self.getScene().getSeedInt(), self.__cache['grass_height'], False, min=70, max=80, seedName="height", startPoint=75)
             newBlocks[(pos,heightTree-1)] = "oak_wood"
             newBlocks[(pos,heightTree-2)] = "oak_wood"
             newBlocks[(pos,heightTree-3)] = "oak_wood"
@@ -128,14 +130,14 @@ class worldGeneratorNormal(WorldGenerator):
     def generateHeight(self, x, chunkPos: list[int,int], seedInt: int,  cache: dict, fromLeft: bool = False, startPoint: int = 10,
                        max: Optional[int] = None, min: Optional[int] = None, probability: int = 60, seedName: str = "global") -> int:  
         _s = seedInt % 10
-        _xAbsolute = x + chunkPos[0] * Chunk.SIZE.x
+        _xAbsolute = x + chunkPos * Chunk.SIZE.x
 
         scene_seed = self.getScene().getSeed()
         
         if _xAbsolute in cache: return cache[_xAbsolute]
         if _xAbsolute == 0: return startPoint
         
-        if x + (chunkPos[0] + 1) * Chunk.SIZE.x not in cache and not fromLeft:
+        if x + (chunkPos + 1) * Chunk.SIZE.x not in cache and not fromLeft:
             return self.generateHeight(x, chunkPos, seedInt, cache, True, startPoint=startPoint, max=max, min=min, probability=probability, seedName=seedName)
         
         
@@ -148,7 +150,7 @@ class worldGeneratorNormal(WorldGenerator):
         
         if fromLeft:
             if x < 0:
-                chunkPos[0] += 1
+                chunkPos += 1
                 return self.generateHeight(x, chunkPos, seedInt, cache, True, startPoint=startPoint, max=max, min=min, probability=probability, seedName=seedName)
             
             _n = self.generateHeight(x - 1, chunkPos, seedInt, cache, True, startPoint=startPoint, max=max, min=min, probability=probability, seedName=seedName)
@@ -169,7 +171,7 @@ class worldGeneratorNormal(WorldGenerator):
         
         while x > Chunk.SIZE.x:
             x -= Chunk.SIZE.x
-            chunkPos[0] += 1
+            chunkPos += 1
         
         _n = self.generateHeight(x + 1, chunkPos, seedInt, cache, False,  startPoint=startPoint, max=max, min=min, probability=probability, seedName=seedName)
         if(wannabe > probability):
@@ -184,7 +186,7 @@ class worldGeneratorNormal(WorldGenerator):
         
         return _n
     
-    def generateVeins(self, chunkPos: tuple[int,int], chunk: Optional[Chunk], blockName: str, howMuchVeinsMin: int, howMuchVeinsMax: int, minInVein: int, maxInVein: int, recursive: bool = True, fromWhatSide: None|str = None, blocks: dict[tuple[int, int], Block] = {}, minY: int=0, maxY: int = Chunk.SIZE.y) -> dict[tuple[int, int], Block]: 
+    def generateVeins(self, chunkPos: int, chunk: Optional[Chunk], blockName: str, howMuchVeinsMin: int, howMuchVeinsMax: int, minInVein: int, maxInVein: int, recursive: bool = True, fromWhatSide: None|str = None, blocks: dict[tuple[int, int], Block] = {}, minY: int=0, maxY: int = Chunk.SIZE.y) -> dict[tuple[int, int], Block]: 
         """Function to generate ores in specified chunk (VERSION TWO)
 
         Args:
@@ -204,11 +206,11 @@ class worldGeneratorNormal(WorldGenerator):
         
              # getting ores from neighbouring chunks
         if recursive:
-            fromLeft = self.generateVeins(chunkPos=(chunkPos[0]-1, chunkPos[1]), chunk=chunk, blockName=blockName, howMuchVeinsMin=howMuchVeinsMin, howMuchVeinsMax=howMuchVeinsMax, minInVein=minInVein, maxInVein=maxInVein, recursive=False, fromWhatSide='left', blocks=blocks, minY=minY,maxY=maxY)
-            fromRight = self.generateVeins(chunkPos=(chunkPos[0]+1, chunkPos[1]), chunk=chunk, blockName=blockName, howMuchVeinsMin=howMuchVeinsMin, howMuchVeinsMax=howMuchVeinsMax, minInVein=minInVein, maxInVein=maxInVein, recursive=False, fromWhatSide='right', blocks=blocks, minY=minY,maxY=maxY)
+            fromLeft = self.generateVeins(chunkPos=chunkPos-1, chunk=chunk, blockName=blockName, howMuchVeinsMin=howMuchVeinsMin, howMuchVeinsMax=howMuchVeinsMax, minInVein=minInVein, maxInVein=maxInVein, recursive=False, fromWhatSide='left', blocks=blocks, minY=minY,maxY=maxY)
+            fromRight = self.generateVeins(chunkPos=chunkPos+1, chunk=chunk, blockName=blockName, howMuchVeinsMin=howMuchVeinsMin, howMuchVeinsMax=howMuchVeinsMax, minInVein=minInVein, maxInVein=maxInVein, recursive=False, fromWhatSide='right', blocks=blocks, minY=minY,maxY=maxY)
         
         # setting seed
-        random.seed(f"${self.getScene().getSeed()}_CHUNK_{int(chunkPos[0])}_VEINS_{blockName}")
+        random.seed(f"${self.getScene().getSeed()}_CHUNK_{int(chunkPos)}_VEINS_{blockName}")
 
         veins_range = (howMuchVeinsMin, howMuchVeinsMax)
         in_vein_range = (minInVein, maxInVein)
@@ -546,7 +548,7 @@ class worldGeneratorNormal(WorldGenerator):
     async def __waitForAnother(self): pass
         
 
-    async def generateChunk(self, chunkPos: tuple[int, int], chunk: 'Chunk', Scene: 'Scene') -> dict[tuple[int, int], Block]:
+    async def generateChunk(self, chunkPos: int, chunk: 'Chunk', Scene: 'Scene') -> dict[tuple[int, int], Block]:
         try:
             # raise Exception('t')
             blocks: dict[tuple[int,int], Block] = {}
@@ -556,9 +558,8 @@ class worldGeneratorNormal(WorldGenerator):
             
             for x in range(0,int(Chunk.SIZE.x)):
                 scene_seed = self.getScene().getSeedInt()
-                chunk_position = list(chunkPos)
 
-                height = self.generateHeight(x, chunk_position, scene_seed, self.__cache['grass_height'], False, min=70, max=80, seedName="height", startPoint=75)
+                height = self.generateHeight(x, chunkPos, scene_seed, self.__cache['grass_height'], False, min=70, max=80, seedName="height", startPoint=75)
                 blocks[(x,height)] = Block.newBlockByResourceManager(
                     chunk=chunk,
                     name="grass_block",
@@ -567,7 +568,7 @@ class worldGeneratorNormal(WorldGenerator):
                     reason=Reason.WorldGenerator
                 )
                 
-                dirtheight = self.generateHeight(x, chunk_position, scene_seed, self.__cache['dirt_height'], False, startPoint=4, max=5, min=3, seedName="dirtheight")
+                dirtheight = self.generateHeight(x, chunkPos, scene_seed, self.__cache['dirt_height'], False, startPoint=4, max=5, min=3, seedName="dirtheight")
                 
                 
                 for y in range(0,dirtheight):
@@ -589,7 +590,7 @@ class worldGeneratorNormal(WorldGenerator):
                         reason=Reason.WorldGenerator
                     ) 
                     if y + currentHeight >= 200:   
-                        bedrockHeight = self.generateHeight(x, chunk_position, scene_seed, self.getScene().heightCache['bedrock_height'], False, startPoint=2, max=2, min=1, probability=20)
+                        bedrockHeight = self.generateHeight(x, chunkPos, scene_seed, self.getScene().heightCache['bedrock_height'], False, startPoint=2, max=2, min=1, probability=20)
                         
                         block_position1 = (x, y + currentHeight + 1)
                         block_position2 = (x, y + currentHeight + 2)
@@ -698,7 +699,7 @@ class worldGeneratorNormal(WorldGenerator):
                             maxY=200)
             
             await asyncio.sleep(0.1)
-            self.generateTress(chunkPos, chunk, blocks, 1, 2)
+            self.generateTrees(chunkPos, chunk, blocks, 1, 2)
             
             # self.generateVeins(chunkPos, chunk, "coal_ore", 1, 1, 6, 6, True, None, blocks, currentHeight+3, 32)
             
