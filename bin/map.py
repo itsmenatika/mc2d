@@ -391,6 +391,14 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
             # the final logic
             # print(blockPosition not in self.__blocks, self.__blocks[blockPosition], block)
             return True if self.__blocks[blockPosition].ID == block.ID else False
+        
+    def __checkForErrorsWorldGeneratorAsyncio(self, task: asyncio.Task) -> None:
+        print(task)
+        try:
+             _  = task.result()
+             print(_)
+        except Exception as e:
+            print('gada', e)
     
     def __init__(self, scene: 'Scene', chunkPos: Vector2 = Vector2(0,0)) -> None:
         # basics
@@ -431,6 +439,7 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
             Scene=self.__scene
         ), name=f"world_generator{self.__chunkPos}"
         )
+        # .add_done_callback(self.__checkForErrorsWorldGeneratorAsyncio)
         self.log(logType.SUCCESS, "starting world generation for a chunk... DONE")
         
         self.log(logType.SUCCESS, "The chunk is intialized!")
