@@ -1,0 +1,69 @@
+{
+    "game": "mc2d",
+    "type": "world_save",
+    "save": true,
+    "worldName": "notImplementedYet",
+    "worldSeed": "seed",
+    "worldSeedInt": 0,
+    "worldGeneratorName": "sus",
+    "worldTime":0,
+    "isServer": false,
+    "lastPlayTime": 0,
+    "worldCreationTime": 0,
+    "firstVersion": "undefined",
+    "firstVersionINT": 0,
+    "cache": {
+        "grass_height": {},
+        "dirt_height": {},
+        "bedrock_height": {}
+    },
+    "playerData": {
+        "__COMMENT3919391": "FIRST UUID IS PLAYER GLOBAL UUID THAT IS USED TO AUTHENTICATION IN SERVERS. SECOND ONE IS THE UUID OF AN ENTITY IN THE WORLD.",
+        "UUID": {
+            "nickname": "itsmenatika",
+            "lastTimePlayed": 0,
+            "entity": [
+                true,
+                "UUID",
+                {
+                    "ENTITYDATA": 0
+                }
+            ]
+        }
+    },
+    "chunkData": {
+        "1": {
+            "gameVersionGenerated": 981,
+            "gameVersionLastVisited": 312,
+            "entities": {
+                "UUID": {
+                    "cords": [12,12],
+                    "id": "twojamama",
+                    "entityData": {
+                        "health": 0,
+                        "max_health": 0,
+                        "customName": "sus",
+                        "customNameVisible": false,
+                        "air": 0,
+                        "max_air": 0,
+                        "air_per_tick_addition": 0,
+                        "air_per_tick_removal": 0
+                    }
+                    
+
+                }
+            },
+            "blocks": {
+                "0": {
+                    "BLOCK_CORDS": {
+                        "id": "stone",
+                        "nbt_data": {
+
+                        }
+                    }
+                }
+            }
+
+        } 
+    }
+}
