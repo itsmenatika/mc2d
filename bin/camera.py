@@ -131,16 +131,20 @@ class Camera:
         # chunkEdges = set([chunk.getStartingPoint() for chunk in sceneToDraw.getActiveChunks().values()].extend(
         #                 [chunk.getEndingPoint() for chunk in sceneToDraw.getActiveChunks().values()]))
         
+        active_scene_chunks = self.sceneToDraw.getActiveChunks()
         
         # draw chunkEdges and information
-        chunkEdges =  [chunk.getStartingPoint().x for chunk in self.sceneToDraw.getActiveChunks().values()]
+        chunkEdges =  [chunk.getStartingPoint().x for chunk in active_scene_chunks.values()]
         # chunkEdges.extend(
         #     [chunk.getEndingPoint().x for chunk in sceneToDraw.getActiveChunks().values()]
         # )
         chunkEdgesSet = set(chunkEdges)
         
+        # Nie wiem jak to by nazwać
+        temp = Chunk.SIZE.y * Block.SIZE.y
+
         for edge in chunkEdgesSet:
-            pygame.draw.line(surface, (230, 0, 20), (edge - self.cords.x, 0 - self.cords.y), (edge - self.cords.x, (Chunk.SIZE.y * Block.SIZE.y) - self.cords.y), 2)
+            pygame.draw.line(surface, (230, 0, 20), (edge - self.cords.x, 0 - self.cords.y), (edge - self.cords.x, temp - self.cords.y), 1)
 
         surface.blit(self.__infoToDraw, (0,0))
         

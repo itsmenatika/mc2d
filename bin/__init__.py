@@ -517,21 +517,12 @@ class Game(Loggable):
                 # "forcedScenes": {
                     
                 # },
-                "events": {
-                },
-                "keyDown": {
-                },
-                "keyUp": {
-                },
-                "rightClick": {
-                    
-                },
-                "leftClick": {
-                    
-                },
-                "wheelClick": {
-                    
-                }
+                "events": {},
+                "keyDown": {},
+                "keyUp": {},
+                "rightClick": {},
+                "leftClick": {},
+                "wheelClick": {}
             }
                 
         # creating copy just because python can create errors about changing size of dictionary during iteration
@@ -600,21 +591,12 @@ class Game(Loggable):
             # "forcedScenes": {
                 
             # },
-            "events": {
-            },
-            "keyDown": {
-            },
-            "keyUp": {
-            },
-            "rightClick": {
-                
-            },
-            "leftClick": {
-                
-            },
-            "wheelClick": {
-                
-            }
+            "events": {},
+            "keyDown": {},
+            "keyUp": {},
+            "rightClick": {},
+            "leftClick": {},
+            "wheelClick": {}
         }
         
         
