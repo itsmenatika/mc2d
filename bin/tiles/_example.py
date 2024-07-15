@@ -31,10 +31,22 @@ class BLOCKID(Block):
         '''Method executed when chunk is loaded, can be changed in every block'''
         pass
     
-    # TODO: function that run when someone tries to break it
-    # TODO: function that run when someone places it
-    # TODO: function that run every update
-    # TODO: function that run every update (for listeners)
+    # # TODO: function that run when someone tries to break it
+    # # TODO: function that run when someone places it
+    # # TODO: function that run every update
+    # # TODO: function that run every update (for listeners)
+
+    def onDestroyAttempt(self, *args, **kwargs):
+        raise NotImplementedError('Not implemented')
+    
+    def onPlace(self, *args, **kwargs):
+        raise NotImplementedError('Not implemented')
+    
+    def update(self, *args, **kwargs):
+        raise NotImplementedError('Not implemented')
+
+    def lupdate(self, *args, **kwargs):
+        raise NotImplementedError('Not implemented')
         
     # you shouldn't touch too much i in init, only if you're sure what you're doing
     def __init__(self, image: Surface, blockPos: Vector2, chunk: Chunk, executor: Executor | None = None, reason: str | None = None, addToEverything: bool = True) -> None:
