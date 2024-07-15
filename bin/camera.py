@@ -4,7 +4,6 @@ from bin.map import Chunk, Scene, Block
 import math
 import asyncio
 
-
 class Camera:
 
     # Metoda prywatna do uzyskania dostępnych sprite'ów do renderowania

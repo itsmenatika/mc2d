@@ -21,19 +21,59 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
     '''portion of the world of the size (16,360)'''
     SIZE = Vector2(16,360)
 
-    def unload(self) -> None:  
-        '''You have to also remove this chunk from list of actived chunks (python reasons). If you don't wanna mess with this just use map.unloadChunk(self) or self.getScene().unloadChunk(self) instead!''' 
+    def unload(self, previousData: dict = {}) -> dict:  
+        '''You have to also remove this chunk from list of actived chunks (python reasons) and add new info to chunk save manually! If you don't wanna mess with this just use map.unloadChunk(self) or self.getScene().unloadChunk(self) instead! That is rather for more precise use than just simple unloading chunk!''' 
         self.log(logType.INFO, f"unloading chunk {self.getChunkPos()}...")
-        self.save()
+        
+        _data = self.save(previousData=previousData)
         self.getScene().remove(self.sprites())
         self.empty()
-        self.log(logType.SUCCESS, f"unloading chunk {self.getChunkPos()}... SUCCESS")
         
-    def save(self) -> None:
+        self.log(logType.SUCCESS, f"unloading chunk {self.getChunkPos()}... SUCCESS")
+
+        return _data
+        
+    def save(self, previousData: dict = {}) -> dict:
         '''just saving chunk'''
         
         self.log(logType.INFO, f"saving chunk {self.getChunkPos()}... (NOT DONE YET)")
+        
+        #  "gameVersionGenerated": 981,
+        #     "gameVersionLastVisited": 312,
+        #     "entities": {
+        #         "UUID": {
+        #             "cords": [12,12],
+        #             "id": "twojamama",
+        #             "entityData": {
+        #                 "health": 0,
+        #                 "max_health": 0,
+        #                 "customName": "sus",
+        #                 "customNameVisible": false,
+        #                 "air": 0,
+        #                 "max_air": 0,
+        #                 "air_per_tick_addition": 0,
+        #                 "air_per_tick_removal": 0
+        #             }
+        
+        if 'gameVersionGenerated' not in previousData:
+            previousData['gameVersionGenerated'] = 0
+        
+        chunkData = {
+            "gameVersionGenerated": previousData['gameVersionGenerated'],
+            "gameVersionLastVisited": 0,
+            "blocks": [
+                {
+                    "id": Block.ID,
+                    "idInt": Block.IDInt,
+                    "blockPos": f"{str(int(blockPos[0]))}_{str(int(blockPos[1]))}"
+                }
+                for blockPos, Block in self.__blocks.items()
+            ]
+            
+        }
+        
         self.log(logType.SUCCESS, f"saving chunk {self.getChunkPos()}... SUCCESS")
+        return chunkData
         # self.getScene().chunkCache[self.getChunkPos()] = self
     
     def getScene(self) -> 'Scene':
@@ -53,7 +93,7 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
         return self.__endPoint
     
     def getChunkPos(self) -> int:
-        return self.__chunkPos
+        return int(self.__chunkPos)
     
     # not used but works, but very slow (NEED TO BE RECREATED!)
     def loadChunkFromCsv(self, csvSource: str) -> None:
@@ -120,16 +160,16 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
                 
         # if using resource manager
         if type(block) == str:
-            block = self.__blocks[blockPosition] = Block.newBlockByResourceManager(
+            block = Block.newBlockByResourceManager(
                 name=block,
                 blockPos=blockPosition,
                 executor=executor,
                 reason=reason,
                 chunk=self
             )
-        else:
-            # if was provided exact block
-            self.__blocks[blockPosition] = block
+            
+        self.__blocks[blockPosition] = block
+
             
         # for security reasons
         if not self.has(block): self.add(block)
@@ -208,8 +248,43 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
              print(_)
         except Exception as e:
             print('gada', e)
+            
+    async def restoreChunkFromChunkData(self, chunkData: dict) -> None:
+        try:
+            # # blocks
+            # blockPosSplit = []
+            # for blockPosStr, blockData in chunkData['blocks'].items():
+            #     blockPosSplit = blockPosStr.split("_")
+            #     blockPos = (int(blockPosSplit[0]), int(blockPosSplit[1]))
+            #     # print('s')
+            #     self.setBlock(blockPos, blockData['id'], executor=self, reason=Reason.chunkRestore)
+            
+            
+            howManyBlocks = len(chunkData['blocks'])
+            
+            blockData = chunkData['blocks']
+            blockPos = []
+            blockdict: dict = {}
+            # blockPosSt = list
+            for block in range(howManyBlocks):
+                blockDict = blockData[block]
+                blockPos = blockDict['blockPos'].split("_")
+                blockPosSt = (int(blockPos[0]), int(blockPos[1]))
+                Block.newBlockByResourceManager(blockDict['id'],
+                                                blockPosSt,
+                                                executor=self,
+                                                reason=Reason.chunkRestore,
+                                                chunk=self)
+                if block % 100 == 0: await asyncio.sleep(0.1)
+            
+            
+            
+            self.log(logType.SUCCESS, "restoring data from save... DONE")
+        except Exception as e:
+            self.errorWithTraceback("error with restoring data from save", e)
+                    
     
-    def __init__(self, scene: 'Scene', chunkPos: int = 0) -> None:
+    def __init__(self, scene: 'Scene', chunkPos: int = 0, chunkData: Optional[dict] = None) -> None:
         # basics
         self.__scene = scene
         self.setLogParent(ParentForLogs(name=f"chunk_{chunkPos}", parent=self.getScene().getLogParent()))
@@ -240,18 +315,22 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
         # intialize blocks 
         self.__blocks: dict[tuple[int,int], Block] = {}
         
-        
-        # chunk generation
-        self.log(logType.INIT, "starting world generation for a chunk...")
-        asyncio.create_task(self.getScene().getWorldGenerator().generateChunk(
-            chunkPos=self.__chunkPos,
-            chunk=self,
-            Scene=self.__scene
-        ), name=f"world_generator{self.__chunkPos}"
-        )
-        # .add_done_callback(self.__checkForErrorsWorldGeneratorAsyncio)
-        self.log(logType.SUCCESS, "starting world generation for a chunk... DONE")
-        
+        if chunkData != None:
+            self.log(logType.INIT, "restoring data from save...")
+            asyncio.create_task(self.restoreChunkFromChunkData(chunkData),
+                                name=f"chunk_restore_{self.__chunkPos}")
+        else:
+            # chunk generation
+            self.log(logType.INIT, "starting world generation for a chunk...")
+            asyncio.create_task(self.getScene().getWorldGenerator().generateChunk(
+                chunkPos=self.__chunkPos,
+                chunk=self,
+                Scene=self.__scene
+            ), name=f"world_generator{self.__chunkPos}"
+            )
+            # .add_done_callback(self.__checkForErrorsWorldGeneratorAsyncio)
+            self.log(logType.SUCCESS, "starting world generation for a chunk... DONE")
+            
         self.log(logType.SUCCESS, "The chunk is intialized!")
 
 
@@ -466,10 +545,11 @@ class Block(pygame.sprite.Sprite):
         self.doRender = True
         
         # reason handling
-        if reason=="world_generator":
-            self.onGenerate(cordsAbsolute=self.cordsAbsolute,cordsRelative=self.__cords, inChunkPosition=blockPos, chunk=chunk)
-        elif reason == "chunk_load":
-            self.onLoad(cordsAbsolute=self.cordsAbsolute,cordsRelative=self.__cords, inChunkPosition=blockPos, chunk=chunk)
+        match reason:
+            case "world_generator":
+                self.onGenerate(cordsAbsolute=self.cordsAbsolute,cordsRelative=self.__cords, inChunkPosition=blockPos, chunk=chunk)
+            case"chunk_load":
+                self.onLoad(cordsAbsolute=self.cordsAbsolute,cordsRelative=self.__cords, inChunkPosition=blockPos, chunk=chunk)
         
         # ???? co skąd to coś tu jest
         # del chunk_position
@@ -518,7 +598,7 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
         
         ChunksToBeLoaded: list[Chunk] = []
         
-        ChunksToBeLoaded.extend([x+centerChunkPos for x in range(-self.RENDERDISTANCE, self.RENDERDISTANCE+1)])
+        ChunksToBeLoaded.extend([int(x+centerChunkPos) for x in range(-self.RENDERDISTANCE, self.RENDERDISTANCE+1)])
         
        
         
@@ -564,6 +644,10 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
             
     def loadChunk(self, chunkPos: int):
         '''just loading chunk by chunkPos. Requires chunkPos of type int'''
+        if str(chunkPos) in self.__forSaving['chunkData']:
+            self.__activeChunks[chunkPos] = Chunk(scene=self, chunkPos=chunkPos, chunkData = self.__forSaving['chunkData'][str(chunkPos)]) 
+            return
+        
         self.__activeChunks[chunkPos] = Chunk(scene=self, chunkPos=chunkPos) 
     
     def isChunkActive(self, chunkPos: int) -> bool:
@@ -580,7 +664,20 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
         return self.__activeChunks[chunkPos]
         
     def unloadChunk(self, chunk: Chunk) -> None:
-        chunk.unload()
+        chunkPos = str(chunk.getChunkPos())
+        
+        if chunkPos in self.__forSaving['chunkData']:
+            data = chunk.unload(previousData=self.__forSaving['chunkData'][chunkPos])
+            self.__forSaving['chunkData'][chunkPos].update(data)
+            del self.__activeChunks[chunk.getChunkPos()]
+            return
+
+        data = chunk.unload()
+        self.__forSaving['chunkData'][chunkPos] = data
+        # self.__forSaving['chunkData'][str(chunk.getChunkPos())].update(
+        #     chunk.unload(previousData=self.__forSaving['chunkData'][str(chunk.getChunkPos())])
+        #     )
+
         del self.__activeChunks[chunk.getChunkPos()]
         
     # def draw(self):
@@ -591,7 +688,7 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
     
     # blocks handling
             
-    def setBlockByAbsolutePos(self, pos: tuple[int,int], block: None|Block, dontRaiseErrors: bool = False) -> None:
+    def setBlockByAbsolutePos(self, pos: tuple[int,int], block: None|Block|str, dontRaiseErrors: bool = False) -> None:
         # if isinstance(pos, Vector2):
         #     pos = tuple(pos)
         
@@ -606,7 +703,7 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
         # previousAmountOfBlocks = ((chunkPos-1) * Chunk.SIZE.x, (chunkPos-1) * Chunk.SIZE.y)
         # blockPos = (cords[0] // Chunk.SIZE.x, cords[1] // Chunk.SIZE.y)
         
-        BlockPos = (pos[0] % Chunk.SIZE.x, pos[1] % Chunk.SIZE.y)
+        BlockPos = (int(pos[0] % Chunk.SIZE.x), int(pos[1] % Chunk.SIZE.y))
         
         self.getChunk(chunkPos).setBlock(BlockPos, block)
         
@@ -659,6 +756,11 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
                 name=saveData['worldName'],
                 seed=saveData['worldSeed'],
                 saveData=saveData)
+        
+        
+    def saveWorld(self) -> None:
+        with open('data/saves/map.json', "w") as file:
+            file.write(json.dumps(self.__forSaving, indent=4))
     
  
     def __init__(self, game: 'Game', name: str, worldGenerator: WorldGenerator, autoAdd: bool = True, inIdle: bool = False, seed: str = "uwusa", saveData: Optional[dict] = None) -> None:
@@ -706,8 +808,8 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
         
         # generating basic chunks
         
-        # for x in range(4):
-        #     self.__activeChunks[(x,0)] = Chunk(scene=self, chunkPos=(x,0)) 
+
+        self.__activeChunks[0] = Chunk(scene=self, chunkPos=0)
                  
         if autoAdd:
             self.__game.addScene(scene=self, name=self.__name)

@@ -151,7 +151,7 @@ class Game(Loggable):
             block_loc_x = (info['mousePos'][0] + self.camera.cords.x) // Block.SIZE.x
             block_loc_y = (info['mousePos'][1] + self.camera.cords.y) // Block.SIZE.y
 
-            blockLocation = Vector2((block_loc_x, block_loc_y)) 
+            blockLocation = (int(block_loc_x), int(block_loc_y))
 
             currentScene.setBlockByAbsolutePos(blockLocation, None, dontRaiseErrors=True)
             
@@ -160,7 +160,7 @@ class Game(Loggable):
             block_loc_x = (info['mousePos'][0] + self.camera.cords.x) // Block.SIZE.x
             block_loc_y = (info['mousePos'][1] + self.camera.cords.y) // Block.SIZE.y
 
-            blockLocation = Vector2((block_loc_x, block_loc_y)) 
+            blockLocation = (int(block_loc_x), int(block_loc_y))
 
 
             currentScene.setBlockByAbsolutePos(blockLocation, self.storage['selectedBlockName'], dontRaiseErrors=True)
@@ -229,6 +229,7 @@ class Game(Loggable):
         self.addInputEvent("blockUp", InputType.keyDown, handleBlockUp, key=pygame.K_z)
         self.addInputEvent("blockDown", InputType.keyDown, handleBlockDown, key=pygame.K_x)  
         self.addInputEvent("blockGet", InputType.wheelClick, getBlock)
+        self.addInputEvent("saveMap", InputType.keyDown, key=pygame.K_s, function=lambda *args, **kwargs: self.getCurrentScene().saveWorld())
         
     
     async def __gameLoop(self) -> None:

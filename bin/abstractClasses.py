@@ -18,7 +18,8 @@ class Entity(ABC): pass
 
 class Reason(Enum):
     '''reason to perform specified action'''
-    WorldGenerator = "world_generator"
+    worldGenerator = "world_generator"
+    chunkRestore = "chunk_restore"
 
 class InputType(Enum):
     '''type of input that was given by user'''
