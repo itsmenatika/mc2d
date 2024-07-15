@@ -63,6 +63,9 @@ class ParentForLogs:
 
 class Logger:
     '''Logger is used to loging stuff. Only one with intialized during the game.'''
+    
+    logFile = "data/logs/latest.log"
+    
     def errorWithTraceback(self, message: str, error: Exception) -> None:
         '''logs error with traceback\n
             Args:\n
@@ -89,6 +92,9 @@ class Logger:
         
         print(finalMessage)
         
+        with open(self.logFile, "a+") as f:
+            f.write(finalMessage+"\n")
+        
     def clear(self) -> None:
         '''clear all logs'''
         self.__logs.clear()
@@ -108,6 +114,9 @@ class Logger:
     def __init__(self, game: 'Game') -> None:
         self.__game = game
         self.__logs: list[str] = []
+        
+        with open(self.logFile, 'w'):
+            pass
         
         
 class Loggable:
