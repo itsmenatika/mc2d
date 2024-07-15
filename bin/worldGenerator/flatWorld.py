@@ -1,9 +1,11 @@
 from bin.abstractClasses import WorldGenerator, Reason
+from bin.logger import logType
 from bin.map import Chunk, Scene, Block
 import asyncio
 
 class flatWorldGenerator(WorldGenerator):
     async def generateChunk(self, chunkPos: tuple[int, int], chunk: 'Chunk', Scene: 'Scene'):
+        self.log(logType.INFO, f"generating chunk {chunkPos}...")
         
         for x in range(0, int(Chunk.SIZE.x)):
             Block.newBlockByResourceManager(name="grass_block", 
@@ -34,4 +36,6 @@ class flatWorldGenerator(WorldGenerator):
                                             chunk=chunk)                
             
             await asyncio.sleep(0.1)
+            
+        self.log(logType.SUCCESS, f"generating chunk {chunkPos}... DONE")
         
