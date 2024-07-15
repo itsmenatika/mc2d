@@ -3,6 +3,7 @@ from typing import Optional
 
 import traceback
 import sys
+from datetime import datetime
 
 
 # Enumerator kolorów
@@ -86,8 +87,9 @@ class Logger:
                 None'''
 
         fromWhere = "gameEngine" if not parent else str(parent)
+        timenow = datetime.now().time().strftime("%X:%f")
             
-        finalMessage = f"[{fromWhere}/{logtype.value}]: {message}"
+        finalMessage = f"{timenow} [{fromWhere}/{logtype.value}]: {message}"
         self.__logs.append(finalMessage)
         
         print(finalMessage)
@@ -115,7 +117,7 @@ class Logger:
         self.__game = game
         self.__logs: list[str] = []
         
-        with open(self.logFile, 'w'):
+        with open(self.logFile, 'w') as f:
             pass
         
         
