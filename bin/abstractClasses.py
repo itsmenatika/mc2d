@@ -18,20 +18,39 @@ class Entity(ABC): pass
 
 class Reason(Enum):
     '''reason to perform specified action'''
+    unknown = "unkown"
+    myCat = "my_cat"
+    fbi = "fbi"
+    skidibi = "skidibi"
+    
     worldGenerator = "world_generator"
     chunkRestore = "chunk_restore"
+    blockPlacement = "block_placement"
+    blockReplacement = "block_replacement"
+    blockChange = "block_change"
+    blockDestroy = "block_destroy"
+    errorCorrection = "error_correction"
+    savingWorld = "saving_world"
+    loadingWorld = "loading_world"
 
 class InputType(Enum):
     '''type of input that was given by user'''
     rightClick = "rightClick"
     leftClick = "leftClick"
     wheelClick = "wheelClick"
+    rightClickHold = "rightClickHold"
+    leftClickHold = "leftClickHold"
+    wheelClickHold = "wheelClickHold"
     keyDown = "keyDown"
     keyUp = "keyUp"
     
-class eventType(Enum):
+class EventType(Enum):
     '''type of event'''
-    destroyBlock = "destroy_block"
+    unknown = "unkown"
+    other = "other"
+    
+    blockPlacement = "block_placement"
+    blockDestroy = "block_destroy"
 
 class Executor(ABC):
     __whoami = None

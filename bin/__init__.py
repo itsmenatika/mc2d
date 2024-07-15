@@ -9,11 +9,13 @@ from bin.camera import Camera
 
 from pygame.math import Vector2
 from bin.namespace import resourceManager
-from bin.worldGenerator.overworld import worldGeneratorNormal
+# from bin.worldGenerator.overworld import worldGeneratorNormal
 from bin.worldGenerator.flatWorld import flatWorldGenerator
 
 from bin.abstractClasses import InputType, inputEventInfo
 from bin.logger import Logger, Loggable, logType, ParentForLogs
+
+from bin.event import event
 
 class gameEngineError(Exception): pass
 class invalidName(gameEngineError): pass
@@ -38,6 +40,64 @@ class Game(Loggable):
         
         # example of function that could be passed here: callable[['Game', currentScene, InputType,inputEventInfo], bool]
         
+        
+        # getting basic info
+        self.__buttonsClicked: tuple[bool, bool, bool] = pygame.mouse.get_pressed()
+        self.__mousePos = pygame.mouse.get_pos()
+        self.__keysPressed = pygame.key.get_pressed()
+        
+        
+        
+        if self.__buttonsClicked[0]:
+            for eventName, eventTwo in self.__inputEventsList["leftClickHold"].items():
+                if eventTwo[1]['enabled']:
+                    try:
+                        if eventTwo[0](self, self.getCurrentScene(), InputType.leftClickHold, {
+                            "buttonClicked": self.__buttonsClicked,
+                            "mousePos": self.__mousePos,
+                            "allKeysPressed": self.__keysPressed,
+                            "leftShift": self.__keysPressed[pygame.K_LSHIFT],
+                            "rightShift": self.__keysPressed[pygame.K_RSHIFT],
+                            "anyShift":  self.__keysPressed[pygame.K_LSHIFT] or self.__keysPressed[pygame.K_RSHIFT]
+                        }, Loggable(game=self, logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
+                    except Exception as e:
+                        self.getLogger().errorWithTraceback("An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
+                        # traceback.print_exception(e)
+                        # print("")
+        if self.__buttonsClicked[1]:
+            for eventName, eventTwo in self.__inputEventsList["wheelClickHold"].items():
+                if eventTwo[1]['enabled']:
+                    try:
+                        if eventTwo[0](self, self.getCurrentScene(), InputType.wheelClickHold, {
+                            "buttonClicked": self.__buttonsClicked,
+                            "mousePos": self.__mousePos,
+                            "allKeysPressed": self.__keysPressed,
+                            "leftShift": self.__keysPressed[pygame.K_LSHIFT],
+                            "rightShift": self.__keysPressed[pygame.K_RSHIFT],
+                            "anyShift":  self.__keysPressed[pygame.K_LSHIFT] or self.__keysPressed[pygame.K_RSHIFT]
+                        }, Loggable(game=self, logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
+                    except Exception as e:
+                        self.getLogger().errorWithTraceback("An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
+                        # traceback.print_exception(e)
+                        # print("")
+        if self.__buttonsClicked[2]:
+            for eventName, eventTwo in self.__inputEventsList["rightClickHold"].items():
+                if eventTwo[1]['enabled']:
+                    try:
+                        if eventTwo[0](self, self.getCurrentScene(), InputType.rightClickHold, {
+                            "buttonClicked": self.__buttonsClicked,
+                            "mousePos": self.__mousePos,
+                            "allKeysPressed": self.__keysPressed,
+                            "leftShift": self.__keysPressed[pygame.K_LSHIFT],
+                            "rightShift": self.__keysPressed[pygame.K_RSHIFT],
+                            "anyShift":  self.__keysPressed[pygame.K_LSHIFT] or self.__keysPressed[pygame.K_RSHIFT]
+                        }, Loggable(game=self, logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
+                    except Exception as e:
+                        # self.getLogger().log(logType.ERROR, f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]}):\n")
+                        # traceback.print_exception(e)
+                        # print("")
+                        self.getLogger().errorWithTraceback("An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
+        
         # looping through them
         for event in self.__events:
             match event.type:
@@ -53,6 +113,15 @@ class Game(Loggable):
                             try:
                                 if eventTwo[0](self, self.getCurrentScene(), InputType.keyUp, {
                                     "buttonClicked": event.key,
+                                    "window": event.window,
+                                    "unicode": event.unicode,
+                                    "mod": event.mod,
+                                    "scancode": event.scancode,
+                                    "allKeysPressed": self.__keysPressed,
+                                    "leftShift": self.__keysPressed[pygame.K_LSHIFT],
+                                    "rightShift": self.__keysPressed[pygame.K_RSHIFT],
+                                    "anyShift":  self.__keysPressed[pygame.K_LSHIFT] or self.__keysPressed[pygame.K_RSHIFT]
+                                    
                                 }, Loggable(game=self,logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
                             except Exception as e:
                                 # self.getLogger().log(logType.ERROR, f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]}):\n")
@@ -60,6 +129,7 @@ class Game(Loggable):
                                 # print("")
                                 self.getLogger().errorWithTraceBack("An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
                 case pygame.KEYDOWN:
+                    # print(event)
                     # handling events when user start pressing key
                     for eventName, eventTwo in self.__inputEventsList["keyDown"].items():
                         # print(event.key, event['key'])
@@ -68,6 +138,14 @@ class Game(Loggable):
                             if eventTwo[1]['key'] == event.key:
                                 if eventTwo[0](self, self.getCurrentScene(), InputType.keyDown, {
                                     "buttonClicked": event.key,
+                                    "window": event.window,
+                                    "unicode": event.unicode,
+                                    "mod": event.mod,
+                                    "scancode": event.scancode,
+                                    "allKeysPressed": self.__keysPressed,
+                                    "leftShift": self.__keysPressed[pygame.K_LSHIFT],
+                                    "rightShift": self.__keysPressed[pygame.K_RSHIFT],
+                                    "anyShift":  self.__keysPressed[pygame.K_LSHIFT] or self.__keysPressed[pygame.K_RSHIFT]
                                 }, Loggable(game=self,logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
                         except Exception as e:
                             # type, value, traceback = sys.exc_info()
@@ -91,44 +169,62 @@ class Game(Loggable):
                     #     # self.camera.cords.y += 200
                     #     self.camera.moveBy(Vector2(0,200))
                 case pygame.MOUSEBUTTONDOWN:
+                    # print(event, event.button == 1)
                     # handling events when user clicks something on their mouse
                     
-                    # getting basic info
-                    buttonsClicked: tuple[bool, bool, bool] = pygame.mouse.get_pressed()
-                    mousePos = pygame.mouse.get_pos()
                     
                     # print(self.__inputEventsList)
-                    if buttonsClicked[0]:
+                    # print(Event)
+                    if event.button == 1:
+                        # print('sw')
                         for eventName, eventTwo in self.__inputEventsList["leftClick"].items():
                             if eventTwo[1]['enabled']:
                                 try:
                                     if eventTwo[0](self, self.getCurrentScene(), InputType.leftClick, {
-                                        "buttonClicked": buttonsClicked,
-                                        "mousePos": mousePos
+                                        "buttonClicked": event.button,
+                                        "allButtonsClicked": self.__buttonsClicked,
+                                        "window": event.window,
+                                        "mousePos": self.__mousePos,
+                                        "allKeysPressed": self.__keysPressed,
+                                        "leftShift": self.__keysPressed[pygame.K_LSHIFT],
+                                        "rightShift": self.__keysPressed[pygame.K_RSHIFT],
+                                        "anyShift":  self.__keysPressed[pygame.K_LSHIFT] or self.__keysPressed[pygame.K_RSHIFT]  
                                     }, Loggable(game=self, logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
                                 except Exception as e:
                                     self.getLogger().errorWithTraceback("An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
                                     # traceback.print_exception(e)
                                     # print("")
-                    if buttonsClicked[1]:
+                    if event.button == 2:
                         for eventName, eventTwo in self.__inputEventsList["wheelClick"].items():
                             if eventTwo[1]['enabled']:
                                 try:
                                     if eventTwo[0](self, self.getCurrentScene(), InputType.leftClick, {
-                                        "buttonClicked": buttonsClicked,
-                                        "mousePos": mousePos
+                                        "buttonClicked": event.button,
+                                        "allButtonsClicked": self.__buttonsClicked,
+                                        "window": event.window,
+                                        "mousePos": self.__mousePos,
+                                        "allKeysPressed": self.__keysPressed,
+                                        "leftShift": self.__keysPressed[pygame.K_LSHIFT],
+                                        "rightShift": self.__keysPressed[pygame.K_RSHIFT],
+                                        "anyShift":  self.__keysPressed[pygame.K_LSHIFT] or self.__keysPressed[pygame.K_RSHIFT]  
                                     }, Loggable(game=self, logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
                                 except Exception as e:
                                     self.getLogger().errorWithTraceback("An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
                                     # traceback.print_exception(e)
                                     # print("")
-                    if buttonsClicked[2]:
+                    if event.button == 3:
                         for eventName, eventTwo in self.__inputEventsList["rightClick"].items():
                             if eventTwo[1]['enabled']:
                                 try:
                                     if eventTwo[0](self, self.getCurrentScene(), InputType.leftClick, {
-                                        "buttonClicked": buttonsClicked,
-                                        "mousePos": mousePos
+                                        "buttonClicked": event.button,
+                                        "allButtonsClicked": self.__buttonsClicked,
+                                        "window": event.window,
+                                        "mousePos": self.__mousePos,
+                                        "allKeysPressed": self.__keysPressed,
+                                        "leftShift": self.__keysPressed[pygame.K_LSHIFT],
+                                        "rightShift": self.__keysPressed[pygame.K_RSHIFT],
+                                        "anyShift":  self.__keysPressed[pygame.K_LSHIFT] or self.__keysPressed[pygame.K_RSHIFT]  
                                     }, Loggable(game=self, logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
                                 except Exception as e:
                                     # self.getLogger().log(logType.ERROR, f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]}):\n")
@@ -219,8 +315,8 @@ class Game(Loggable):
                 loggable.info(f"block editor got changed to {game.storage['selectedBlockName']} (intID: {game.storage['selectedBlock']})")
                 
         # binding events
-        self.addInputEvent("test", InputType.leftClick, destroyBlock)
-        self.addInputEvent("test2", InputType.rightClick, addBlock)
+        self.addInputEvent("test", InputType.rightClickHold, destroyBlock)
+        self.addInputEvent("test2", InputType.leftClickHold, addBlock)
         self.addInputEvent("keyUp", InputType.keyDown, lambda *args, **kwargs: self.camera.moveBy(Vector2(0,-200)), key=pygame.K_UP)
         self.addInputEvent("keyDown", InputType.keyDown, lambda *args, **kwargs: self.camera.moveBy(Vector2(0,200)), key=pygame.K_DOWN)
         self.addInputEvent("keyRight", InputType.keyDown, lambda *args, **kwargs: self.camera.moveBy(Vector2(200,0)), key=pygame.K_RIGHT)
@@ -522,7 +618,10 @@ class Game(Loggable):
                 "keyUp": {},
                 "rightClick": {},
                 "leftClick": {},
-                "wheelClick": {}
+                "wheelClick": {},
+                "rightClickHold": {},
+                "leftClickHold": {},
+                "wheelClickHold": {}
             }
                 
         # creating copy just because python can create errors about changing size of dictionary during iteration
@@ -596,7 +695,10 @@ class Game(Loggable):
             "keyUp": {},
             "rightClick": {},
             "leftClick": {},
-            "wheelClick": {}
+            "wheelClick": {},
+            "rightClickHold": {},
+            "leftClickHold": {},
+            "wheelClickHold": {}
         }
         
         

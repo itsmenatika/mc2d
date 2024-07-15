@@ -1,7 +1,8 @@
 from typing import Optional, Callable
 import asyncio
-from bin.abstractClasses import Executor
-from bin.logger import Loggable
+from bin.abstractClasses import Executor, EventType
+from bin.logger import Loggable, ParentForLogs
+# from bin.map import Chunk, Block, Scene
 
 class eventError(Exception): pass
 
@@ -9,12 +10,24 @@ class event(Executor, Loggable):
     '''class to easy manage preventing events'''
     defaultName = "unkownEvent"
     
+    
+    # fast event creating
+    # @staticmethod
+    # def createBlockPlacementByAbsolutePos(self, scene: 'Scene', blockPos: tuple[int,int], block: str | None | 'Block', dontRaiseErrors: bool = True) -> 'event':
+    #     return event(
+    #         callback=lambda: scene.setBlockByAbsolutePos(blockPos, block, dontRaiseErrors),
+    #         eventType=EventType.blockPlacement
+    #     )
+      
+    
+    
+    
     def isWaiting(self) -> bool: 
         '''check if event still waits for execution'''
         return self.__waiting
     
     def do(self) -> None:
-        '''forces event to execute. Only use if that required to specified purpose. Internal code of the game will rather not use this function because its time-consuming!'''
+        '''forces event to execute. Only use if that required to specified purpose. Internal code of the game will rather not use this function because its time-consuming! (unless you doesn't care lol|sometimes it's easier to just execute this function)'''
         if self.__waiting != True:
             self.logErr("trying to execute event, but event was already executed!")
             
@@ -43,15 +56,19 @@ class event(Executor, Loggable):
         self.__waiting = False
         
         
-    def __init__(self, callback: Callable, argsForCallback: Optional[list] = None, kwargsForCallback: Optional[dict] = None, shownName: Optional[str] = None, createAsyncioTask: bool = False) -> None:
+    def __init__(self, callback: Callable, argsForCallback: Optional[list] = None, kwargsForCallback: Optional[dict] = None, shownName: Optional[str] = None, createAsyncioTask: bool = False, eventType: EventType = EventType.unknown, *args, **kwargs) -> None:
+        
         self.__waiting: bool = True
         self.__callback = callback
         self.__createAsyncioTask = createAsyncioTask
         self._args = argsForCallback
         self.__kwargs = kwargsForCallback
+        self.__eventType = eventType
         
         if shownName != None:
             self.__shownName = shownName
         else:
             self.__shownName = self.defaultName
+            
+        super().__init__(logParent=ParentForLogs(f"event_{self.__shownName}", parent=self.getLogParent()))
         

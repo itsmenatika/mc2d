@@ -11,6 +11,8 @@ import random
 # from bin.camera import Camera
 from bin.abstractClasses import Executor, WorldGenerator, Reason
 from bin.logger import Loggable, logType, ParentForLogs
+
+from bin.event import event, EventType
 # from bin.tools import getChunkPosFromCords
 
 
@@ -20,6 +22,41 @@ class chunkNotLoaded(Exception): pass
 class Chunk(pygame.sprite.Group, Executor, Loggable):
     '''portion of the world of the size (16,360)'''
     SIZE = Vector2(16,360)
+
+    async def restoreChunkFromChunkData(self, chunkData: dict) -> None:
+        '''allows you to restore chunk from chunkData'''
+        try:
+            # # blocks
+            # blockPosSplit = []
+            # for blockPosStr, blockData in chunkData['blocks'].items():
+            #     blockPosSplit = blockPosStr.split("_")
+            #     blockPos = (int(blockPosSplit[0]), int(blockPosSplit[1]))
+            #     # print('s')
+            #     self.setBlock(blockPos, blockData['id'], executor=self, reason=Reason.chunkRestore)
+            
+            
+            howManyBlocks = len(chunkData['blocks'])
+            
+            blockData = chunkData['blocks']
+            blockPos = []
+            blockdict: dict = {}
+            # blockPosSt = list
+            for block in range(howManyBlocks):
+                blockDict = blockData[block]
+                blockPos = tuple(blockDict['blockPos'])
+                Block.newBlockByResourceManager(blockDict['id'],
+                                                blockPos,
+                                                executor=self,
+                                                reason=Reason.chunkRestore,
+                                                chunk=self)
+                if block % 100 == 0: await asyncio.sleep(0.1)
+            
+            
+            
+            self.log(logType.SUCCESS, "restoring data from save... DONE")
+        except Exception as e:
+            self.errorWithTraceback("error with restoring data from save", e)
+                    
 
     def unload(self, previousData: Optional[dict] = None) -> dict:  
         '''You have to also remove this chunk from list of actived chunks (python reasons) and add new info to chunk save manually! If you don't wanna mess with this just use map.unloadChunk(self) or self.getScene().unloadChunk(self) instead! That is rather for more precise use than just simple unloading chunk!''' 
@@ -252,39 +289,7 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
         except Exception as e:
             print('gada', e)
             
-    async def restoreChunkFromChunkData(self, chunkData: dict) -> None:
-        try:
-            # # blocks
-            # blockPosSplit = []
-            # for blockPosStr, blockData in chunkData['blocks'].items():
-            #     blockPosSplit = blockPosStr.split("_")
-            #     blockPos = (int(blockPosSplit[0]), int(blockPosSplit[1]))
-            #     # print('s')
-            #     self.setBlock(blockPos, blockData['id'], executor=self, reason=Reason.chunkRestore)
-            
-            
-            howManyBlocks = len(chunkData['blocks'])
-            
-            blockData = chunkData['blocks']
-            blockPos = []
-            blockdict: dict = {}
-            # blockPosSt = list
-            for block in range(howManyBlocks):
-                blockDict = blockData[block]
-                blockPos = tuple(blockDict['blockPos'])
-                Block.newBlockByResourceManager(blockDict['id'],
-                                                blockPos,
-                                                executor=self,
-                                                reason=Reason.chunkRestore,
-                                                chunk=self)
-                if block % 100 == 0: await asyncio.sleep(0.1)
-            
-            
-            
-            self.log(logType.SUCCESS, "restoring data from save... DONE")
-        except Exception as e:
-            self.errorWithTraceback("error with restoring data from save", e)
-                    
+
     
     def __init__(self, scene: 'Scene', chunkPos: int = 0, chunkData: Optional[dict] = None) -> None:
         # basics
@@ -550,7 +555,7 @@ class Block(pygame.sprite.Sprite):
         match reason:
             case "world_generator":
                 self.onGenerate(cordsAbsolute=self.cordsAbsolute,cordsRelative=self.__cords, inChunkPosition=blockPos, chunk=chunk)
-            case"chunk_load":
+            case "chunk_restore":
                 self.onLoad(cordsAbsolute=self.cordsAbsolute,cordsRelative=self.__cords, inChunkPosition=blockPos, chunk=chunk)
         
         # ???? co skąd to coś tu jest
@@ -689,6 +694,12 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
     #     self.camera.draw(self.get)
     
     # blocks handling
+    
+    def setBlockByAbsolutePosWithEvent(self, pos: tuple[int,int], block: None|Block|str, eventType: EventType, reason: Reason,
+                                       dontRaiseErrors: bool = False) -> None:
+        pass
+        
+    
             
     def setBlockByAbsolutePos(self, pos: tuple[int,int], block: None|Block|str, dontRaiseErrors: bool = False) -> None:
         # if isinstance(pos, Vector2):

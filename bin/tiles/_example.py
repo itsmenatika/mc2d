@@ -26,7 +26,7 @@ class BLOCKID(Block):
         '''Method executed when chunk is generated, can be changed in every block'''
         pass
     
-    # function run once block is loaded from save (not implemented yet, will be soon) (requirement to be invoked: Reason.chunkRestore)
+    # function run once block is loaded from save (requirement to be invoked: Reason.chunkRestore)
     def onLoad(self, cordsRelative: Vector2, cordsAbsolute: Vector2, inChunkPosition: tuple[int,int], chunk: Chunk):  
         '''Method executed when chunk is loaded, can be changed in every block'''
         pass
