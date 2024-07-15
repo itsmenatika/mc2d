@@ -32,38 +32,6 @@
         }
     },
     "chunkData": {
-        "1": {
-            "gameVersionGenerated": 981,
-            "gameVersionLastVisited": 312,
-            "entities": {
-                "UUID": {
-                    "cords": [12,12],
-                    "id": "twojamama",
-                    "entityData": {
-                        "health": 0,
-                        "max_health": 0,
-                        "customName": "sus",
-                        "customNameVisible": false,
-                        "air": 0,
-                        "max_air": 0,
-                        "air_per_tick_addition": 0,
-                        "air_per_tick_removal": 0
-                    }
-                    
 
-                }
-            },
-            "blocks": {
-                "0": {
-                    "BLOCK_CORDS": {
-                        "id": "stone",
-                        "nbt_data": {
-
-                        }
-                    }
-                }
-            }
-
-        } 
     }
 }

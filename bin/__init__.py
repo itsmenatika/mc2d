@@ -10,6 +10,8 @@ from bin.camera import Camera
 from pygame.math import Vector2
 from bin.namespace import resourceManager
 from bin.worldGenerator.overworld import worldGeneratorNormal
+from bin.worldGenerator.flatWorld import flatWorldGenerator
+
 from bin.abstractClasses import InputType, inputEventInfo
 from bin.logger import Logger, Loggable, logType, ParentForLogs
 
@@ -142,7 +144,7 @@ class Game(Loggable):
         # be careful with everything here. that was written fastly on 3 am
         
         # basics
-        t = Scene(self, name="test", worldGenerator=worldGeneratorNormal)
+        t = Scene(self, name="test", worldGenerator=flatWorldGenerator)
         self.setCurrentScene(t)
         self.camera = Camera(cords=Vector2(0,70), game=self)
         

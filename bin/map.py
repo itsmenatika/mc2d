@@ -21,7 +21,7 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
     '''portion of the world of the size (16,360)'''
     SIZE = Vector2(16,360)
 
-    def unload(self, previousData: dict = {}) -> dict:  
+    def unload(self, previousData: Optional[dict] = None) -> dict:  
         '''You have to also remove this chunk from list of actived chunks (python reasons) and add new info to chunk save manually! If you don't wanna mess with this just use map.unloadChunk(self) or self.getScene().unloadChunk(self) instead! That is rather for more precise use than just simple unloading chunk!''' 
         self.log(logType.INFO, f"unloading chunk {self.getChunkPos()}...")
         
@@ -33,8 +33,11 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
 
         return _data
         
-    def save(self, previousData: dict = {}) -> dict:
+    def save(self, previousData: Optional[dict] = None) -> dict:
         '''just saving chunk'''
+        
+        if previousData == None:
+            previousData = {}
         
         self.log(logType.INFO, f"saving chunk {self.getChunkPos()}... (NOT DONE YET)")
         
@@ -759,6 +762,15 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
         
         
     def saveWorld(self) -> None:
+        '''allows you to save the world'''
+        # ensuring that every chunk is in current state
+        for chunkPos, chunk in self.__activeChunks.items():
+            if str(chunkPos) in self.__forSaving['chunkData']:
+                self.__forSaving['chunkData'][str(chunkPos)] = chunk.save(previousData=self.__forSaving['chunkData'][str(chunkPos)])
+            else:
+                self.__forSaving['chunkData'][str(chunkPos)] = chunk.save()
+        
+        # final saving
         with open('data/saves/map.json', "w") as file:
             file.write(json.dumps(self.__forSaving, indent=4))
     
@@ -809,7 +821,7 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
         # generating basic chunks
         
 
-        self.__activeChunks[0] = Chunk(scene=self, chunkPos=0)
+        # self.__activeChunks[0] = Chunk(scene=self, chunkPos=0)
                  
         if autoAdd:
             self.__game.addScene(scene=self, name=self.__name)
