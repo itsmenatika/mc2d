@@ -1,3 +1,6 @@
+# user data or save data
+data/saves/map.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
