@@ -68,7 +68,7 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
                 {
                     "id": Block.ID,
                     "idInt": Block.IDInt,
-                    "blockPos": f"{str(int(blockPos[0]))}_{str(int(blockPos[1]))}"
+                    "blockPos": [int(blockPos[0]), int(blockPos[1])]
                 }
                 for blockPos, Block in self.__blocks.items()
             ]
@@ -271,10 +271,9 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
             # blockPosSt = list
             for block in range(howManyBlocks):
                 blockDict = blockData[block]
-                blockPos = blockDict['blockPos'].split("_")
-                blockPosSt = (int(blockPos[0]), int(blockPos[1]))
+                blockPos = tuple(blockDict['blockPos'])
                 Block.newBlockByResourceManager(blockDict['id'],
-                                                blockPosSt,
+                                                blockPos,
                                                 executor=self,
                                                 reason=Reason.chunkRestore,
                                                 chunk=self)
