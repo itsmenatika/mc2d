@@ -1,8 +1,8 @@
 from enum import Enum
 from typing import Optional
-
 import traceback
 import sys
+import os
 from datetime import datetime
 
 
@@ -116,6 +116,9 @@ class Logger:
     def __init__(self, game: 'Game') -> None:
         self.__game = game
         self.__logs: list[str] = []
+        
+        # if not os.path.exists(self.logFile):
+        #     os.fi
         
         with open(self.logFile, 'w') as f:
             pass

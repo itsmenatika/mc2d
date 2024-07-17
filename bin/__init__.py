@@ -2,6 +2,7 @@ import pygame
 import sys
 import traceback
 import asyncio
+import os
 from typing import Optional, Iterable, ItemsView, Union
 
 from bin.map import Scene, Chunk, currentScene, Block
@@ -676,6 +677,22 @@ class Game(Loggable):
         self.__logger: Logger = Logger(self)
         
         self.__logger.log(logType.INIT, "loading engine...")
+        
+        
+        if not os.path.exists("bin"):
+            self.__logger.log(logType.ERROR, "couldn't find path 'bin'. We couldn't run the game")
+            self.__logger.log(logType.CRASHREPORT, "game was self-crashed by game engine")
+            exit()
+            
+        if not os.path.exists("data"):
+            self.__logger.log(logType.ERROR, "couldn't find path 'data'. We couldn't run the game")
+            self.__logger.log(logType.CRASHREPORT, "game was self-crashed by game engine")
+            exit()
+            
+        if not os.path.exists("resources"):
+            self.__logger.log(logType.ERROR, "couldn't find path 'resources'. We couldn't run game")
+            self.__logger.log(logType.CRASHREPORT, "game was self-crashed by game engine")
+            exit()
         
         # basics
         self.__resolution = resolution
