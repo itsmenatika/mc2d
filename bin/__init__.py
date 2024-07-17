@@ -13,10 +13,10 @@ from bin.namespace import resourceManager
 # from bin.worldGenerator.overworld import worldGeneratorNormal
 from bin.worldGenerator.flatWorld import flatWorldGenerator
 
-from bin.abstractClasses import InputType, inputEventInfo
+from bin.abstractClasses import InputType, inputEventInfo, EventType
 from bin.logger import Logger, Loggable, logType, ParentForLogs
 
-from bin.event import event
+from bin.event import Event
 
 class gameEngineError(Exception): pass
 class invalidName(gameEngineError): pass
@@ -62,7 +62,7 @@ class Game(Loggable):
                             "anyShift":  self.__keysPressed[pygame.K_LSHIFT] or self.__keysPressed[pygame.K_RSHIFT]
                         }, Loggable(game=self, logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
                     except Exception as e:
-                        self.getLogger().errorWithTraceback("An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
+                        self.getLogger().errorWithTraceback(f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
                         # traceback.print_exception(e)
                         # print("")
         if self.__buttonsClicked[1]:
@@ -78,7 +78,7 @@ class Game(Loggable):
                             "anyShift":  self.__keysPressed[pygame.K_LSHIFT] or self.__keysPressed[pygame.K_RSHIFT]
                         }, Loggable(game=self, logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
                     except Exception as e:
-                        self.getLogger().errorWithTraceback("An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
+                        self.getLogger().errorWithTraceback(f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
                         # traceback.print_exception(e)
                         # print("")
         if self.__buttonsClicked[2]:
@@ -97,7 +97,7 @@ class Game(Loggable):
                         # self.getLogger().log(logType.ERROR, f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]}):\n")
                         # traceback.print_exception(e)
                         # print("")
-                        self.getLogger().errorWithTraceback("An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
+                        self.getLogger().errorWithTraceback(f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
         
         # looping through them
         for event in self.__events:
@@ -128,7 +128,7 @@ class Game(Loggable):
                                 # self.getLogger().log(logType.ERROR, f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]}):\n")
                                 # traceback.print_exception(e)
                                 # print("")
-                                self.getLogger().errorWithTraceBack("An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
+                                self.getLogger().errorWithTraceBack(f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
                 case pygame.KEYDOWN:
                     # print(event)
                     # handling events when user start pressing key
@@ -155,7 +155,7 @@ class Game(Loggable):
                             # self.getLogger().log(logType.ERROR, f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]}):\n")
                             # traceback.print_exception(e)
                             # print("")
-                            self.getLogger().errorWithTraceback("An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
+                            self.getLogger().errorWithTraceback(f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
                     
                     # if event.key == pygame.K_LEFT:
                     #     # self.camera.cords.x -= 200
@@ -192,7 +192,7 @@ class Game(Loggable):
                                         "anyShift":  self.__keysPressed[pygame.K_LSHIFT] or self.__keysPressed[pygame.K_RSHIFT]  
                                     }, Loggable(game=self, logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
                                 except Exception as e:
-                                    self.getLogger().errorWithTraceback("An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
+                                    self.getLogger().errorWithTraceback(f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
                                     # traceback.print_exception(e)
                                     # print("")
                     if event.button == 2:
@@ -210,7 +210,7 @@ class Game(Loggable):
                                         "anyShift":  self.__keysPressed[pygame.K_LSHIFT] or self.__keysPressed[pygame.K_RSHIFT]  
                                     }, Loggable(game=self, logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
                                 except Exception as e:
-                                    self.getLogger().errorWithTraceback("An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
+                                    self.getLogger().errorWithTraceback(f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
                                     # traceback.print_exception(e)
                                     # print("")
                     if event.button == 3:
@@ -231,7 +231,7 @@ class Game(Loggable):
                                     # self.getLogger().log(logType.ERROR, f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]}):\n")
                                     # traceback.print_exception(e)
                                     # print("")
-                                    self.getLogger().errorWithTraceback("An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
+                                    self.getLogger().errorWithTraceback(f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
                 
                
                     
@@ -252,7 +252,7 @@ class Game(Loggable):
 
             blockLocation = (int(block_loc_x), int(block_loc_y))
 
-            currentScene.setBlockByAbsolutePos(blockLocation, None, dontRaiseErrors=True)
+            currentScene.setBlockByAbsolutePosWithEvent(blockLocation, None, dontRaiseErrors=True)
             
             
         def addBlock(game, currentScene: Scene, typeEvent, info, loggable):
@@ -262,7 +262,7 @@ class Game(Loggable):
             blockLocation = (int(block_loc_x), int(block_loc_y))
 
 
-            currentScene.setBlockByAbsolutePos(blockLocation, self.storage['selectedBlockName'], dontRaiseErrors=True)
+            currentScene.setBlockByAbsolutePosWithEvent(blockLocation, self.storage['selectedBlockName'], dontRaiseErrors=True)
         
         
         # functions for changing block

@@ -4,9 +4,9 @@ from bin.abstractClasses import Executor, EventType
 from bin.logger import Loggable, ParentForLogs
 # from bin.map import Chunk, Block, Scene
 
-class eventError(Exception): pass
+class EventError(Exception): pass
 
-class event(Executor, Loggable):
+class Event(Executor, Loggable):
     '''class to easy manage preventing events'''
     defaultName = "unkownEvent"
     
@@ -26,7 +26,7 @@ class event(Executor, Loggable):
         '''check if event still waits for execution'''
         return self.__waiting
     
-    def do(self) -> None:
+    def do(self):
         '''forces event to execute. Only use if that required to specified purpose. Internal code of the game will rather not use this function because its time-consuming! (unless you doesn't care lol|sometimes it's easier to just execute this function)'''
         if self.__waiting != True:
             self.logErr("trying to execute event, but event was already executed!")
@@ -36,17 +36,17 @@ class event(Executor, Loggable):
             if self.__createAsyncioTask:
                 asyncio.create_task(self.__callback(), name=self.__shownName)
             else:
-                self.__callback()
+                return self.__callback()
         elif self.__kwargs != None and self.__args == None:
             if self.__createAsyncioTask:
                 asyncio.create_task(self.__callback(**self.__kwargs), name=self.__shownName)
             else:
-                self.__callback(**self.__kwargs)
+                return self.__callback(**self.__kwargs)
         else:
             if self.__createAsyncioTask:
                 asyncio.create_task(self.__callback(*self.__args, **self.__kwargs), name=self.__shownName)
             else:
-                self.__callback(*self.__args, **self.__kwargs)
+                return self.__callback(*self.__args, **self.__kwargs)
         self.__waiting = False
         
     
@@ -56,12 +56,15 @@ class event(Executor, Loggable):
         self.__waiting = False
         
         
-    def __init__(self, callback: Callable, argsForCallback: Optional[list] = None, kwargsForCallback: Optional[dict] = None, shownName: Optional[str] = None, createAsyncioTask: bool = False, eventType: EventType = EventType.unknown, *args, **kwargs) -> None:
+    def getEventType(self) -> EventType:
+        return self.__eventType
+        
+    def __init__(self, callback: Callable, argsForCallback: Optional[list] = None, kwargsForCallback: Optional[dict] = None, shownName: Optional[str] = None, createAsyncioTask: bool = False, eventType: EventType = EventType.unknown, previousParentForLogs: Optional[ParentForLogs] = None, *args, **kwargs) -> None:
         
         self.__waiting: bool = True
         self.__callback = callback
         self.__createAsyncioTask = createAsyncioTask
-        self._args = argsForCallback
+        self.__args = argsForCallback
         self.__kwargs = kwargsForCallback
         self.__eventType = eventType
         
@@ -70,5 +73,5 @@ class event(Executor, Loggable):
         else:
             self.__shownName = self.defaultName
             
-        super().__init__(logParent=ParentForLogs(f"event_{self.__shownName}", parent=self.getLogParent()))
+        super().__init__(logParent=ParentForLogs(f"event_{self.__shownName}", parent=previousParentForLogs))
         

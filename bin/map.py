@@ -9,10 +9,10 @@ import asyncio
 import json
 import random
 # from bin.camera import Camera
-from bin.abstractClasses import Executor, WorldGenerator, Reason
+from bin.abstractClasses import Executor, WorldGenerator, Reason, EventType
 from bin.logger import Loggable, logType, ParentForLogs
 
-from bin.event import event, EventType
+from bin.event import Event
 # from bin.tools import getChunkPosFromCords
 
 
@@ -362,14 +362,28 @@ class Block(pygame.sprite.Sprite):
     
     # functions to changed in every block:
     
-    def onGenerate(self, cordsRelative: Vector2, cordsAbsolute: Vector2, inChunkPosition: tuple[int,int], chunk: Chunk):
+    def onGenerate(self, cordsRelative: Vector2, cordsAbsolute: Vector2, inChunkPosition: tuple[int,int], chunk: Chunk, executor: Optional[Executor] = None) -> None:
         '''Method executed when chunk is generated, can be changed in every block'''
         pass
     
-    def onLoad(self, cordsRelative: Vector2, cordsAbsolute: Vector2, inChunkPosition: tuple[int,int], chunk: Chunk):  
+    def onLoad(self, cordsRelative: Vector2, cordsAbsolute: Vector2, inChunkPosition: tuple[int,int], chunk: Chunk, executor: Optional[Executor] = None) -> None:  
         '''Method executed when chunk is loaded, can be changed in every block'''
         pass
+   
+    @staticmethod
+    def onPlaceAttempt(blockPosAbsolute: tuple[int,int], inChunkPosition: tuple[int,int], chunk: Chunk, event: Event, reason: Optional[Reason] = None, executor: Optional[Executor] = None, changingBlock: bool = False) -> None:  
+        '''method executed when block would be break (if you really want BLOCK OBJECT YOU MUST INTIALIZE EVENT BY event.do())'''
+        pass
     
+    # block.onBreak(blockPosAbsolute=pos,
+    #                                 inChunkPosition=block.getInChunkPosition()
+    #                                 chunk=self,
+    #                                 event=event,
+    #                                 reason=reason,
+    #                                 executor=executor)
+    def onBreakAttempt(self, blockPosAbsolute: tuple[int,int], inChunkPosition: tuple[int,int], chunk: Chunk, event: Event, reason: Optional[Reason] = None, executor: Optional[Executor] = None) -> None:  
+        '''method executed when block would be break'''
+        pass
     
     # getting neighbours
     
@@ -520,6 +534,9 @@ class Block(pygame.sprite.Sprite):
         
     
     
+    def isOfID(self, id: str) -> bool:
+        return True if self.ID == id else False
+    
     def __init__(self, image:pygame.surface.Surface, blockPos: tuple[int,int], chunk: Chunk, executor: Optional[Executor] = None, reason: Optional[str] = None, addToEverything: bool = True) -> None:
         '''creating block (TRY TO NOT USE IT!, USE another methods like Block.newBlockByResourceManager() or chunk.setBlock() or scene.setBlock(), using this method is very risky! using this will cause a lot of problems, especially because you have to use relative position! there's no guarantee that everything will work just fine!)\n
             Args:\n
@@ -552,12 +569,13 @@ class Block(pygame.sprite.Sprite):
         self.doRender = True
         
         # reason handling
+# (self, blockPosAbsolute: tuple[int,int], inChunkPosition: tuple[int,int], chunk: Chunk, event: Event, reason: Optional[Reason] = None, executor: Optional[Executor] = None)
         match reason:
             case "world_generator":
-                self.onGenerate(cordsAbsolute=self.cordsAbsolute,cordsRelative=self.__cords, inChunkPosition=blockPos, chunk=chunk)
+                self.onGenerate(cordsAbsolute=self.cordsAbsolute,cordsRelative=self.__cords, inChunkPosition=blockPos, chunk=chunk, executor=executor)
             case "chunk_restore":
-                self.onLoad(cordsAbsolute=self.cordsAbsolute,cordsRelative=self.__cords, inChunkPosition=blockPos, chunk=chunk)
-        
+                self.onLoad(cordsAbsolute=self.cordsAbsolute,cordsRelative=self.__cords, inChunkPosition=blockPos, chunk=chunk, executor=executor)
+
         # ???? co skąd to coś tu jest
         # del chunk_position
 
@@ -695,9 +713,76 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
     
     # blocks handling
     
-    def setBlockByAbsolutePosWithEvent(self, pos: tuple[int,int], block: None|Block|str, eventType: EventType, reason: Reason,
-                                       dontRaiseErrors: bool = False) -> None:
-        pass
+    def setBlockByAbsolutePosWithEvent(self, pos: tuple[int,int], block: None|str, reason: Optional[Reason] = None, dontRaiseErrors: bool = True, executor: Optional[Executor] = None) -> None:
+        '''create fast event about changing the block without caring about managing event (though if you want to truly optimize something you should control events yourself!). That's kind of temporary command. If functions like self.tryToPlace() or self.tryToBreak() do exist, use them instead.'''
+        # check
+        chunkPos = pos[0] // Chunk.SIZE.x
+        
+        if chunkPos not in self.__activeChunks:
+            self.log(logType.ERROR, f"Trying to access block of position ${pos} which should be located in chunk ${chunkPos}, but that chunk is not loaded!")
+            if dontRaiseErrors: return
+            raise chunkNotLoaded(f"Trying to access block of position ${pos} which should be located in chunk ${chunkPos}, but that chunk is not loaded!")
+        
+        
+        BlockPos = (int(pos[0] % Chunk.SIZE.x), int(pos[1] % Chunk.SIZE.y))
+        chunk: Chunk = self.getChunk(chunkPos)
+        
+        # event creation
+        
+        
+        if block == None:
+            event = Event(callback=lambda: self.getChunk(chunkPos).setBlock(BlockPos, None),
+                        eventType=EventType.blockBreak)
+            blockPr: Block | None = chunk.getBlockByTuple(BlockPos)
+            
+            if blockPr != None:
+                blockPr.onBreakAttempt(pos, BlockPos, chunk, event, reason, executor)
+                
+            if event.isWaiting(): event.do()
+            
+        else:
+            event = Event(callback=lambda: self.getChunk(chunkPos).setBlock(BlockPos, block),
+                        eventType=EventType.blockPlacement)
+            
+            blockClass = self.__game.getNameSpace()['blocks'][block]['class']
+            
+            blockClass.onPlaceAttempt(pos, BlockPos, chunk, event, reason, executor, chunk.getBlockByTuple(BlockPos) != None)
+        
+            if event.isWaiting(): event.do()            
+            
+        
+        
+        # event = Event(callback=lambda: self.setBlockByAbsolutePos(
+        #     pos=pos,
+        #     block=block,
+        #     dontRaiseErrors=dontRaiseErrors
+        # ),
+        #                 eventType=eventType)
+        
+        # # invoking
+        # match event.getEventType():
+        #     case eventType.blockBreak:
+        #         block = self.getBlockByAbsPos(pos)
+        #         if block != None:
+        #             block.onBreak(blockPosAbsolute=pos,
+        #                             inChunkPosition=block.getInChunkPosition(),
+        #                             chunk=self,
+        #                             event=event,
+        #                             reason=reason,
+        #                             executor=executor)
+        #             if event.isWaiting(): event.do()
+        #     case eventType.blockPlacement:
+        #         block = self.getBlockByAbsPos(pos)
+        #         changingBlock = block != None
+        #         block.onPlace(blockPosAbsolute=pos,
+        #                         inChunkPosition=block.getInChunkPosition(),
+        #                         chunk=self,
+        #                         event=event,
+        #                         reason=reason,
+        #                         executor=executor,
+        #                         changingBlock = changingBlock)
+        #         if event.isWaiting(): event.do()
+            
         
     
             

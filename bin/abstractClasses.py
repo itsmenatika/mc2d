@@ -50,7 +50,7 @@ class EventType(Enum):
     other = "other"
     
     blockPlacement = "block_placement"
-    blockDestroy = "block_destroy"
+    blockBreak = "block_break"
 
 class Executor(ABC):
     __whoami = None
