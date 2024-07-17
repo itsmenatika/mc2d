@@ -102,7 +102,7 @@ if __name__ == "__main__":
             gameStarted = True if f.read() == "1" else False
         
         if gameStarted:
-            odp = messagebox.askokcancel("askokcancel", "A game process is already running. We can't guarantee stability of a new game instance. Do you want to play anyway?") 
+            odp = messagebox.askokcancel("Warning", "A game process is already running. We can't guarantee stability of a new game instance. Do you want to play anyway?") 
             if not odp: return
         
         with open("data/isGameOpen", "w") as f:
