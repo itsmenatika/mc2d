@@ -1,6 +1,8 @@
 import tkinter as Tk
 from tkinter import ttk
 
+import bin
+
 
 root = Tk.Tk()
 root.title("mc2d Launcher")
@@ -90,12 +92,16 @@ editProfileBtn.pack(side="left", fill="x", expand=1, padx=5)
 # ProfileFrame.grid_columnconfigure(0,weight=1)
 ProfileFrame.pack(side="left", padx=8)
 
+def play():
+    root.destroy()
+    bin.Game((1280,720))
+
 
 playButtonFrame = ttk.Frame(master=bottom)
 playButtonFrame.grid_rowconfigure(0, weight=1)
 playButtonFrame.grid_rowconfigure(1, weight=1)
 playButtonFrame.grid_rowconfigure(2, weight=1)
-playButton = Tk.Button(master=playButtonFrame, text="Play", width=30, height=3)
+playButton = Tk.Button(master=playButtonFrame, text="Play", width=30, height=3, command=play)
 playButton.grid(column=0, row=1)
 # playButton.grid(column=1, row=0)
 
