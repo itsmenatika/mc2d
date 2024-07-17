@@ -22,6 +22,9 @@ class gameEngineError(Exception): pass
 class invalidName(gameEngineError): pass
 
 
+GAMEVERSION: str = "PRE-INDEV 1"
+GAMEVERSIONINT: int = 1
+
 class Game(Loggable):
     '''main class'''
     
@@ -654,6 +657,14 @@ class Game(Loggable):
     
     # anothet getting
     
+    @staticmethod
+    def getVersion() -> str: return GAMEVERSION
+    
+    @staticmethod
+    def getVersionInt() -> int: return GAMEVERSIONINT
+    
+    @staticmethod
+    def getVersionFull() -> tuple[str, int]: return (GAMEVERSION, GAMEVERSIONINT)
     
     
     def getGame(self): return self

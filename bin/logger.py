@@ -2,6 +2,8 @@ from enum import Enum
 from typing import Optional
 import traceback
 import sys
+import platform
+import psutil
 import os
 from datetime import datetime
 
@@ -122,6 +124,26 @@ class Logger:
         
         with open(self.logFile, 'w') as f:
             pass
+        
+      
+        date = datetime.now()
+        ram = psutil.virtual_memory()
+        
+        self.log(logType.INIT, "---------------------")
+        self.log(logType.INIT, f"Logs for mc2D, VERSION OF mc2D: {self.__game.getVersion()} (INT VERSION: {self.__game.getVersionInt()})")
+        self.log(logType.INIT, "")
+        self.log(logType.INIT, f"date: {date}")
+        self.log(logType.INIT, f"system: {platform.system()}")
+        self.log(logType.INIT, f"system version: {platform.version()}")
+        self.log(logType.INIT, f"architecture: {platform.machine()}")
+        self.log(logType.INIT, f"processor: {platform.processor()}")
+        self.log(logType.INIT, "")
+        self.log(logType.INIT, f"total available ram in system: {round(ram.total / (1024.0 ** 3),3)}GB")
+        self.log(logType.INIT, f"total available ram to take: {round(ram.available / (1024.0 ** 3),3)}GB")
+        self.log(logType.INIT, f"percent of taken ram: {ram.percent}%")
+        self.log(logType.INIT, "")
+        self.log(logType.INIT, f"python compiler: {platform.python_compiler()}")
+        self.log(logType.INIT, "---------------------")
         
         
 class Loggable:
