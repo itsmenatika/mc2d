@@ -30,7 +30,23 @@ notebook.add(launcherLogs, text="Launcher logs")
 
 #  game logs
 gameLogs = ttk.Frame(master=notebook)
-notebook.add(gameLogs, text="Game logs")
+notebook.add(gameLogs, text="Recent game logs")
+
+logs = Tk.Text(master=gameLogs, bg="lightgray", fg="black")
+logs.pack(side="top", fill="both", expand=1)
+
+
+with open("data/logs/latest.log", "r+") as f:
+    content = f.read()
+    logs.insert(0.0, content)
+    # logs.add(Tk.END, f.readline())
+# logs.insert(Tk.END, 'swawa')
+# logs.set
+logs.config(state="disabled")
+# logs.configure(text=lines)
+# controls = 
+
+# ttk.Label(master=gameLogs, text="Recent game logs")
 
 
 #  account
