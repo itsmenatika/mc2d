@@ -3,6 +3,9 @@ from pygame.math import Vector2
 from bin.map import Chunk, Scene, Block
 import math
 import asyncio
+import time
+
+from bin.tools import timeTrackerPrintAsync,timeTrackerPrint
 
 class Camera:
 
@@ -40,6 +43,7 @@ class Camera:
         
         # Przypisz skonwertowane na listę przefiltrowane sprite'y do listy dostępnych sprite'ów
         available_sprites = list(filtered_sprites)
+     
 
         # Zwróć dostępnę sprite'y do renderu
         return available_sprites
@@ -48,11 +52,13 @@ class Camera:
         cameraEndPoint = (self.SCREENSIZE[0] + self.cords.x, self.SCREENSIZE[1] + self.cords.y)
         
         self.spritesTodraw = self.__get_available_sprites_to_render(cameraEndPoint)
+        
     async def __filterSpritesToDraw(self):
         while True:
             self.__filterSpritesToDrawNonAsync()
 
             await asyncio.sleep(0.1)
+            
     async def __generateInfo(self):
         while True:
 
@@ -167,7 +173,7 @@ class Camera:
         
         surface.blit(g_selected_block_main_txt, (10,50))
         surface.blit(self.__font.render(f"{g_storage_selected_block} ({game.storage['selectedBlock']})", False, (100, 100, 100)), (75,50))
-
+        
         
     # @property
     # def cords(self):

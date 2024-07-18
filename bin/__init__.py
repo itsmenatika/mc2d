@@ -51,7 +51,7 @@ class Game(Loggable):
         self.__keysPressed = pygame.key.get_pressed()
         
         
-        
+        # mouse hold detecting
         if self.__buttonsClicked[0]:
             for eventName, eventTwo in self.__inputEventsList["leftClickHold"].items():
                 if eventTwo[1]['enabled']:
@@ -68,6 +68,7 @@ class Game(Loggable):
                         self.getLogger().errorWithTraceback(f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
                         # traceback.print_exception(e)
                         # print("")
+                        
         if self.__buttonsClicked[1]:
             for eventName, eventTwo in self.__inputEventsList["wheelClickHold"].items():
                 if eventTwo[1]['enabled']:
@@ -84,6 +85,7 @@ class Game(Loggable):
                         self.getLogger().errorWithTraceback(f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
                         # traceback.print_exception(e)
                         # print("")
+                        
         if self.__buttonsClicked[2]:
             for eventName, eventTwo in self.__inputEventsList["rightClickHold"].items():
                 if eventTwo[1]['enabled']:
@@ -361,7 +363,7 @@ class Game(Loggable):
             for scene in self.__scenes.values():
                 if not scene.idle: await scene.tick()
             
-            await asyncio.sleep(0.01)
+            await asyncio.sleep(0.000000001)
             await self.__drawLoop()
             self.clock.tick(120)
             # self.clock.get_rawtime()
