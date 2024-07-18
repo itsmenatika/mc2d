@@ -109,10 +109,10 @@ class Game(Loggable):
             match event.type:
                 case pygame.QUIT:
                     # handling when user want to force quit by pressing "X" on their window
-                    self.getLogger().log(logtype=logType.ERROR, message="game is being forcefully closed...")
+                    self.getLogger().log(logtype=logType.ERROR, message="Game has been forcefully quitted by the engine!")
                     with open("data/isGameOpen", "w") as f:
                         f.write("0")
-                    self.getLogger().log(logtype=logType.ERROR, message="game engine has been forcefully closed by user!", parent=None)
+                    self.getLogger().log(logtype=logType.ERROR, message="Game has been forcefully quitted by the player!", parent=None)
                     self.__isGameOn = False
                 case pygame.KEYUP:
                     # handling events when user stop pressing key
@@ -342,12 +342,12 @@ class Game(Loggable):
         '''a main loop that is run once every frame'''
         
         # info for logger
-        self.__logger.log(logType.SUCCESS, "loading engine... COMPLETE ")  
+        self.__logger.log(logType.SUCCESS, "Succesfully initi1alized engine!")  
         
         # await onrun function 
-        self.__logger.log(logType.INIT, "invoking onrun functions...")            
+        self.__logger.log(logType.INIT, "Invoking function of [onrun] type...")            
         await self.__onRun()
-        self.__logger.log(logType.SUCCESS, "invoking onrun functions... DONE")   
+        self.__logger.log(logType.SUCCESS, "Succesfully invoked functions of [onrun]!")   
         
         # giving tick time for every scene for scene specific events
         def executeScene(scene: Scene) -> Scene:
@@ -356,7 +356,7 @@ class Game(Loggable):
             return scene
             
         # final main loop
-        self.__logger.log(logType.INIT, "starting final game loop...")          
+        self.__logger.log(logType.INIT, "Starting the final game loop.")          
         while self.__isGameOn:
             await self.__eventHandler()
             
@@ -549,10 +549,11 @@ class Game(Loggable):
         
         # handling situation if there was already event with that name
         if self.doesInputEventNameDoExist(name):
-            self.getLogger().log(logType.ERROR, f"Trying to set a input event of id '{name}' but the name was already claimed!")
+            self.getLogger().log(logType.ERROR, f"Tried to initialize an input event for already existing input event \'{name}\'!")
             if not dontRaiseAnyErrors:
-                raise invalidName(f"name ''{name}'' is already claimed as name for an event!")
+                raise invalidName(f"Name of the input event (\'{name}\') is not available.")
             if not setIfDoExist: return
+            # Tu nie wiedziałem jak to by inaczej opisać (nie czaje do końca xd)
             self.getLogger().log(logType.INFO, f"f'{name}' will be set anyways, because a flag of ignoring that is set!")
         
         # setting event
@@ -562,7 +563,7 @@ class Game(Loggable):
         self.__inputEventsList[typeOfInputTypeEvent][name] = [function, eventInfo]
         
         # logs
-        self.getLogger().log(logType.SUCCESS, f"A new input event has been added with the name of '{name}'. information about this event: {eventInfo}")
+        self.getLogger().log(logType.SUCCESS, f"Initialized a new input event \'{name}\'! Event info: {eventInfo}.")
         
             # if forcedSceneName is not None:
                 
@@ -576,9 +577,9 @@ class Game(Loggable):
                 
         # check if name exist
         if not self.doesInputEventNameDoExist(name):
-            self.getLogger().log(logType.ERROR, f"Trying to remove a input event of the name '{name}' but the name wasnt used!")
+            self.getLogger().log(logType.ERROR, f"Attempted to uninitialize not existing event key \'{name}\'!")
             if not dontRaiseAnyErrors:
-                raise invalidName(f"Didn't find an event of the name '{name}'")
+                raise invalidName(f"Failed to find an event input for '{name}'!")
             return
             
         # deleting event
@@ -588,7 +589,7 @@ class Game(Loggable):
         del self.__inputEventsList['events'][name]
         
         # logs
-        self.getLogger().log(logType.SUCCESS, f"An input event of the name '{name}' has been deleted. The event info: {eventInfo}")
+        self.getLogger().log(logType.SUCCESS, f"Succesfully uninitialized event key for '{name}'! Event info: {eventInfo}.")
         
     
     def getInputEvents(self, ofType:Optional[Union[str, InputType]] = None) -> list[tuple[str,list[callable, dict]]]:   
@@ -691,22 +692,22 @@ class Game(Loggable):
         # logger
         self.__logger: Logger = Logger(self)
         
-        self.__logger.log(logType.INIT, "loading engine...")
+        self.__logger.log(logType.INIT, "Initializing engine...")
         
         
         if not os.path.exists("bin"):
-            self.__logger.log(logType.ERROR, "couldn't find path 'bin'. We couldn't run the game")
-            self.__logger.log(logType.CRASHREPORT, "game was self-crashed by game engine")
+            self.__logger.log(logType.ERROR, "Unable to run the game! Failed to access the directory \'bin\'.")
+            self.__logger.log(logType.CRASHREPORT, "Switched state for game by this engine (Running -> False).")
             exit()
             
         if not os.path.exists("data"):
-            self.__logger.log(logType.ERROR, "couldn't find path 'data'. We couldn't run the game")
-            self.__logger.log(logType.CRASHREPORT, "game was self-crashed by game engine")
+            self.__logger.log(logType.ERROR, "Unable to run the game! Failed to access the directory \'data\'.")
+            self.__logger.log(logType.CRASHREPORT, "Switched state for game by this engine (Running -> False).")
             exit()
             
         if not os.path.exists("resources"):
-            self.__logger.log(logType.ERROR, "couldn't find path 'resources'. We couldn't run game")
-            self.__logger.log(logType.CRASHREPORT, "game was self-crashed by game engine")
+            self.__logger.log(logType.ERROR, "Unable to run the game! Failed to access the directory \'resources\'.")
+            self.__logger.log(logType.CRASHREPORT, "Switched state for game by this engine (Running -> False).")
             exit()
         
         # basics
@@ -736,7 +737,7 @@ class Game(Loggable):
         
         
         
-        self.__logger.log(logType.INIT, "loading engine... (loading pygame stuff)")
+        self.__logger.log(logType.INIT, "Gathering pygame resources...")
         
         
         # pygame issues
@@ -745,7 +746,7 @@ class Game(Loggable):
         self.__display = pygame.display.set_mode(self.__resolution)
         pygame.display.set_caption("Kantraft")
         self.clock = pygame.time.Clock()
-        self.__logger.log(logType.SUCCESS, "loading engine... (loading pygame stuff - COMPLETE)")
+        self.__logger.log(logType.SUCCESS, "Succesfully gathered pygame resources!")
         
 
         self.__resourceManager = resourceManager(self)
@@ -758,7 +759,7 @@ class Game(Loggable):
         
         # main loop
         
-        self.__logger.log(logType.INIT, "invoking asyncio main game loop... ")
+        self.__logger.log(logType.INIT, "Invoking engine\'s asynchronous main-loop...")
         asyncio.run(self.__gameLoop())
         
         

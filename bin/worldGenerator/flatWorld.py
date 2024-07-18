@@ -5,7 +5,7 @@ import asyncio
 
 class flatWorldGenerator(WorldGenerator):
     async def generateChunk(self, chunkPos: tuple[int, int], chunk: 'Chunk', Scene: 'Scene'):
-        self.log(logType.INFO, f"generating chunk {chunkPos}...")
+        self.log(logType.INFO, f"Generating chunk at {chunkPos}...")
         
         for x in range(0, int(Chunk.SIZE.x)):
             Block.newBlockByResourceManager(name="grass_block", 
@@ -37,5 +37,5 @@ class flatWorldGenerator(WorldGenerator):
             
             await asyncio.sleep(0.1)
             
-        self.log(logType.SUCCESS, f"generating chunk {chunkPos}... DONE")
+        self.log(logType.SUCCESS, f"Succesfully generated chunk at {chunkPos}!")
         

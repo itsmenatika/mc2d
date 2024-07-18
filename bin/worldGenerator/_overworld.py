@@ -708,13 +708,13 @@ class worldGeneratorNormal(WorldGenerator):
             
             # chunk.setBlocks(blocks)
             # 5 / 0
-            self.log(logType.SUCCESS, f"chunk {chunkPos} has been generated successfully!")
+            self.log(logType.SUCCESS, f"Succesfully generated chunk at {chunkPos}!")
            
         except Exception as e:
             # self.log(logType.ERROR, f"error has occured while trying to generate chunk {chunkPos}!\nError:\n")
             # traceback.print_exc()
             # print()
-            self.errorWithTraceback(f"error has occured while trying to generate chunk {chunkPos}!", e)
+            self.errorWithTraceback(f"Failed to generate chunk at {chunkPos}! An error occured.", e)
         finally:
             return blocks
         
