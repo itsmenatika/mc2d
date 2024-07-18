@@ -146,8 +146,15 @@ if __name__ == "__main__":
         logs.config(state="disabled")
         logs.see(Tk.END)
         previousContent = content
-
-    while True:
+    
+    sad = True
+    def destroySelf(event):
+        global sad
+        if event.widget == root:
+            sad = False
+            
+    root.bind("<Destroy>", destroySelf)
+    while sad:
         
         with open("data/logs/latest.log", "r") as f:
             content = f.read()
@@ -160,5 +167,9 @@ if __name__ == "__main__":
                 previousContent = content
         
         root.update()
+        
+        # if root.clos
 
     # root.mainloop()
+    
+        # root.mainloop()
