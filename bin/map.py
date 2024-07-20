@@ -337,7 +337,7 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
             self.log(logType.SUCCESS, "starting world generation for a chunk... DONE")
             
         self.__entities: dict[UUID, Entity] = {}
-        self.__timeToDeactivate = 300 / # 300 ticks
+        self.__timeToDeactivate = 300 # 300 ticks
             
         self.log(logType.SUCCESS, "The chunk is intialized!")
 
