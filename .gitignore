@@ -1,5 +1,6 @@
 # user data or save data
 data/saves/map.json
+temp/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
