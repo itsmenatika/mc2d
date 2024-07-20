@@ -124,10 +124,45 @@ class Launcher:
         self.log(f"profile has been changed to {newProfile}")
         self.setSelectedProfileFile(newProfile)
         
+    def createProfileAddOrNewWidgets(self, parent) -> None:
+        self.__outsideFrameProfileWindow = Tk.Frame(master=parent)
+        self.__outsideFrameProfileWindow.pack(padx=3, pady=3, fill="x")
+        
+        Tk.Label(master=self.__outsideFrameProfileWindow, text="Name: ").grid(row=0,column=0)
+        self.__textBoxName = Tk.Entry(master=self.__outsideFrameProfileWindow, width=40)
+        self.__textBoxName.grid(row=0, column= 1)
+        
+        Tk.Label(master=self.__outsideFrameProfileWindow, text="Game version: ").grid(row=1,column=0) 
+        self.__gameVersionProfileNew = ttk.Combobox(master=self.__outsideFrameProfileWindow, values=["PRE-INDEV-1"])
+        self.__gameVersionProfileNew.grid(row=1, column=1)
+        
+        Tk.Label(master=self.__outsideFrameProfileWindow, text="Resolution: ").grid(row=2,column=0) 
+        self.__resolutionProfileNewFrame = ttk.Frame(master=self.__outsideFrameProfileWindow)
+        self.__resolutionProfileNewFrame.grid(row=2, column=1)
+        
+        self.__resolutionProfileNewXVar = Tk.StringVar(master=parent, value="1280")
+        self.__resolutionProfileNewYVar = Tk.StringVar(master=parent, value="720")
+        self.__resolutionProfileNewX = ttk.Entry(master=self.__resolutionProfileNewFrame, textvariable=self.__resolutionProfileNewXVar, width=6)
+        self.__resolutionProfileNewX.grid(column=0, row=0)
+        Tk.Label(master=self.__resolutionProfileNewFrame, text="x").grid(row=0,column=1) 
+        self.__resolutionProfileNewY = ttk.Entry(master=self.__resolutionProfileNewFrame, textvariable=self.__resolutionProfileNewYVar, width=6)
+        self.__resolutionProfileNewY.grid(column=2, row=0)
+        
+        self.__checkBoxDebugProfile = ttk.Checkbutton(master=self.__outsideFrameProfileWindow).grid(column=4,row=4)
+        
     def addProfileWindow(self, *args, **kwargs) -> None:
         self.log("creating add profile window...")
         self.__addProfileWindow = Tk.Toplevel(master=self.__root)
         self.__addProfileWindow.geometry("300x300")
+        self.__addProfileWindow.resizable(False, False)
+        self.__addProfileWindow.title("New profile")
+        self.__addProfileWindow.attributes("-toolwindow",1)
+        self.__addProfileWindow.transient(self.__root)
+        self.__addProfileWindow.focus()
+        self.__addProfileWindow.grab_set()
+        
+        self.createProfileAddOrNewWidgets(self.__addProfileWindow)
+
         self.log("creating add profile window... DONE")
         
         
