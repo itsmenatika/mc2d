@@ -24,7 +24,7 @@ class Entity(pygame.sprite.Sprite, Executor, Loggable):
     def moveBy(self, howMuch: Vector2) -> Vector2:
         pass
     
-    def __init__(self, chunk: 'Chunk', cords: Vector2, forcedUUID = Optional[int] = None):
+    def __init__(self, chunk: 'Chunk', cords: Vector2, forcedUUID: Optional[int] = None):
         super().__init__()
         
         self.__chunk = chunk
