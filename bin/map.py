@@ -1,19 +1,17 @@
-# from bin import Game
-from typing import Optional, TypeAlias, NoReturn
+# external imports
 import pygame
 from pygame.math import Vector2
-from pygame.sprite import AbstractGroup
+from typing import Optional, TypeAlias, NoReturn
 import csv
-import os
 import asyncio
 import json
-import random
-# from bin.camera import Camera
+from uuid import UUID
+
+# internal imports
 from bin.abstractClasses import Executor, WorldGenerator, Reason, EventType
 from bin.logger import Loggable, logType, ParentForLogs
-
 from bin.event import Event
-# from bin.tools import getChunkPosFromCords
+from bin.entity import Entity
 
 
 
@@ -338,6 +336,9 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
             # .add_done_callback(self.__checkForErrorsWorldGeneratorAsyncio)
             self.log(logType.SUCCESS, "starting world generation for a chunk... DONE")
             
+        self.__entities: dict[UUID, Entity] = {}
+        self.__timeToDeactivate = 300 / # 300 ticks
+            
         self.log(logType.SUCCESS, "The chunk is intialized!")
 
 
@@ -384,6 +385,10 @@ class Block(pygame.sprite.Sprite):
     def onBreakAttempt(self, blockPosAbsolute: tuple[int,int], inChunkPosition: tuple[int,int], chunk: Chunk, event: Event, reason: Optional[Reason] = None, executor: Optional[Executor] = None) -> None:  
         '''method executed when block would be break'''
         pass
+    
+    def onUpdate(self, blockPosAbsolute: tuple[int,int], inChunkPosition: tuple[int,int], chunk, event: Event, reason: Optional[Reason] = None, executor: Optional[Executor] = None) -> None:
+        pass
+    
     
     # getting neighbours
     
