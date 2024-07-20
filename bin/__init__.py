@@ -110,7 +110,7 @@ class Game(Loggable):
                 case pygame.QUIT:
                     # handling when user want to force quit by pressing "X" on their window
                     self.getLogger().log(logtype=logType.ERROR, message="Game has been forcefully quitted by the engine!")
-                    with open("temp/isGameOpen", "w") as f:
+                    with open("data/isGameOpen", "w") as f:
                         f.write("0")
                     self.getLogger().log(logtype=logType.ERROR, message="Game has been forcefully quitted by the player!", parent=None)
                     self.__isGameOn = False

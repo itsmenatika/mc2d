@@ -61,12 +61,12 @@ class Launcher:
     
     def setIsGameOpen(self, value: bool) -> None:
         self.log("setting selecedProfile to file...")
-        with open("temp/isGameOpen", "w") as f:
+        with open("data/isGameOpen", "w") as f:
             f.write("1" if value else "0")
             
     def getIsGameOpen(self) -> bool:
         self.log("reading selecedProfile from file...")
-        with open("temp/isGameOpen", "r") as f:
+        with open("data/isGameOpen", "r") as f:
             return True if f.read() == "1" else False
         
     
@@ -168,14 +168,17 @@ class Launcher:
         
     def ensuringThatEveryFileDoExist(self) -> None:
 
+        if not os.path.isdir("data/logs"):
+            os.makedirs("data/logs")
+
         if not os.path.exists("data/logs/latest.log"):
             with open("data/logs/latest.log", "w") as f:
                 f.write("")
                 self.log("Couldn't a find file 'data/logs/latest.log'. created one.")
         
         
-        if not os.path.exists("temp/isGameOpen"):
-            self.log("Couldn't a find file 'temp/isGameOpen'. created one.")
+        if not os.path.exists("data/isGameOpen"):
+            self.log("Couldn't a find file 'data/isGameOpen'. created one.")
             self.setIsGameOpen(False)
             
         if not os.path.exists("data/launcherData/profiles.json"):
@@ -207,6 +210,9 @@ class Launcher:
         #     f.write("0")
             
         # setproctitle.setproctitle("mc2d Launchers")
+
+        if not os.path.isdir("data/launcherData"):
+            os.makedirs("data/launcherData")
         
         with open("data/launcherData/launcherLogsRecent.log", "w") as f:
             f.write("")
