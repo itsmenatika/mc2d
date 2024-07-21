@@ -110,8 +110,7 @@ class Game(Loggable):
                 case pygame.QUIT:
                     # handling when user want to force quit by pressing "X" on their window
                     self.getLogger().log(logtype=logType.ERROR, message="Game has been forcefully quitted by the engine!")
-                    with open("temp/isGameOpen", "w") as f:
-                        f.write("0")
+                    self.__writeInformationAboutClosedGame()
                     self.getLogger().log(logtype=logType.ERROR, message="Game has been forcefully quitted by the player!", parent=None)
                     self.__isGameOn = False
                 case pygame.KEYUP:
@@ -365,7 +364,7 @@ class Game(Loggable):
             
             await asyncio.sleep(0.000000001)
             await self.__drawLoop()
-            self.clock.tick(120)
+            self.clock.tick(1000)
             # self.clock.get_rawtime()
             # print(self.clock.get_fps())
             
@@ -686,6 +685,11 @@ class Game(Loggable):
     # already implemented in Loggable    
     # def log(self, logtype: logType, message: str) -> None:
     #     self.__logger.log(logtype, message, self.__logParent)
+    
+    
+    def __writeInformationAboutClosedGame(self) -> None:
+        with open("temp/isGameOpen", "w") as f:
+            f.write("0")
         
     def __init__(self, resolution: tuple[int,int]) -> None:
         super().__init__(logParent=ParentForLogs("game"))
@@ -698,16 +702,19 @@ class Game(Loggable):
         if not os.path.exists("bin"):
             self.__logger.log(logType.ERROR, "Unable to run the game! Failed to access the directory \'bin\'.")
             self.__logger.log(logType.CRASHREPORT, "Switched state for game by this engine (Running -> False).")
+            self.__writeInformationAboutClosedGame()
             exit()
             
         if not os.path.exists("data"):
             self.__logger.log(logType.ERROR, "Unable to run the game! Failed to access the directory \'data\'.")
             self.__logger.log(logType.CRASHREPORT, "Switched state for game by this engine (Running -> False).")
+            self.__writeInformationAboutClosedGame()
             exit()
             
         if not os.path.exists("resources"):
             self.__logger.log(logType.ERROR, "Unable to run the game! Failed to access the directory \'resources\'.")
             self.__logger.log(logType.CRASHREPORT, "Switched state for game by this engine (Running -> False).")
+            self.__writeInformationAboutClosedGame()
             exit()
         
         # basics

@@ -7,13 +7,17 @@ from multiprocessing import Process
 import asyncio
 import os
 import json
+import importlib
 from datetime import datetime
 
 # internal imports
 import bin
 
 
-def startGame(): bin.Game((1280,720))
+def startGame(): 
+    gameBin = importlib.import_module("bin")
+    bin.Game((1280,720))
+        
 
 class Launcher:
     def log(self, message: str):
@@ -90,10 +94,26 @@ class Launcher:
             odp = messagebox.askokcancel("Warning", "A game process is already running. We can't guarantee stability of a new game instance. Do you want to play anyway?") 
             if not odp: return
         
+        
+        # preverification of files
+        if not os.path.exists("bin"):
+            self.log("Couldn't launch the game because of the fact that: 'no bin folder'")
+            messagebox.showerror("no files","Can't access folder: /bin")
+            return
+        
+        if not os.path.exists("bin/__init__.py"):
+            self.log("Couldn't launch the game because of the fact that: 'no bin startup file (__init__.py)'")
+            messagebox.showerror("no files","Can't access folder: /bin/__init__.py")
+            return
+        
         self.setIsGameOpen(True)
             
         self.log("game has been launched!")
         gameStarted = True
+        
+        
+            
+        
         p = Process(target=startGame)
         p.start()
         
