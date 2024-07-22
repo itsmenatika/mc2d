@@ -439,15 +439,19 @@ class Block(pygame.sprite.Sprite):
         )
     
     def getBlockLeft(self, howManyToLeft: int = 1) -> 'Block | None':
+        '''allows you get the block on the left'''
         return self.getScene().getBlockByAbsPos((self.__absolutePos[0]-howManyToLeft,self.__absolutePos[1]))
     
     def getBlockRight(self, howManyToRight: int = 1) -> 'Block | None':
+        '''allows you get the block on the right'''
         return self.getScene().getBlockByAbsPos((self.__absolutePos[0]+howManyToRight,self.__absolutePos[1]))
  
     def getBlockUp(self, howManyToUp: int = 1) -> 'Block | None':
+        '''allows you get the block above'''
         return self.getScene().getBlockByAbsPos((self.__absolutePos[0],self.__absolutePos[1]-howManyToUp))
  
-    def getBlockDown(self, howManyToUp: int = 1) -> 'Block | None':
+    def getBlockDown(self, howManyToDown: int = 1) -> 'Block | None':
+        '''allows you get the block under'''
         return self.getScene().getBlockByAbsPos((self.__absolutePos[0],self.__absolutePos[1]+howManyToUp))      
     
     def getBlockRelative(self, x: int = 0, y: int = 0) -> 'Block | None':
@@ -456,6 +460,7 @@ class Block(pygame.sprite.Sprite):
     # changing block
     
     def changeBlockTo(self, block: 'Block | str | None', executor: Optional[Executor] = None, reason: Optional[Reason|str] = None) -> None:
+        '''Function to change this block to another block'''
         self.getChunk().setBlock(self.getBlockPos(), block, executor, reason)
     
     def setToAir(self, executor: Optional[Executor] = None, reason: Optional[Reason|str] = None) -> None:
