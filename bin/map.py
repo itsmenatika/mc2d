@@ -179,7 +179,7 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
         return self.__blocks[(blockPosition[0],blockPosition[1])] if (blockPosition[0],blockPosition[1]) in self.__blocks else None
     
     
-    def setBlock(self, blockPosition: tuple[int,int], block: 'Block | str | None', executor: Optional[Executor] = None, reason: Optional[str] = None) -> None:
+    def setBlock(self, blockPosition: tuple[int,int], block: 'Block | str | None', executor: Optional[Executor] = None, reason: Optional[str] = None) -> 'None | Block | str':
         '''allows you to set block in specified chunk\n
             Args:\n
                 * blockPosition: tuple -> block location relative to chunk
@@ -187,7 +187,7 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
                 * executor: Optional[Executor] -> autor of this action (instance)
                 * reason: Optional[str] -> reason why block will be set
             Returns:\n
-                None | Block: result (None if no block found)'''
+                None | Block: result (function will try to return block that was placed)'''
              
         # deleting previous
         if blockPosition in self.__blocks:
@@ -212,6 +212,8 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
         # for security reasons
         if not self.has(block): self.add(block)
         if not self.getScene().has(block): self.getScene().add(block)
+        
+        return block
 
         # deleting block if that will be replace with something else or just should be deleted
         # elif block == None or self.checkPositionForBlock(blockPosition):
@@ -386,11 +388,55 @@ class Block(pygame.sprite.Sprite):
         '''method executed when block would be break'''
         pass
     
-    def onUpdate(self, blockPosAbsolute: tuple[int,int], inChunkPosition: tuple[int,int], chunk, event: Event, reason: Optional[Reason] = None, executor: Optional[Executor] = None) -> None:
+    def onUpdate(self, blockPosAbsolute: tuple[int,int], inChunkPosition: tuple[int,int], chunk, reason: Optional[Reason] = None, executor: Optional[Executor] = None) -> None:
         pass
     
+    # update managing
+    def causeUpdate(self, reason: Optional[Reason] = None, executor: Optional[Executor] = None) -> None:
+        self.onUpdate(blockPosAbsolute=self.__absolutePos,
+                      inChunkPosition=self.__inChunkPos,
+                      chunk=self.__chunk,
+                      reason=reason,
+                      executor=executor
+                      )
     
-    # getting neighbours
+    def causeUpdatesOnNeighbours(self, reason: Optional[Reason] = None, executor: Optional[Executor] = None) -> None:
+        '''cause update on all neighbours'''
+        for neighbor in self.getBlockNeighbours():
+            if neighbor != None: neighbor.causeUpdate(reason=reason, executor=executor)
+    
+    
+    # @classmethod
+    # def causeUpdatesOnNeighborsByAbsPos(cls, blockPos: tuple[int,int], reason: Optional[Reason] = None, executor: Optional[Executor] = None) -> None:
+    #     '''cause update on all neighbours, but by giving position of this block (block doesn't have to exist!)'''
+    #     for neighbor in cls.getBlockNeighboursByAbsPos(blockPos):
+    #         if neighbor != None: neighbor.causeUpdate(reason=reason, executor=executor)
+    
+    # # getting neighbours
+    
+    
+    # @classmethod
+    # def getBlockNeighboursByAbsPos(cls, blockPos: tuple[int,int]) -> tuple['Block|None']:
+    #     '''Function that allows you to get all neighbouring blocks (not diagonal ones) simply by just absolute block pos. It returns it in format like this:
+    #         tuple[BlockFromLeft, BlockFromRight, BlockFromUp, BlockFromDown]'''
+    #     getBlockFunction = cls.getScene().getBlockByAbsPos
+    #     return (
+    #         getBlockFunction((blockPos[0]-1,blockPos[1])),
+    #         getBlockFunction((blockPos[0]+1,blockPos[1])),
+    #         getBlockFunction((blockPos[0],blockPos[1]-1)),
+    #         getBlockFunction((blockPos[0],blockPos[1]+1))
+    #     )
+    
+    def getBlockNeighbours(self) -> tuple['Block|None']:
+        '''Function that allows you to get all neighbouring blocks (not diagonal ones). It returns it in format like this:
+            tuple[BlockFromLeft, BlockFromRight, BlockFromUp, BlockFromDown]'''
+        getBlockFunction = self.getScene().getBlockByAbsPos
+        return (
+            getBlockFunction((self.__absolutePos[0]-1,self.__absolutePos[1])),
+            getBlockFunction((self.__absolutePos[0]+1,self.__absolutePos[1])),
+            getBlockFunction((self.__absolutePos[0],self.__absolutePos[1]-1)),
+            getBlockFunction((self.__absolutePos[0],self.__absolutePos[1]+1))
+        )
     
     def getBlockLeft(self, howManyToLeft: int = 1) -> 'Block | None':
         return self.getScene().getBlockByAbsPos((self.__absolutePos[0]-howManyToLeft,self.__absolutePos[1]))
@@ -718,6 +764,43 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
     
     # blocks handling
     
+    def __blockChangeCallback(self, chunk: Chunk, blockPos: tuple[int,int], block: Block|None, reason: Optional[Reason] = None, executor: Optional[Executor] = None) -> None:
+        '''internal callback used with events. BlockPos is relative to the chunk where block is'''
+        # vars
+        BlockT: Block | None = None # temp block var
+        neighboursOfBlocks: tuple[Block|None] = None # neighbours of the block
+        
+        # saving neighbors for update (if case there will be any problem with futher setting/or it will be just set to air)
+        blockT= chunk.getBlockByTuple(blockPos)
+        if blockT != None:
+            neighboursOfBlocks = blockT.getBlockNeighbours()
+        else: neighboursOfBlocks: None = None
+        
+        
+        # setting block
+        blockT = chunk.setBlock(blockPosition=blockPos, block=block, executor=executor, reason=reason)
+        
+        # get neighbours if block that has been set to is not air
+        if blockT != None:
+            neighboursOfBlocks = blockT.getBlockNeighbours()
+            
+        # updating neighbours
+        if neighboursOfBlocks != None:
+            neighbour: Block = None
+            for neighbour in neighboursOfBlocks:
+                if neighbour != None: 
+                    neighbour.causeUpdate(reason=reason, executor=executor)
+        
+        # blockOld: Block | None = chunk.getBlockByTuple(blockPos)
+        # if blockOld != None and block == None: blockOld.causeUpdatesOnNeighbours(reason=reason,executor=executor)
+         
+        # block: Block = self.getChunk(chunkPos).setBlock(blockPos, block)
+        # if block != None: 
+        #     block.causeUpdatesOnNeighbours(reason=reason,executor=executor)
+
+    
+
+    
     def setBlockByAbsolutePosWithEvent(self, pos: tuple[int,int], block: None|str, reason: Optional[Reason] = None, dontRaiseErrors: bool = True, executor: Optional[Executor] = None) -> None:
         '''create fast event about changing the block without caring about managing event (though if you want to truly optimize something you should control events yourself!). That's kind of temporary command. If functions like self.tryToPlace() or self.tryToBreak() do exist, use them instead.'''
         # check
@@ -736,7 +819,7 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
         
         
         if block == None:
-            event = Event(callback=lambda: self.getChunk(chunkPos).setBlock(BlockPos, None),
+            event = Event(callback=lambda: self.__blockChangeCallback(chunk=chunk, blockPos=BlockPos, block=None, reason=reason, executor=executor),
                         eventType=EventType.blockBreak)
             blockPr: Block | None = chunk.getBlockByTuple(BlockPos)
             
@@ -746,7 +829,7 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
             if event.isWaiting(): event.do()
             
         else:
-            event = Event(callback=lambda: self.getChunk(chunkPos).setBlock(BlockPos, block),
+            event = Event(callback=lambda: self.__blockChangeCallback(chunk=chunk, blockPos=BlockPos, block=block, reason=reason, executor=executor),
                         eventType=EventType.blockPlacement)
             
             blockClass = self.__game.getNameSpace()['blocks'][block]['class']
@@ -814,14 +897,14 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
         '''Get block by absolute blockPos'''
         chunkCords = absolutePos[0] // Chunk.SIZE.x
         # chunkStartPoint = (Chunk.SIZE.x * chunkCords, 0) 
-        RelativeBlockPos = (absolutePos[0]  // Block.SIZE.x % Chunk.SIZE.x, 
-                            absolutePos[1] // Block.SIZE.y)
+        RelativeBlockPos = (absolutePos[0] % Chunk.SIZE.x, 
+                            absolutePos[1])
         
         
         if chunkCords not in self.__activeChunks:
             raise chunkNotLoaded(f"Trying to access block of cords ${absolutePos} which should be located in chunk ${chunkCords}, but that chunk is not loaded!")
         
-        
+        # print('fa',RelativeBlockPos)
         return self.__activeChunks[chunkCords].getBlockByTuple(RelativeBlockPos)       
         
     def getBlock(self, cords: Vector2) -> Block | None:

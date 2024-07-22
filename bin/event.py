@@ -51,6 +51,7 @@ class Event(Executor, Loggable):
         
     
     def prevent(self) -> None:
+        '''prevents event from any execution'''
         if not self.__waiting:
             self.logErr("trying to prevent event, but event was already prevented!")
         self.__waiting = False

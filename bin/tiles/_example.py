@@ -45,11 +45,19 @@ class BLOCKID(Block):
         '''method executed when block would be break'''
         pass
     
+    def onUpdate(self, blockPosAbsolute: tuple[int,int], inChunkPosition: tuple[int,int], chunk: Chunk, event: Event, reason: Optional[Reason] = None, executor: Optional[Executor] = None) -> None:  
+        '''method that is run every time block received that it should update itself.\n
+            current reasons to cause update:
+            * method .causeUpdate() or .causeUpdateOnNeighbours
+            * destroying/placing/changing neighbour of this block (only after event is done! on attempts event is still not done, you must force event to be done by using event.do())'''
+        pass
+    
+    
     # # TODO: function that run every update
     # # TODO: function that run every update (for listeners)
     
-    def update(self, *args, **kwargs):
-        raise NotImplementedError('Not implemented')
+    # def update(self, *args, **kwargs):
+    #     raise NotImplementedError('Not implemented')
 
     def lupdate(self, *args, **kwargs):
         raise NotImplementedError('Not implemented')

@@ -72,41 +72,41 @@ class resourceManager(Loggable):
                 
                 # check for structure
                 if name not in module.__dict__:
-                    self.log(logType.ERROR, "File {tile} doesn't provide the main class of the block and was expected to do so. Class should be named {name}")
+                    self.log(logType.ERROR, f"File {tile} doesn't provide the main class of the block and was expected to do so. Class should be named {name}")
                     continue
                 
                 # checking for components in the main class
                 if "ID" not in module_dict_data:
-                    self.log(logType.ERROR, "A class of block with the name {name} doesn't have ID!")
+                    self.log(logType.ERROR, f"A class of block with the name {name} doesn't have ID!")
                     continue
                 
                 if type(module_data.ID) != str:
-                    self.log(logType.ERROR, "A class of block with the name {name} doesn't have proper ID (that should be string)!")
+                    self.log(logType.ERROR, f"A class of block with the name {name} doesn't have proper ID (that should be string)!")
                     continue
                 
                 if "IDInt" not in module_dict_data:
-                    self.log(logType.ERROR, "A class of block with the name {name} doesn't have IDInt!")
+                    self.log(logType.ERROR, f"A class of block with the name {name} doesn't have IDInt!")
                     continue
                     
                 if type(module_data.IDInt) != int:
-                    self.log(logType.ERROR, "A class of block with the name {name} doesn't have proper IDInt (that should be int)!")
+                    self.log(logType.ERROR, f"A class of block with the name {name} doesn't have proper IDInt (that should be int)!")
                     continue
                 
                 if "MAINTEXTURE" not in module_dict_data:
-                    self.log(logType.ERROR, "A class of block with the name {name} doesn't have MAINTEXTURE!")
+                    self.log(logType.ERROR, f"A class of block with the name {name} doesn't have MAINTEXTURE!")
                     continue
                 
                 
                 if type(module_data.MAINTEXTURE) != str:
-                    self.log(logType.ERROR, "A class of block with the name {name} doesn't have proper MAINTEXTURE (that should be string)!")
+                    self.log(logType.ERROR, f"A class of block with the name {name} doesn't have proper MAINTEXTURE (that should be string)!")
                     continue
                 
                 if "MAINTEXTUREISTRANSPARENT" not in module_dict_data:
-                    self.log(logType.ERROR, "A class of block with the name {name} doesn't have MAINTEXTUREISTRANSPARENT!")
+                    self.log(logType.ERROR, f"A class of block with the name {name} doesn't have MAINTEXTUREISTRANSPARENT!")
                     continue
                 
                 if type(module_data.MAINTEXTUREISTRANSPARENT) != bool:
-                    self.log(logType.ERROR, "A class of block with the name {name} doesn't have proper MAINTEXTUREISTRANSPARENT (that should be bool)!")
+                    self.log(logType.ERROR, f"A class of block with the name {name} doesn't have proper MAINTEXTUREISTRANSPARENT (that should be bool)!")
                     continue
                 
                 _mainTextureLoc = os.path.join("resources", module_data.MAINTEXTURE).replace("/","\\")
@@ -116,12 +116,12 @@ class resourceManager(Loggable):
                     continue
                 
                 if name in GAME_NAMESPACE["blocks"]:
-                    self.log(logType.ERROR, "The name {name} is ambiguous! That ID was already used somewhere else!")
+                    self.log(logType.ERROR, f"The name {name} is ambiguous! That ID was already used somewhere else!")
                     continue
                  
                 # print(GAME_NAMESPACE["IDInts"])
                 if module_data.IDInt in GAME_NAMESPACE["IDInts"].keys():
-                    self.log(logType.ERROR, "Int ID of {name} is already claimed (trying to possess ID of {module_data.IDInt}!\nThis is claimed by the block of id {GAME_NAMESPACE['IDInts'][module_data.IDInt]} !")
+                    self.log(logType.ERROR, f"Int ID of {name} is already claimed (trying to possess ID of {module_data.IDInt}!\nThis is claimed by the block of id {GAME_NAMESPACE['IDInts'][module_data.IDInt]} !")
                     continue
                     # raise Exception(f"Int ID of {name} is already claimed (trying to possess ID of {module.__dict__[name].IDInt}!\nThis is claimed by block of id {GAME_NAMESPACE['IDInts'][module.__dict__[name].IDInt]} !")
                 
@@ -151,8 +151,10 @@ class resourceManager(Loggable):
                 self.log(logType.SUCCESS, f"new block added: {name} (INT ID: {module_data.IDInt})")
                 loadedBlocks+=1
                 # print(f"[NAMESPACE] New block added: {name} (INT ID: {module.__dict__[name].IDInt})")
-            except ModuleNotFoundError:
-                self.log(logType.CRASHREPORT, "Unable to import module \'bin.tiles{name}\'! Module not found.")
+            except ModuleNotFoundError as e:
+                self.errorWithTraceback(f"error with importing block {name}, couldn't find module",e)
+                self.log(logType.CRASHREPORT, f"Unable to import module \'bin.tiles.{name}\'! Module not found.")
+                exit()
             except Exception as e:
                 # self.log(logType.ERROR, f"unable to block of id {name}\nERROR:\n {e}\n")
                 self.errorWithTraceback(f"unable to block of id {name}", e)
