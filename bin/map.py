@@ -15,6 +15,8 @@ from bin.entity import Entity
 
 
 
+# images for light calculation
+
 class chunkNotLoaded(Exception): pass
 
 class Chunk(pygame.sprite.Group, Executor, Loggable):
@@ -350,6 +352,63 @@ class Block(pygame.sprite.Sprite):
     # informations for every block
     SIZE = Vector2(32,32) # SIZE OF ALL BLOCKS
     
+    
+    # dark textures for faster lighting calculations
+    darkTexture0 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    darkTexture0.fill((0,0,0,255))
+
+    darkTexture1 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    darkTexture1.fill((0,0,0,240))
+    
+    darkTexture2 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    darkTexture2.fill((0,0,0,230))
+    
+    darkTexture3 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    darkTexture3.fill((0,0,0,220))
+    
+    darkTexture4 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    darkTexture4.fill((0,0,0,200))
+    
+    darkTexture5 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    darkTexture5.fill((0,0,0,180))
+    
+    darkTexture6 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    darkTexture6.fill((0,0,0,160))
+    
+    darkTexture7 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    darkTexture7.fill((0,0,0,140))
+    
+    darkTexture8 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    darkTexture8.fill((0,0,0,120))
+    
+    darkTexture9 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    darkTexture9.fill((0,0,0,100))
+    
+    darkTexture10 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    darkTexture10.fill((0,0,0,80))
+    
+    darkTexture11 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    darkTexture11.fill((0,0,0,70))
+    
+    darkTexture12 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    darkTexture12.fill((0,0,0,60))
+    
+    darkTexture13 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    darkTexture13.fill((0,0,0,40))
+    
+    darkTexture14 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    darkTexture14.fill((0,0,0,20))
+    
+    darkTexture15 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    darkTexture15.fill((0,0,0,0))
+
+    darkTextures = [
+        darkTexture0, darkTexture1, darkTexture2, darkTexture3, darkTexture4,
+        darkTexture5, darkTexture6, darkTexture7, darkTexture8, darkTexture9,
+        darkTexture10, darkTexture11, darkTexture12, darkTexture13, darkTexture14,
+        darkTexture15,
+    ]
+    
     # basic information about block (info that can be changed in every block)
     MAINTEXTURE: str | None = None  # texture that will be used
     MAINTEXTUREISTRANSPARENT: bool = False # if texture is transparent (that is only for pygame optimization)
@@ -452,7 +511,7 @@ class Block(pygame.sprite.Sprite):
  
     def getBlockDown(self, howManyToDown: int = 1) -> 'Block | None':
         '''allows you get the block under'''
-        return self.getScene().getBlockByAbsPos((self.__absolutePos[0],self.__absolutePos[1]+howManyToUp))      
+        return self.getScene().getBlockByAbsPos((self.__absolutePos[0],self.__absolutePos[1]+howManyToDown))      
     
     def getBlockRelative(self, x: int = 0, y: int = 0) -> 'Block | None':
                return self.getScene().getBlockByAbsPos((self.__absolutePos[0]+x,self.__absolutePos[1]+y))   
@@ -593,10 +652,29 @@ class Block(pygame.sprite.Sprite):
     def isOfID(self, id: str) -> bool:
         return True if self.ID == id else False
     
+    # light managing
+    
+    @property
+    def lightValue(self) -> int:
+        return self.__lightValue
+    
+    @lightValue.setter
+    def lightValue(self, value) -> None:
+        self.__lightValue = value
+        
+
+    def recompileLight(self) -> None:
+        self.image = self.mainImageCompiled.copy()
+        self.image.blit(self.darkTextures[self.__lightValue], (0,0))
+        
+        
+        
+        # recalculating image by light
+    
     def __init__(self, image:pygame.surface.Surface, blockPos: tuple[int,int], chunk: Chunk, executor: Optional[Executor] = None, reason: Optional[str] = None, addToEverything: bool = True) -> None:
         '''creating block (TRY TO NOT USE IT!, USE another methods like Block.newBlockByResourceManager() or chunk.setBlock() or scene.setBlock(), using this method is very risky! using this will cause a lot of problems, especially because you have to use relative position! there's no guarantee that everything will work just fine!)\n
             Args:\n
-                * image: pygame.surface.Surface -> image
+                * image: pygame.surface.Surface -> image (NOT USED NOW, for optimalization purposes!)
                 * blockPos: tuple[int,int] -> position of this block relative to chunk
                 * chunk: Chunk -> chunk where this block is located
                 * executor: Optional[Executor] -> autor of this action (instance)
@@ -613,7 +691,7 @@ class Block(pygame.sprite.Sprite):
         self.__chunk = chunk
         self.__inChunkPos = blockPos
         self.__absolutePos = (blockPos[0]+chunk.getChunkPos()*Chunk.SIZE.x, blockPos[1])
-        self.image = image
+        self.image = self.mainImageCompiled.copy()
         self.__cords: Vector2 = Vector2(blockPos[0] * Block.SIZE.x, blockPos[1] * Block.SIZE.y)
         # print(self.__cords)
         self.cordsAbsolute: Vector2 = Vector2(self.__cords.x + self.__chunk.getStartingPoint().x,
@@ -623,6 +701,8 @@ class Block(pygame.sprite.Sprite):
         self.rect.topleft = self.cordsAbsolute
         
         self.doRender = True
+        self.__lightValue = 8
+        self.recompileLight()
         
         # reason handling
 # (self, blockPosAbsolute: tuple[int,int], inChunkPosition: tuple[int,int], chunk: Chunk, event: Event, reason: Optional[Reason] = None, executor: Optional[Executor] = None)

@@ -67,49 +67,54 @@ class resourceManager(Loggable):
                 
                 module = importlib.import_module(f"bin.tiles.{name}")
 
-                module_data = module.__dict__[name]
-                module_dict_data = module_data.__dict__
                 
                 # check for structure
                 if name not in module.__dict__:
                     self.log(logType.ERROR, f"File {tile} doesn't provide the main class of the block and was expected to do so. Class should be named {name}")
                     continue
                 
+                # this should be below previous one because it has event checked if that even exist yet
+                mainClassData = module.__dict__[name]
+                mainClassDict = mainClassData.__dict__
+                
+                
+                # if isinstance(mainClassData, Block)
+                
                 # checking for components in the main class
-                if "ID" not in module_dict_data:
+                if "ID" not in mainClassDict:
                     self.log(logType.ERROR, f"A class of block with the name {name} doesn't have ID!")
                     continue
                 
-                if type(module_data.ID) != str:
+                if type(mainClassData.ID) != str:
                     self.log(logType.ERROR, f"A class of block with the name {name} doesn't have proper ID (that should be string)!")
                     continue
                 
-                if "IDInt" not in module_dict_data:
+                if "IDInt" not in mainClassDict:
                     self.log(logType.ERROR, f"A class of block with the name {name} doesn't have IDInt!")
                     continue
                     
-                if type(module_data.IDInt) != int:
+                if type(mainClassData.IDInt) != int:
                     self.log(logType.ERROR, f"A class of block with the name {name} doesn't have proper IDInt (that should be int)!")
                     continue
                 
-                if "MAINTEXTURE" not in module_dict_data:
+                if "MAINTEXTURE" not in mainClassDict:
                     self.log(logType.ERROR, f"A class of block with the name {name} doesn't have MAINTEXTURE!")
                     continue
                 
                 
-                if type(module_data.MAINTEXTURE) != str:
+                if type(mainClassData.MAINTEXTURE) != str:
                     self.log(logType.ERROR, f"A class of block with the name {name} doesn't have proper MAINTEXTURE (that should be string)!")
                     continue
                 
-                if "MAINTEXTUREISTRANSPARENT" not in module_dict_data:
+                if "MAINTEXTUREISTRANSPARENT" not in mainClassDict:
                     self.log(logType.ERROR, f"A class of block with the name {name} doesn't have MAINTEXTUREISTRANSPARENT!")
                     continue
                 
-                if type(module_data.MAINTEXTUREISTRANSPARENT) != bool:
+                if type(mainClassData.MAINTEXTUREISTRANSPARENT) != bool:
                     self.log(logType.ERROR, f"A class of block with the name {name} doesn't have proper MAINTEXTUREISTRANSPARENT (that should be bool)!")
                     continue
                 
-                _mainTextureLoc = os.path.join("resources", module_data.MAINTEXTURE).replace("/","\\")
+                _mainTextureLoc = os.path.join("resources", mainClassData.MAINTEXTURE).replace("/","\\")
                 if not os.path.exists(_mainTextureLoc):
                     # _r2 = "resources/" + module.__dict__[name].MAINTEXTURE
                     self.log(logType.ERROR, f"Path {_mainTextureLoc} provided in MAINTEXTURE do not exist. We could not load block of id {name}!")
@@ -120,35 +125,48 @@ class resourceManager(Loggable):
                     continue
                  
                 # print(GAME_NAMESPACE["IDInts"])
-                if module_data.IDInt in GAME_NAMESPACE["IDInts"].keys():
-                    self.log(logType.ERROR, f"Int ID of {name} is already claimed (trying to possess ID of {module_data.IDInt}!\nThis is claimed by the block of id {GAME_NAMESPACE['IDInts'][module_data.IDInt]} !")
+                if mainClassData.IDInt in GAME_NAMESPACE["IDInts"].keys():
+                    self.log(logType.ERROR, f"Int ID of {name} is already claimed (trying to possess ID of {mainClassData.IDInt}!\nThis is claimed by the block of id {GAME_NAMESPACE['IDInts'][mainClassData.IDInt]} !")
                     continue
                     # raise Exception(f"Int ID of {name} is already claimed (trying to possess ID of {module.__dict__[name].IDInt}!\nThis is claimed by block of id {GAME_NAMESPACE['IDInts'][module.__dict__[name].IDInt]} !")
                 
                 
+                # claiming this id for this block
                 GAME_NAMESPACE["IDInts"][module.__dict__[name].IDInt] = name
 
                 main_texture = pygame.image.load(_mainTextureLoc)
-
-                self.__resources[module_data.MAINTEXTURE] = main_texture.convert()
-
-                if module_data.MAINTEXTUREISTRANSPARENT:
-                    self.__resources[module_data.MAINTEXTURE] = main_texture.convert_alpha()
                 
+                # darkTexture = pygame.surface.Surface((64,64), flags=pygame.SRCALPHA)
+                # darkTexture.fill((0,0,0,210))
+                # main_texture.blit(darkTexture, (0,0))
+                
+                # main_texture.set_alpha(pygame.SRCALPHA)
+                # pygame.draw.rect(main_texture, pygame.Color(0,0,0,a=230), (0,0,64,64))
+
+                
+                # loading texture of the block
+                if mainClassData.MAINTEXTUREISTRANSPARENT:
+                    mainClassData.mainImageCompiled = self.__resources[mainClassData.MAINTEXTURE] = main_texture.convert_alpha()
+                else:
+                    mainClassData.mainImageCompiled = self.__resources[mainClassData.MAINTEXTURE] = main_texture.convert()
+                    
+                
+                    # pygame.transform.b
+                # creating namespace for the block
                 GAME_NAMESPACE["blocks"][name] = {
                     "module": module,
                     "id": name,
                     "type": "block",
-                    "class": module_data,
-                    "idInt": module_data.IDInt,
-                    "MAINTEXTURE_loc": module_data.MAINTEXTURE,
+                    "class": mainClassData,
+                    "idInt": mainClassData.IDInt,
+                    "MAINTEXTURE_loc": mainClassData.MAINTEXTURE,
                     "MAINTEXTURE_loc_with": _mainTextureLoc,
-                    "ISMAINTEXTURETRANSPARENT": module_data.MAINTEXTUREISTRANSPARENT,
-                    "MAINTEXTURE_object": self.__resources[module_data.MAINTEXTURE],
-                    "MAINTEXTURE_get": lambda: self.getTexture(module_data.MAINTEXTURE)
+                    "ISMAINTEXTURETRANSPARENT": mainClassData.MAINTEXTUREISTRANSPARENT,
+                    "MAINTEXTURE_object": self.__resources[mainClassData.MAINTEXTURE],
+                    "MAINTEXTURE_get": lambda: self.getTexture(mainClassData.MAINTEXTURE)
                 }
                 
-                self.log(logType.SUCCESS, f"new block added: {name} (INT ID: {module_data.IDInt})")
+                self.log(logType.SUCCESS, f"new block added: {name} (INT ID: {mainClassData.IDInt})")
                 loadedBlocks+=1
                 # print(f"[NAMESPACE] New block added: {name} (INT ID: {module.__dict__[name].IDInt})")
             except ModuleNotFoundError as e:
@@ -163,28 +181,6 @@ class resourceManager(Loggable):
                 
         self.log(logType.SUCCESS, f"loading blocks has ended! LOADED BLOCKS: {loadedBlocks}/{totalBlocks} (failed: {totalBlocks - loadedBlocks})")
         self.log(logType.SUCCESS, "namespace has been loaded successfully...")
-
-        
-       
-        # for type, whatwevegothere in GAME_NAMESPACE.items():
-        #     match type:
-        #         case 'blocks':
-        #             for blockName, block in whatwevegothere.items(): 
-        #                 try:
-                            
-                            
-        #                     self.__resources['intIds'][block['intID']] = blockName
-                            
-                        
-                            
-        #                     # main Texture
-        #                     if 'MAINTEXTURE' in block['class'].__dict__:
-        #                         self.__resources[block['class'].MAINTEXTURE] = pygame.image.load(block['class'].MAINTEXTURE).convert_alpha()
-                        
-        #                     else:
-        #                         self.__resources[blockName+".png"] = pygame.image.load(blockName+".png").convert_alpha()
-        #                 except Exception as e:
-        #                     raise e
            
     def getGame(self) -> 'Game':
         return self.__game         
