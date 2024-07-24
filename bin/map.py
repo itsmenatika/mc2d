@@ -699,7 +699,7 @@ class Block(pygame.sprite.Sprite):
         self.__chunk = chunk
         self.__inChunkPos = blockPos
         self.__absolutePos = (blockPos[0]+chunk.getChunkPos()*Chunk.SIZE.x, blockPos[1])
-        self.image = self.mainImageCompiled.copy()
+        self.image = self.mainImageCompiled
         self.__cords: Vector2 = Vector2(blockPos[0] * Block.SIZE.x, blockPos[1] * Block.SIZE.y)
         # print(self.__cords)
         self.cordsAbsolute: Vector2 = Vector2(self.__cords.x + self.__chunk.getStartingPoint().x,
