@@ -421,6 +421,10 @@ class Block(pygame.sprite.Sprite):
     listenPriority: int = 1 # priority of listening. The higher the better. {NOT IMPLEMENTED YET}
     
     
+    # lighting information
+    
+    lightingAbsorption = 4 # tells lighting engine how that should be treated (if that should absorb the light)
+    
     # SCREENSIZE = (1280,720) # SIZE OF SCREEN (IDK IF THAT WAS USED ANYWHERE BUT ILL KEEP IT FOR SECURITY REASONS)
     
     # functions to changed in every block:

@@ -39,7 +39,7 @@ class lightingManager(Loggable, Executor):
                         # if currentLight == 15: print('s')
                         block.lightValue = currentLight
                         
-                        currentLight = max(currentLight-4, 0)  
+                        currentLight = max(currentLight-block.lightingAbsorption, 0)  
                           
         # check for neighbouring blocks
         chunkInCorrectOrder = dict(sorted(chunks.items(), key=lambda item: item[0]))
@@ -69,7 +69,7 @@ class lightingManager(Loggable, Executor):
                         else: left = left.lightValue               
                         
                         block.lightValue = max(
-                        up-2, down-2, right-1, left-1, 2, block.lightValue-3
+                        up-2, down-2, right-1, left-1, 2, block.lightValue
                         )-2
                         
                         block.recompileLight()

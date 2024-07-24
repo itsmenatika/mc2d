@@ -11,6 +11,10 @@ class allium(Block):
     ID = "allium"
     IDInt = 19
     
+    # lighting information
+    
+    lightingAbsorption = 0 # tells lighting engine how that should be treated (if that should absorb the light)
+    
     @staticmethod
     def onPlaceAttempt(blockPosAbsolute: tuple[int,int], inChunkPosition: tuple[int,int], chunk: Chunk, event: Event, reason: Optional[Reason] = None, executor: Optional[Executor] = None, changingBlock: bool = False) -> None:
         block = chunk.getScene().getBlockByAbsPos((blockPosAbsolute[0], blockPosAbsolute[1]+1))
