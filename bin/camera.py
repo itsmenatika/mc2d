@@ -96,8 +96,10 @@ class Camera:
             except Exception as e: pass
                 # print(e)
             # blockID = blockID.getBlockByTuple((chunkPos[0], chunkPos[1]))
+            
+            rNum = self.getGame().getResourceManager().getAmountOfResources()
 
-            temp_info = f"BlockPos: {BlockPos} AbsBlockPos: {absoluteBlockPos} Chunk: {chunkPos} cords: {AbsolutePos} | {round(scene_game_clock.get_fps())}FPS {scene_game_clock.get_rawtime()}MS | BlockID: {blockID} | lightLevel: {lightLevel}"
+            temp_info = f"BlockPos: {BlockPos} AbsBlockPos: {absoluteBlockPos} Chunk: {chunkPos} cords: {AbsolutePos} | {round(scene_game_clock.get_fps())}FPS {scene_game_clock.get_rawtime()}MS | BlockID: {blockID} | lightLevel: {lightLevel} | rNum: {rNum}"
             
             self.__infoToDraw = self.__font.render(temp_info, False, (100, 100, 100))
 

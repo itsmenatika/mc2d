@@ -354,61 +354,61 @@ class Block(pygame.sprite.Sprite):
     SIZE = Vector2(32,32) # SIZE OF ALL BLOCKS
     
     
-    # dark textures for faster lighting calculations
-    darkTexture0 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture0.fill((0,0,0,255))
+    # dark textures for faster lighting calculations (NOT USED, MOVED TO RESOURCEMANAGER)
+    # darkTexture0 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    # darkTexture0.fill((0,0,0,255))
 
-    darkTexture1 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture1.fill((0,0,0,240))
+    # darkTexture1 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    # darkTexture1.fill((0,0,0,240))
     
-    darkTexture2 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture2.fill((0,0,0,230))
+    # darkTexture2 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    # darkTexture2.fill((0,0,0,230))
     
-    darkTexture3 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture3.fill((0,0,0,220))
+    # darkTexture3 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    # darkTexture3.fill((0,0,0,220))
     
-    darkTexture4 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture4.fill((0,0,0,200))
+    # darkTexture4 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    # darkTexture4.fill((0,0,0,200))
     
-    darkTexture5 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture5.fill((0,0,0,180))
+    # darkTexture5 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    # darkTexture5.fill((0,0,0,180))
     
-    darkTexture6 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture6.fill((0,0,0,160))
+    # darkTexture6 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    # darkTexture6.fill((0,0,0,160))
     
-    darkTexture7 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture7.fill((0,0,0,140))
+    # darkTexture7 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    # darkTexture7.fill((0,0,0,140))
     
-    darkTexture8 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture8.fill((0,0,0,120))
+    # darkTexture8 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    # darkTexture8.fill((0,0,0,120))
     
-    darkTexture9 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture9.fill((0,0,0,100))
+    # darkTexture9 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    # darkTexture9.fill((0,0,0,100))
     
-    darkTexture10 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture10.fill((0,0,0,80))
+    # darkTexture10 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    # darkTexture10.fill((0,0,0,80))
     
-    darkTexture11 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture11.fill((0,0,0,70))
+    # darkTexture11 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    # darkTexture11.fill((0,0,0,70))
     
-    darkTexture12 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture12.fill((0,0,0,60))
+    # darkTexture12 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    # darkTexture12.fill((0,0,0,60))
     
-    darkTexture13 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture13.fill((0,0,0,40))
+    # darkTexture13 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    # darkTexture13.fill((0,0,0,40))
     
-    darkTexture14 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture14.fill((0,0,0,20))
+    # darkTexture14 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    # darkTexture14.fill((0,0,0,20))
     
-    darkTexture15 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture15.fill((0,0,0,0))
+    # darkTexture15 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
+    # darkTexture15.fill((0,0,0,0))
 
-    darkTextures = [
-        darkTexture0, darkTexture1, darkTexture2, darkTexture3, darkTexture4,
-        darkTexture5, darkTexture6, darkTexture7, darkTexture8, darkTexture9,
-        darkTexture10, darkTexture11, darkTexture12, darkTexture13, darkTexture14,
-        darkTexture15,
-    ]
+    # darkTextures = [
+    #     darkTexture0, darkTexture1, darkTexture2, darkTexture3, darkTexture4,
+    #     darkTexture5, darkTexture6, darkTexture7, darkTexture8, darkTexture9,
+    #     darkTexture10, darkTexture11, darkTexture12, darkTexture13, darkTexture14,
+    #     darkTexture15,
+    # ]
     
     # basic information about block (info that can be changed in every block)
     MAINTEXTURE: str | None = None  # texture that will be used
@@ -670,8 +670,10 @@ class Block(pygame.sprite.Sprite):
 
     def recompileLight(self) -> None:
         '''recompiles light for specific block (recompiles self.image)'''
-        self.image: pygame.surface.Surface = self.mainImageCompiled.copy()
-        self.image.blit(self.darkTextures[self.__lightValue], (0,0))
+        # self.image: pygame.surface.Surface = self.mainImageCompiled.copy()
+        # self.image.blit(self.darkTextures[self.__lightValue], (0,0))
+        
+        self.image = self.getGame().getResourceManager().getTexture(self.MAINTEXTURE, lightValue=self.lightValue)
         
         
         
@@ -708,7 +710,7 @@ class Block(pygame.sprite.Sprite):
         
         self.doRender = True
         self.__lightValue = 15
-        self.recompileLight()
+        # self.recompileLight()
         
         # reason handling
 # (self, blockPosAbsolute: tuple[int,int], inChunkPosition: tuple[int,int], chunk: Chunk, event: Event, reason: Optional[Reason] = None, executor: Optional[Executor] = None)
