@@ -31,18 +31,27 @@ class lightingManager(Loggable, Executor):
         for chunk in chunks.values():
             for x in range(0, int(chunk.SIZE.x)):
                 currentLight = skyLight
+                
                 for y in range(0, int(chunk.SIZE.y)):
                     block = chunk.getBlockByTuple((x,y))
+                    
                     if block != None:
+                        # if currentLight == 15: print('s')
                         block.lightValue = currentLight
-                        currentLight = max(currentLight-4, 0)
-                   
-                   
-        for chunk in chunks.values():
+                        
+                        currentLight = max(currentLight-4, 0)  
+                          
+        # check for neighbouring blocks
+        chunkInCorrectOrder = dict(sorted(chunks.items(), key=lambda item: item[0]))
+        # print(chunkInCorrectOrder)
+        for chunk in chunkInCorrectOrder.values():
             for y in range(0, int(chunk.SIZE.y)):
                 for x in range(0, int(chunk.SIZE.x)):
+                    
                     block = chunk.getBlockByTuple((x,y))
+                    
                     if block != None:
+                        
                         up = block.getBlockUp()
                         if up == None: up = 0
                         else: up = up.lightValue
@@ -60,7 +69,7 @@ class lightingManager(Loggable, Executor):
                         else: left = left.lightValue               
                         
                         block.lightValue = max(
-                        up, down, right-2, left-2, 2
+                        up-2, down-2, right-1, left-1, 2, block.lightValue-3
                         )-2
                         
                         block.recompileLight()
