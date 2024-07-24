@@ -337,6 +337,11 @@ class Game(Loggable):
         self.addInputEvent("saveMap", InputType.keyDown, key=pygame.K_s, function=lambda *args, **kwargs: self.getCurrentScene().saveWorld())
         
     
+        def recompileLight(game, currentScene: Scene, typeEvent, info, loggable: Loggable):
+            currentScene.getLightingManager().recompileBlocks()
+            
+        self.addInputEvent("t", InputType.keyDown, key=pygame.K_l, function=recompileLight)
+
     async def __gameLoop(self) -> None:
         '''a main loop that is run once every frame'''
         

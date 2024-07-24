@@ -12,6 +12,7 @@ from bin.abstractClasses import Executor, WorldGenerator, Reason, EventType
 from bin.logger import Loggable, logType, ParentForLogs
 from bin.event import Event
 from bin.entity import Entity
+from bin.lighting import lightingManager
 
 
 
@@ -664,7 +665,8 @@ class Block(pygame.sprite.Sprite):
         
 
     def recompileLight(self) -> None:
-        self.image = self.mainImageCompiled.copy()
+        '''recompiles light for specific block (recompiles self.image)'''
+        self.image: pygame.surface.Surface = self.mainImageCompiled.copy()
         self.image.blit(self.darkTextures[self.__lightValue], (0,0))
         
         
@@ -701,7 +703,7 @@ class Block(pygame.sprite.Sprite):
         self.rect.topleft = self.cordsAbsolute
         
         self.doRender = True
-        self.__lightValue = 8
+        self.__lightValue = 15
         self.recompileLight()
         
         # reason handling
@@ -978,7 +980,7 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
         
         self.getChunk(chunkPos).setBlock(BlockPos, block)
         
-    def getBlockByAbsPos(self, absolutePos: tuple[int,int]) -> Block | None:
+    def getBlockByAbsPos(self, absolutePos: tuple[int,int], dontRaiseErrors: bool = True) -> Block | None:
         '''Get block by absolute blockPos'''
         chunkCords = absolutePos[0] // Chunk.SIZE.x
         # chunkStartPoint = (Chunk.SIZE.x * chunkCords, 0) 
@@ -987,7 +989,9 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
         
         
         if chunkCords not in self.__activeChunks:
-            raise chunkNotLoaded(f"Trying to access block of cords ${absolutePos} which should be located in chunk ${chunkCords}, but that chunk is not loaded!")
+            if not dontRaiseErrors:
+                raise chunkNotLoaded(f"Trying to access block of cords ${absolutePos} which should be located in chunk ${chunkCords}, but that chunk is not loaded!")
+            return None
         
         # print('fa',RelativeBlockPos)
         return self.__activeChunks[chunkCords].getBlockByTuple(RelativeBlockPos)       
@@ -1041,6 +1045,10 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
         # final saving
         with open('data/saves/map.json', "w") as file:
             file.write(json.dumps(self.__forSaving, indent=4))
+            
+            
+    def getLightingManager(self) -> lightingManager:
+        return self.__lightingManager
     
  
     def __init__(self, game: 'Game', name: str, worldGenerator: WorldGenerator, autoAdd: bool = True, inIdle: bool = False, seed: str = "uwusa", saveData: Optional[dict] = None) -> None:
@@ -1093,6 +1101,8 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
                  
         if autoAdd:
             self.__game.addScene(scene=self, name=self.__name)
+            
+        self.__lightingManager = lightingManager(self)
             
         self.log(logType.SUCCESS, "The scene is intialized!")
             

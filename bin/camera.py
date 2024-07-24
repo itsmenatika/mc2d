@@ -82,6 +82,7 @@ class Camera:
             scene_game_clock = self.sceneToDraw.getGame().clock
             
             blockID = "None (air??)"
+            lightLevel = None
             try:
                 current_scene = self.getGame().getCurrentScene()
 
@@ -89,12 +90,14 @@ class Camera:
                 # print(chunk.__dict__.keys())
                 # print(chunk._Chunk__blocks, BlockPos)
         
-                blockID = chunk.getBlockByTuple((BlockPos[0], BlockPos[1])).ID
+                block: Block = chunk.getBlockByTuple((BlockPos[0], BlockPos[1]))
+                blockID = block.ID
+                lightLevel = block.lightValue
             except Exception as e: pass
                 # print(e)
             # blockID = blockID.getBlockByTuple((chunkPos[0], chunkPos[1]))
 
-            temp_info = f"BlockPos: {BlockPos} AbsBlockPos: {absoluteBlockPos} Chunk: {chunkPos} cords: {AbsolutePos} | {round(scene_game_clock.get_fps())}FPS {scene_game_clock.get_rawtime()}MS | BlockID: {blockID}"
+            temp_info = f"BlockPos: {BlockPos} AbsBlockPos: {absoluteBlockPos} Chunk: {chunkPos} cords: {AbsolutePos} | {round(scene_game_clock.get_fps())}FPS {scene_game_clock.get_rawtime()}MS | BlockID: {blockID} | lightLevel: {lightLevel}"
             
             self.__infoToDraw = self.__font.render(temp_info, False, (100, 100, 100))
 
