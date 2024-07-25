@@ -21,9 +21,6 @@ class lightingManager(Loggable, Executor):
          
         skyLight: int = 15
         
-        lightTableMainBlocks = [[skyLight for y in range(0,256)] for x in range(0,16)]
-        lightTableBackgroundBlocks = [[skyLight for y in range(0,256)] for x in range(0,16)]
-        
         chunks: dict[int, 'Chunk'] = self.__scene.getActiveChunks()
         # chunkSize: Vector2 = chunks.values()[chunks.keys()[0]].ChunkSize
         
@@ -48,8 +45,8 @@ class lightingManager(Loggable, Executor):
                         # if currentLight == 15: print('s')
                         
                     # calculate strength of current light beam
-                    if block.isInBackground():
-                    # block.lightValue = currentLight
+                    # if block.isInBackground():
+                    block.lightValue = currentLight
                     
                     blockOp = block.getOppositeLayer()
                     if blockOp != None:
@@ -67,6 +64,9 @@ class lightingManager(Loggable, Executor):
         # return
         # sort blocks
         chunkInCorrectOrder = dict(sorted(chunks.items(), key=lambda item: item[0]))
+        
+        lightTable = []
+        
         # print(chunkInCorrectOrder)
         for chunk in chunkInCorrectOrder.values():
             for y in range(0, int(chunk.SIZE.y)):
@@ -100,19 +100,55 @@ class lightingManager(Loggable, Executor):
                     if left == None: left = block.getBlockLeft(backgroundForced=not background)
                     left = 0 if left == None else left.lightValue           
                         
-                    # calculate max of this values -2
-                    block.lightValue = max(
+                        
+                    lightTable.append(data := (block.isInBackground(), block, max(
                         up-2, down-2, right-1, left-1, 2, block.lightValue
-                    ) - 2
-                       
-                    blockOp = block.getOppositeLayer()
-                    if blockOp != None:
-                        blockOp.lightValue = block.lightValue
-                        blockOp.recompileLight()
-                        # print(blockOp.lightValue)
-                       
-                    # tell block to recompile its image to fix the new assigned light value 
+                    ) - 2))
+                    
+                    block.lightValue = data[2]
                     block.recompileLight()
+
+        # # print(lightTable)
+        # # final compile (4th iteration)
+        # for data in lightTable:
+        #     # x, y = cord
+        #     # if data[0]: block = chunk.getBlockByTuple(cord, background=True)
+        #     # else: block = chunk.getBlockByTuple(cord)
+            
+        #     # print(block)
+
+        #     block = data[1]
+            
+        #     # if data[1]:
+        #     #     block.lightValue = max(data[2] -1, 0)
+        #     # else:
+        #     #     block.lightValue = data[2]
+            
+        #     block.lightValue = data[2]
+            
+        #     # print(block.lightValue)
+        #     # print(block.lightValue)
+        #     block.recompileLight()
+            
+            # blockOp = block.getOppositeLayer()
+            # if blockOp != None:
+            #     if not data[1]: data[2] -= 1
+            #     blockOp.lightValue = max(data[2],0)
+            #     blockOp.recompileLight()
+                        
+                    # calculate max of this values -2
+                    # block.lightValue = max(
+                    #     up-2, down-2, right-1, left-1, 2, block.lightValue
+                    # ) - 2
+                       
+                    # blockOp = block.getOppositeLayer()
+                    # if blockOp != None:
+                    #     blockOp.lightValue = block.lightValue
+                    #     blockOp.recompileLight()
+                    #     # print(blockOp.lightValue)
+                       
+                    # # tell block to recompile its image to fix the new assigned light value 
+                    # block.recompileLight()
                         
         
     
