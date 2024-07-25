@@ -21,7 +21,7 @@ class exceptionThatShouldntBeWrite(Exception): pass
 class resourceManager(Loggable):
     shadow_layouts = []
 
-    for alpha in (255, 0, -17):
+    for alpha in range(255, 0, -17):
         shadow = pygame.surface.Surface((Block.SIZE.x, Block.SIZE.y), flags=pygame.SRCALPHA)
 
         shadow.fill((0, 0, 0, alpha))
