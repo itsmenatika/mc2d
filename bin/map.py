@@ -21,8 +21,8 @@ from bin.lighting import lightingManager
 class chunkNotLoaded(Exception): pass
 
 class Chunk(pygame.sprite.Group, Executor, Loggable):
-    '''portion of the world of the size (16,360)'''
-    SIZE = Vector2(16,360)
+    '''portion of the world of the size (16,256)'''
+    SIZE = Vector2(16, 256)
 
     async def restoreChunkFromChunkData(self, chunkData: dict) -> None:
         '''allows you to restore chunk from chunkData'''

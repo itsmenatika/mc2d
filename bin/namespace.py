@@ -19,68 +19,21 @@ from bin.map import Block
 class unkownNameSpace(Exception): pass
 class exceptionThatShouldntBeWrite(Exception): pass
 class resourceManager(Loggable):
-    # dark textures for faster lighting calculations
-    darkTexture0 = pygame.surface.Surface((Block.SIZE.x,Block.SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture0.fill((0,0,0,255))
+    shadow_layouts = []
 
-    darkTexture1 = pygame.surface.Surface((Block.SIZE.x,Block.SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture1.fill((0,0,0,240))
-    
-    darkTexture2 = pygame.surface.Surface((Block.SIZE.x,Block.SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture2.fill((0,0,0,230))
-    
-    darkTexture3 = pygame.surface.Surface((Block.SIZE.x,Block.SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture3.fill((0,0,0,220))
-    
-    darkTexture4 = pygame.surface.Surface((Block.SIZE.x,Block.SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture4.fill((0,0,0,200))
-    
-    darkTexture5 = pygame.surface.Surface((Block.SIZE.x,Block.SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture5.fill((0,0,0,180))
-    
-    darkTexture6 = pygame.surface.Surface((Block.SIZE.x,Block.SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture6.fill((0,0,0,160))
-    
-    darkTexture7 = pygame.surface.Surface((Block.SIZE.x,Block.SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture7.fill((0,0,0,140))
-    
-    darkTexture8 = pygame.surface.Surface((Block.SIZE.x,Block.SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture8.fill((0,0,0,120))
-    
-    darkTexture9 = pygame.surface.Surface((Block.SIZE.x,Block.SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture9.fill((0,0,0,100))
-    
-    darkTexture10 = pygame.surface.Surface((Block.SIZE.x,Block.SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture10.fill((0,0,0,80))
-    
-    darkTexture11 = pygame.surface.Surface((Block.SIZE.x,Block.SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture11.fill((0,0,0,70))
-    
-    darkTexture12 = pygame.surface.Surface((Block.SIZE.x,Block.SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture12.fill((0,0,0,60))
-    
-    darkTexture13 = pygame.surface.Surface((Block.SIZE.x,Block.SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture13.fill((0,0,0,40))
-    
-    darkTexture14 = pygame.surface.Surface((Block.SIZE.x,Block.SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture14.fill((0,0,0,20))
-    
-    darkTexture15 = pygame.surface.Surface((Block.SIZE.x,Block.SIZE.y), flags=pygame.SRCALPHA)
-    darkTexture15.fill((0,0,0,0))
+    for alpha in (0, 255, 17):
+        shadow = pygame.surface.Surface((Block.SIZE.x, Block.SIZE.y), flags=pygame.SRCALPHA)
 
-    darkTextures = [
-        darkTexture0, darkTexture1, darkTexture2, darkTexture3, darkTexture4,
-        darkTexture5, darkTexture6, darkTexture7, darkTexture8, darkTexture9,
-        darkTexture10, darkTexture11, darkTexture12, darkTexture13, darkTexture14,
-        darkTexture15,
-    ]
+        shadow.fill((0, 0, 0,))
+
+        shadow_layouts.append(shadow)
     
     def getAmountOfResources(self) -> int:
         return len(self.__resources)
     
     def applyDarkToTexture(self, image: pygame.surface.Surface, lightValue: int) -> pygame.surface.Surface:
         image = image.copy()
-        image.blit(self.darkTextures[lightValue], (0,0))
+        image.blit(self.shadow_layouts[lightValue], (0,0))
         return image
     
     def getTexture(self, name: str, disableTryingToGet: bool = False, **kwargs):

@@ -35,11 +35,11 @@ class lightingManager(Loggable, Executor):
                 for y in range(0, int(chunk.SIZE.y)):
                     block = chunk.getBlockByTuple((x,y))
                     
-                    if block != None:
+                    if block == None:
+                        continue
                         # if currentLight == 15: print('s')
-                        block.lightValue = currentLight
                         
-                        currentLight = max(currentLight-block.lightingAbsorption, 0)  
+                    currentLight = max(block.lightValue - block.lightingAbsorption, 0)  
                           
         # check for neighbouring blocks
         chunkInCorrectOrder = dict(sorted(chunks.items(), key=lambda item: item[0]))
@@ -50,29 +50,27 @@ class lightingManager(Loggable, Executor):
                     
                     block = chunk.getBlockByTuple((x,y))
                     
-                    if block != None:
+                    if block == None:
+                        continue
                         
-                        up = block.getBlockUp()
-                        if up == None: up = 0
-                        else: up = up.lightValue
+                    up = block.getBlockUp()
+                    up = 0 if up == None else up.lightValue
+ 
+                    down = block.getBlockDown()
+                    down = 0 if down == None else down.lightValue
                         
-                        down = block.getBlockDown()
-                        if down == None: down = 0
-                        else: down = down.lightValue
+                    right = block.getBlockRight()
+                    right = 0 if right == None else right.lightValue
                         
-                        right = block.getBlockRight() 
-                        if right == None: right = 0
-                        else: right = right.lightValue
+                    left = block.getBlockLeft()
+                    left = 0 if left == None else left.lightValue           
                         
-                        left = block.getBlockLeft() 
-                        if left == None: left = 0    
-                        else: left = left.lightValue               
-                        
-                        block.lightValue = max(
+                    block.lightValue = max(
                         up-2, down-2, right-1, left-1, 2, block.lightValue
-                        )-2
+                    ) - 2
                         
-                        block.recompileLight()
+                    block.recompileLight()
+                        
         
     
     def __init__(self, scene: 'Scene') -> None:
