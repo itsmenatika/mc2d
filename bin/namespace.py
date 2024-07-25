@@ -27,6 +27,11 @@ class resourceManager(Loggable):
         shadow.fill((0, 0, 0, alpha))
 
         shadow_layouts.append(shadow)
+        
+    # no shadow
+    __shadow = pygame.surface.Surface((Block.SIZE.x, Block.SIZE.y), flags=pygame.SRCALPHA)
+    __shadow.fill((0, 0, 0, 0))
+    shadow_layouts.append(__shadow)
     
     def getAmountOfResources(self) -> int:
         return len(self.__resources)

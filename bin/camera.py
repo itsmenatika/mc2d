@@ -10,7 +10,7 @@ from bin.tools import timeTrackerPrintAsync,timeTrackerPrint
 class Camera:
 
     # Metoda prywatna do uzyskania dostępnych sprite'ów do renderowania
-    def __get_available_sprites_to_render(self, camera_end_points: tuple[int, int]) -> list:
+    def __get_available_sprites_to_render(self, camera_end_points: tuple[int, int], spriteGroup: pygame.sprite.Group) -> list:
         # Lista do przechowania dostępnych sprite'ów 
         available_sprites = []
 
@@ -39,7 +39,7 @@ class Camera:
                     and (sprite_xy[1] + block_sz_y) > cord_y and sprite_xy[1] < (lt_cam_endpoint + block_sz_y)
 
         # Przefiltrowane sprite'y
-        filtered_sprites = filter(filter_sprite, self.sceneToDraw.sprites())
+        filtered_sprites = filter(filter_sprite, spriteGroup)
         
         # Przypisz skonwertowane na listę przefiltrowane sprite'y do listy dostępnych sprite'ów
         available_sprites = list(filtered_sprites)
@@ -48,16 +48,24 @@ class Camera:
         # Zwróć dostępnę sprite'y do renderu
         return available_sprites
         
+
     def __filterSpritesToDrawNonAsync(self) -> None:
         cameraEndPoint = (self.SCREENSIZE[0] + self.cords.x, self.SCREENSIZE[1] + self.cords.y)
         
-        self.spritesTodraw = self.__get_available_sprites_to_render(cameraEndPoint)
+        # self.spritesTodraw = self.__get_available_sprites_to_render(cameraEndPoint, spriteGroup=spriteGroup)
+        
+        self.mainBlocks = self.__get_available_sprites_to_render(camera_end_points=cameraEndPoint, spriteGroup=self.sceneToDraw.mainBlocks)
+
+        self.backgroundBlocks = self.__get_available_sprites_to_render(camera_end_points=cameraEndPoint, spriteGroup=self.sceneToDraw.backgroundBlocks)
         
     async def __filterSpritesToDraw(self):
         while True:
-            self.__filterSpritesToDrawNonAsync()
-
-            await asyncio.sleep(0.1)
+            cameraEndPoint = (self.SCREENSIZE[0] + self.cords.x, self.SCREENSIZE[1] + self.cords.y)
+            
+            self.mainBlocks = self.__get_available_sprites_to_render(camera_end_points=cameraEndPoint, spriteGroup=self.sceneToDraw.mainBlocks)
+            await asyncio.sleep(0.05)
+            self.backgroundBlocks = self.__get_available_sprites_to_render(camera_end_points=cameraEndPoint, spriteGroup=self.sceneToDraw.backgroundBlocks)
+            await asyncio.sleep(0.05)
             
     async def __generateInfo(self):
         while True:
@@ -116,7 +124,10 @@ class Camera:
         # chunk: Chunk = None
         sprite: Block = None
 
-        for sprite in self.spritesTodraw:
+        for sprite in self.backgroundBlocks:
+            surface.blit(sprite.image, sprite.getCords() - self.cords)
+
+        for sprite in self.mainBlocks:
             surface.blit(sprite.image, sprite.getCords() - self.cords)
         # for sprite in sceneToDraw.sprites():
         #     cords = sprite.getCords()
@@ -212,7 +223,8 @@ class Camera:
 
         self.SCREENSIZE = pygame.display.get_surface().get_size()
 
-        self.spritesTodraw = pygame.sprite.Group()
+        self.mainBlocks = pygame.sprite.Group()
+        self.backgroundBlocks = pygame.sprite.Group()
         self.sceneToDraw: Scene = self.__game.getCurrentScene()
         self.pointedBlock = pygame.rect.Rect((0, 0), (Block.SIZE.x, Block.SIZE.y))
 

@@ -12,9 +12,3 @@ class bedrock(Block):
     
     # def onGenerate(self, cordsRelative: Vector2, cordsAbsolute: Vector2, inChunkPosition: tuple[int,int], chunk: Chunk):
     #     print(f"bedrock generated in {cordsAbsolute} {inChunkPosition}")
-        
-
-        
-    def __init__(self, image: Surface, blockPos: Vector2, chunk: Chunk, executor: Executor | None = None, reason: str | None = None, addToEverything: bool = True) -> None:
-        super().__init__(image, blockPos, chunk, executor, reason, addToEverything)
-    

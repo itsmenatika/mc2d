@@ -16,18 +16,15 @@ class allium(Block):
     lightingAbsorption = 0 # tells lighting engine how that should be treated (if that should absorb the light)
     
     @staticmethod
-    def onPlaceAttempt(blockPosAbsolute: tuple[int,int], inChunkPosition: tuple[int,int], chunk: Chunk, event: Event, reason: Optional[Reason] = None, executor: Optional[Executor] = None, changingBlock: bool = False) -> None:
+    def onPlaceAttempt(blockPosAbsolute: tuple[int,int], inChunkPosition: tuple[int,int], chunk: Chunk, event: Event, background: bool = False, reason: Optional[Reason] = None, executor: Optional[Executor] = None, changingBlock: bool = False) -> None:
         block = chunk.getScene().getBlockByAbsPos((blockPosAbsolute[0], blockPosAbsolute[1]+1))
         
         if block == None or block.ID not in ("dirt", "grass_block"):
             event.prevent()
    
-    def onUpdate(self, blockPosAbsolute: tuple[int, int], inChunkPosition: tuple[int, int], chunk, reason: Reason | None = None, executor: Executor | None = None) -> None:
+    def onUpdate(self, blockPosAbsolute: tuple[int, int], inChunkPosition: tuple[int, int], chunk, background: bool = False, reason: Reason | None = None, executor: Executor | None = None) -> None:
         block = self.getBlockDown()
         if block == None or block.ID not in ("dirt", "grass_block"):
             self.setToAir(executor=executor, reason=reason)
 
-        
-    def __init__(self, image: Surface, blockPos: Vector2, chunk: Chunk, executor: Executor | None = None, reason: str | None = None, addToEverything: bool = True) -> None:
-        super().__init__(image, blockPos, chunk, executor, reason, addToEverything)
     

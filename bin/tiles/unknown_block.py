@@ -9,7 +9,3 @@ class Unknown(Block):
     MAINTEXTUREISTRANSPARENT = False
     ID = "?"
     IDInt = 19
-        
-    def __init__(self, image: Surface, blockPos: Vector2, chunk: Chunk, executor: Executor | None = None, reason: str | None = None, addToEverything: bool = True) -> None:
-        super().__init__(image, blockPos, chunk, executor, reason, addToEverything)
-    

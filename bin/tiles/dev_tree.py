@@ -15,7 +15,7 @@ class dev_tree(Block):
     IDInt = 18
     
     @staticmethod
-    def onPlaceAttempt(blockPosAbsolute: tuple[int,int], inChunkPosition: tuple[int,int], chunk: Chunk, event: Event, reason: Optional[Reason] = None, executor: Optional[Executor] = None, changingBlock: bool = False) -> None: 
+    def onPlaceAttempt(blockPosAbsolute: tuple[int,int], inChunkPosition: tuple[int,int], chunk: Chunk, event: Event, background: bool = False, reason: Optional[Reason] = None, executor: Optional[Executor] = None, changingBlock: bool = False) -> None: 
         event.prevent()
         
         scene = chunk.getScene()
@@ -35,5 +35,3 @@ class dev_tree(Block):
         # we don't have water yet :c
         # scene.setBlockByAbsolutePos((blockPosAbsolute[0], blockPosAbsolute[1]+i+1), "diamond_block")
     
-    def __init__(self, image: Surface, blockPos: Vector2, chunk: Chunk, executor: Executor | None = None, reason: str | None = None, addToEverything: bool = True) -> None:
-        super().__init__(image, blockPos, chunk, executor, reason, addToEverything)

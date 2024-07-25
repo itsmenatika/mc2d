@@ -13,6 +13,12 @@ class flatWorldGenerator(WorldGenerator):
                                             executor=self,
                                             reason=Reason.worldGenerator,
                                             chunk=chunk)
+            Block.newBlockByResourceManager(name="dirt_background", 
+                                        blockPos=(x,35),
+                                        executor=self,
+                                        background=True,
+                                        reason=Reason.worldGenerator,
+                                        chunk=chunk) 
 
             for g in range(0,5):
                 Block.newBlockByResourceManager(name="dirt", 
@@ -20,11 +26,24 @@ class flatWorldGenerator(WorldGenerator):
                                             executor=self,
                                             reason=Reason.worldGenerator,
                                             chunk=chunk) 
+                Block.newBlockByResourceManager(name="dirt_background", 
+                                            blockPos=(x,36+g),
+                                            executor=self,
+                                            background=True,
+                                            reason=Reason.worldGenerator,
+                                            chunk=chunk) 
             
             for g in range(0+g,60+g):
                 Block.newBlockByResourceManager(name="stone", 
-                                            blockPos=(x,36+g),
+                                            blockPos=(x,36+g+1),
                                             executor=self,
+                                            reason=Reason.worldGenerator,
+                                            chunk=chunk) 
+
+                Block.newBlockByResourceManager(name="stone_background", 
+                                            blockPos=(x,36+g+1),
+                                            executor=self,
+                                            background=True,
                                             reason=Reason.worldGenerator,
                                             chunk=chunk) 
 
@@ -33,8 +52,15 @@ class flatWorldGenerator(WorldGenerator):
                                             blockPos=(x,36+g+1),
                                             executor=self,
                                             reason=Reason.worldGenerator,
-                                            chunk=chunk)                
+                                            chunk=chunk)     
             
+            Block.newBlockByResourceManager(name="stone_background", 
+                                blockPos=(x,36+g+1),
+                                executor=self,
+                                background=True,
+                                reason=Reason.worldGenerator,
+                                chunk=chunk)            
+
             await asyncio.sleep(0.1)
             
         self.log(logType.SUCCESS, f"Succesfully generated chunk at {chunkPos}!")
