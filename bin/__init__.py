@@ -1,22 +1,23 @@
+# external imports
 import pygame
-import sys
-import traceback
+from pygame.math import Vector2
+# import sys
+# import traceback
 import asyncio
 import os
 from typing import Optional, Iterable, ItemsView, Union
+import time
 
+# internal imports
 from bin.map import Scene, Chunk, currentScene, Block
 from bin.camera import Camera
-
-from pygame.math import Vector2
 from bin.namespace import resourceManager
 # from bin.worldGenerator.overworld import worldGeneratorNormal
 from bin.worldGenerator.flatWorld import flatWorldGenerator
-
 from bin.abstractClasses import InputType, inputEventInfo, EventType
 from bin.logger import Logger, Loggable, logType, ParentForLogs
-
-from bin.event import Event
+# from bin.event import Event
+from bin.entity import Entity, entityType
 
 class gameEngineError(Exception): pass
 class invalidName(gameEngineError): pass
@@ -323,7 +324,7 @@ class Game(Loggable):
                 
         # binding events
         self.addInputEvent("test", InputType.rightClickHold, destroyBlock)
-        self.addInputEvent("test2", InputType.leftClickHold, addBlock)
+        # self.addInputEvent("test2", InputType.leftClickHold, addBlock)
         self.addInputEvent("keyUp", InputType.keyDown, lambda *args, **kwargs: self.camera.moveBy(Vector2(0,-200)), key=pygame.K_UP)
         self.addInputEvent("keyDown", InputType.keyDown, lambda *args, **kwargs: self.camera.moveBy(Vector2(0,200)), key=pygame.K_DOWN)
         self.addInputEvent("keyRight", InputType.keyDown, lambda *args, **kwargs: self.camera.moveBy(Vector2(200,0)), key=pygame.K_RIGHT)
@@ -341,6 +342,37 @@ class Game(Loggable):
             currentScene.getLightingManager().recompileBlocks()
             
         self.addInputEvent("t", InputType.keyDown, key=pygame.K_l, function=recompileLight)
+        
+        
+        def spawnEntity(game, currentScene: Scene, typeEvent, info, loggable: Loggable):
+            mousePos = Vector2(info['mousePos'])
+            currentScene.addEntity(Entity(pygame.image.load("resources/tiles/allium.png"), currentScene.getChunk(currentScene.getChunkPosFromCords(mousePos)), mousePos+self.camera.cords, entityType.falling_block))
+            
+        self.addInputEvent("test2", InputType.leftClick, spawnEntity)
+            
+            
+        
+
+    async def __tick(self):
+        while self.__isGameOn:
+            # 20 per second (used for physics etc, NOT USE IT FOR RENDER PURPOSES)
+            # spread ticks accross scenes
+            for scene in self.__scenes.values():
+                # main ticks
+                if not scene.idle: await scene.tick()
+                
+            self.__tickPerSecondTime.append(time.time())
+            # print(self.getTicksPerSecond())
+            await asyncio.sleep(0.05)
+            
+    async def __resertTickNumber(self):
+        while self.__isGameOn:
+            self.__tickPerSecond = len(self.__tickPerSecondTime)
+            self.__tickPerSecondTime.clear()
+            await asyncio.sleep(1)
+            
+    def getTicksPerSecond(self) -> int:
+        return self.__tickPerSecond
 
     async def __gameLoop(self) -> None:
         '''a main loop that is run once every frame'''
@@ -353,19 +385,26 @@ class Game(Loggable):
         await self.__onRun()
         self.__logger.log(logType.SUCCESS, "Succesfully invoked functions of [onrun]!")   
         
-        # giving tick time for every scene for scene specific events
-        def executeScene(scene: Scene) -> Scene:
-            if not scene.idle:
-                scene.tick()
-            return scene
+        self.__logger.log(logType.INIT, "intializing ticks...")
+        self.__tickPerSecond = 20
+        self.__tickPerSecondTime = []
+        asyncio.create_task(coro=self.__tick(), name="ticker")
+        # print(asyncio.all_tasks())
+        self.__logger.log(logType.SUCCESS, "intialized ticks.")
+        
+        # # giving tick time for every scene for scene specific events
+        # def executeScene(scene: Scene) -> Scene:
+        #     if not scene.idle:
+        #         scene.tick()
+        #     return scene
             
         # final main loop
         self.__logger.log(logType.INIT, "Starting the final game loop.")          
         while self.__isGameOn:
             await self.__eventHandler()
             
-            for scene in self.__scenes.values():
-                if not scene.idle: await scene.tick()
+            # for scene in self.__scenes.values():
+            #     if not scene.idle: await scene.tick()
             
             await asyncio.sleep(0.000000001)
             await self.__drawLoop()

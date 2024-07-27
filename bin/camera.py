@@ -129,6 +129,10 @@ class Camera:
 
         for sprite in self.mainBlocks:
             surface.blit(sprite.image, sprite.getCords() - self.cords)
+            
+            
+        for entity in self.sceneToDraw.entityGroup.sprites():
+            surface.blit(entity.image, entity.getCords() - self.cords)
         # for sprite in sceneToDraw.sprites():
         #     cords = sprite.getCords()
             

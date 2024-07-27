@@ -14,7 +14,6 @@ ENTITIES = [
 inputEventInfo: TypeAlias = dict[str, Any]
 
 
-class Entity(ABC): pass
 
 class Reason(Enum):
     '''reason to perform specified action'''

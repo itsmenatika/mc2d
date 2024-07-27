@@ -406,6 +406,42 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
             print('gada', e)
             
 
+
+    # entity managing
+    
+    # def getEntity(self, uuid: UUID) -> Entity | None:
+    #     return self.__entities.get(uuid, default=None)
+    
+    # def getEntityUuid(self, entity: Entity) -> UUID | None:
+        
+    
+    # def addEntity(self, entity: Entity) -> None:
+    #     self.__entities[entity.getUuid()] = entity
+    #     self.add(entity)
+        
+    #     # add to scene 
+    #     self.getScene().add(entity)
+        
+    def isEntityPartOfTheChunk(self, entity: Entity) -> bool:
+        return True if entity in self.__entities.values() else False
+    
+    def isEntityPartOfTheChunkByUuid(self, uuid: UUID) -> bool:
+        return True if uuid in self.__entities.keys() else False
+    
+    def addEntityToEntityList(self, entity: Entity) -> None:
+        '''That shouldn't be used. That adds manually entity to entity list of the chunk. use Scene.addEntity instead or just Entity() !'''
+        self.__entities[entity.getUuid()] = entity
+        
+
+    def removentityFromEntityList(self, entity: Entity) -> None:
+        '''That shouldn't be used! That adds manually entity to entity list of the chunk. use Scene.removeEntity instead or just Entity().unalive() !'''
+        del self.__entities[entity.getUuid()]
+        
+    
+    
+    # def removeEntity(self, entity: Entity) -> None:
+    #     del self.__entities[self.getEntity()]
+        
     
     def __init__(self, scene: 'Scene', chunkPos: int = 0, chunkData: Optional[dict] = None) -> None:
         # basics
@@ -907,9 +943,10 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
     
     async def tick(self) -> None:
         '''thing that happens every tick'''
-        # aha = dupa()
-        # aha.rect = pygame.rect.Rect(pygame.mouse.get_pos()[0]-self.getGame().camera.cords.x,pygame.mouse.get_pos()[1]-self.getGame().camera.cords.y,1,1)
-        # print(pygame.sprite.spritecollide(aha, self.sprites(), False))
+ 
+        # spread ticks across entities
+        for entity in self.__entityMain.values():
+            await entity.tick()
         
         
         surfSize = pygame.display.get_surface().get_size()
@@ -1173,6 +1210,16 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
     def getLightingManager(self) -> lightingManager:
         return self.__lightingManager
     
+    # entity managing
+    def addEntity(self, entity: Entity) -> None:
+        self.add(entity)
+        self.__entityMain[entity.getUuid] = entity
+        self.entityGroup.add(entity)
+        
+        # chunk
+        entityChunk: Chunk = entity.getChunk()
+        entityChunk.addEntityToEntityList(entity)
+    
  
     def __init__(self, game: 'Game', name: str, worldGenerator: WorldGenerator, autoAdd: bool = True, inIdle: bool = False, seed: str = "uwusa", saveData: Optional[dict] = None) -> None:
         # basics (required to even basic logging :<)
@@ -1218,6 +1265,9 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
         self.backgroundBlocks: pygame.sprite.Group = pygame.sprite.Group()
         
         self.__activeChunks: dict[int, Chunk] = {}
+        
+        self.__entityMain: dict[UUID, Entity] = {}
+        self.entityGroup: pygame.sprite.Group = pygame.sprite.Group()
         
         # generating basic chunks
         
