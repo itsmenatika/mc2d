@@ -27,7 +27,8 @@ class Entity(pygame.sprite.Sprite, Executor, Loggable):
     
     async def tick(self):
         # print(self.rect)
-        print(self.detectColission())
+        self.detectColission()
+        # print(self.detectColission())
     
     def getChunk(self) -> 'Chunk':
         return self.__chunk
