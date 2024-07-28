@@ -33,20 +33,20 @@ class Event(Executor, Loggable):
             
         
         if self.__kwargs == None and self.__args == None:
-            if self.__createAsyncioTask:
-                asyncio.create_task(self.__callback(), name=self.__shownName)
-            else:
+            if not self.__createAsyncioTask:
                 return self.__callback()
+            asyncio.create_task(self.__callback(), name=self.__shownName)
+
         elif self.__kwargs != None and self.__args == None:
-            if self.__createAsyncioTask:
-                asyncio.create_task(self.__callback(**self.__kwargs), name=self.__shownName)
-            else:
+            if not self.__createAsyncioTask:
                 return self.__callback(**self.__kwargs)
+            asyncio.create_task(self.__callback(**self.__kwargs), name=self.__shownName)
+                
         else:
-            if self.__createAsyncioTask:
-                asyncio.create_task(self.__callback(*self.__args, **self.__kwargs), name=self.__shownName)
-            else:
-                return self.__callback(*self.__args, **self.__kwargs)
+            if not self.__createAsyncioTask:
+                return self.__callback(*self.__args, **self.__kwargs)   
+            asyncio.create_task(self.__callback(*self.__args, **self.__kwargs), name=self.__shownName)
+               
         self.__waiting = False
         
     
@@ -68,11 +68,8 @@ class Event(Executor, Loggable):
         self.__args = argsForCallback
         self.__kwargs = kwargsForCallback
         self.__eventType = eventType
-        
-        if shownName != None:
-            self.__shownName = shownName
-        else:
-            self.__shownName = self.defaultName
+
+        self.__shownName = shownName if shownName != None else self.defaultName
             
         super().__init__(logParent=ParentForLogs(f"event_{self.__shownName}", parent=previousParentForLogs))
         

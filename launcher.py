@@ -346,7 +346,7 @@ class Launcher:
 
         accountFastInfo = ttk.Frame(master=self.__bottomFrame)
 
-        ttk.Label(master=accountFastInfo, text="Welcome back, SUS!").pack(side="top", pady=1)
+        ttk.Label(master=accountFastInfo, text="Welcome back, Arek!").pack(side="top", pady=1)
         ttk.Label(master=accountFastInfo, text="new version is out!").pack(side="top", pady=1)
         ttk.Button(master=accountFastInfo, text="switch User").pack(side="top", pady=2)
 
