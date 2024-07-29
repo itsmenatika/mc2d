@@ -63,14 +63,9 @@ class Entity(pygame.sprite.Sprite, Executor, Loggable):
         self.rect = self.image.get_rect()
         self.rect.midbottom = self.__cords
         
-        if forcedUUID == None:
-            self.__uuid: UUID = uuid4()
-        else: self.__uuid = forcedUUID
-        
-        if nbtData == None:
-            self.__nbtData: dict = {}
-        else: self.__nbtData = nbtData
-        
+        self.__uuid = forcedUUID if forcedUUID != None else uuid4()
+
+        self.__nbtData = nbtData if nbtData != None else {}
         
         self.__type = oftype
         self.setLogParent(parentForLogs=ParentForLogs(name=f"entity_{self.__uuid}", parent=self.__game.getLogParent()))

@@ -40,8 +40,7 @@ class lightingManager(Loggable, Executor):
                         block = chunk.getBlockByTuple((x,y), background=True)
                     
                     # if theres still no block, continue
-                    if block == None:
-                        continue
+                    if block == None: continue
                         # if currentLight == 15: print('s')
                         
                     # calculate strength of current light beam
@@ -85,19 +84,33 @@ class lightingManager(Loggable, Executor):
                         
                     # get block neighbours (if no neighbours then set 0, in the future it should get backgroundForced tile instead)
                     up = block.getBlockUp()
-                    if up == None: up = block.getBlockUp(backgroundForced=not background)
+                    if up == None: 
+                        up = block.getBlockUp(backgroundForced=not background)
+
                     up = 0 if up == None else up.lightValue
  
+
                     down = block.getBlockDown()
-                    if down == None: down = block.getBlockDown(backgroundForced=not background)
+                    
+                    if down == None: 
+                        down = block.getBlockDown(backgroundForced=not background)
+
                     down = 0 if down == None else down.lightValue
                         
+
                     right = block.getBlockRight()
-                    if right == None: right = block.getBlockRight(backgroundForced=not background)
+
+                    if right == None: 
+                        right = block.getBlockRight(backgroundForced=not background)
+
                     right = 0 if right == None else right.lightValue
                         
+
                     left = block.getBlockLeft()
-                    if left == None: left = block.getBlockLeft(backgroundForced=not background)
+
+                    if left == None: 
+                        left = block.getBlockLeft(backgroundForced=not background)
+
                     left = 0 if left == None else left.lightValue           
                         
                         

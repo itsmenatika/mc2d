@@ -166,22 +166,19 @@ class Camera:
         # )
         chunkEdgesSet = set(chunkEdges)
         
-        # Nie wiem jak to by nazwać
-        temp = Chunk.SIZE.y * Block.SIZE.y
 
         for edge in chunkEdgesSet:
-            pygame.draw.line(surface, (230, 0, 20), (edge - self.cords.x, 0 - self.cords.y), (edge - self.cords.x, temp - self.cords.y), 1)
+            pygame.draw.line(surface, (230, 0, 20), (edge - self.cords.x, 0 - self.cords.y), (edge - self.cords.x, (Chunk.SIZE.y * Block.SIZE.y) - self.cords.y), 1)
 
         surface.blit(self.__infoToDraw, (0,0))
         
         mousePos = pygame.mouse.get_pos()
 
-        pointed_block_zx = (mousePos[0] + self.cords.x) // Block.SIZE.x * Block.SIZE.x - self.cords.x
-        pointed_block_zy = (mousePos[1] + self.cords.y) // Block.SIZE.y * Block.SIZE.y - self.cords.y
-        
         # self.cords = Vector2(0,0)
         
-        self.pointedBlock.topleft = (pointed_block_zx, pointed_block_zy)
+        self.pointedBlock.topleft = (
+            (mousePos[0] + self.cords.x) // Block.SIZE.x * Block.SIZE.x - self.cords.x,
+            (mousePos[1] + self.cords.y) // Block.SIZE.y * Block.SIZE.y - self.cords.y)
 
         pygame.draw.rect(surface, "red", self.pointedBlock, width=2)
 

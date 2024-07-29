@@ -91,7 +91,8 @@ class WorldGenerator(Executor, ABC, Loggable):
         return self.__scene.getSeed()
     
     @abstractmethod
-    def generateChunk(self, chunkPos: tuple[int,int], chunk: 'Chunk', Scene: 'Scene') -> dict[tuple[int,int], 'Block']: pass
+    def generateChunk(self, chunkPos: tuple[int,int], chunk: 'Chunk', Scene: 'Scene') -> dict[tuple[int,int], 'Block']:
+        raise NotImplementedError('Attempted to call a not implemented abstract method!')
     
     def __init__(self, scene: 'Scene') -> None:
         super().__init__(logParent=ParentForLogs(name="worldGenerator", parent=scene.getLogParent()))

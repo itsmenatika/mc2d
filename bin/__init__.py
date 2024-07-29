@@ -359,7 +359,8 @@ class Game(Loggable):
             # spread ticks accross scenes
             for scene in self.__scenes.values():
                 # main ticks
-                if not scene.idle: await scene.tick()
+                if not scene.idle: 
+                    await scene.tick()
                 
             self.__tickPerSecondTime.append(time.time())
             # print(self.getTicksPerSecond())
@@ -452,7 +453,7 @@ class Game(Loggable):
             del self.__scenes[name]
             
         
-    def findNameOfScene(self, scene: Scene) -> str | None:
+    def findNameOfScene(self, scene: Scene) -> Optional[str]:
         '''find scene by object\n
             Args:\n
                 * scene: Scene -> that scene
@@ -535,10 +536,8 @@ class Game(Loggable):
         # get value from enum      
         if forcedType != None and forcedType != str:
             forcedType = forcedType.value
-        
-        key_bindings: list[str] = ["rightClick", "leftClick", "keyUp", "keyDown"]
 
-        for key in key_bindings:
+        for key in ["rightClick", "leftClick", "keyUp", "keyDown"]:
             input_key_events = self.__inputEventsList[key]
 
             return is_in(name, key, input_key_events)

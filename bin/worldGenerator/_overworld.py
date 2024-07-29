@@ -272,7 +272,8 @@ class worldGeneratorNormal(WorldGenerator):
             if fromWhatSide == "left":
                 return list(filter(lambda block: block[0] >= Chunk.SIZE.x, everyVein))
             
-
+        everyVein.extend(map(lambda ore: (int(ore[0]-chunk.SIZE.x), ore[1]), fromLeft))
+        everyVein.extend(map(lambda ore: (int(Chunk.SIZE.x+ore[0]), ore[1]), fromRight))
             
         # final
         
@@ -287,8 +288,7 @@ class worldGeneratorNormal(WorldGenerator):
         #     first = first[0]
         #     self.getScene().getGame().camera.cords = Vector2(first[0] * Block.SIZE.x + chunk.getStartingPoint()[0], first[1] * Block.SIZE.y + chunk.getStartingPoint()[1])
         
-        everyVein.extend(map(lambda ore: (int(ore[0]-chunk.SIZE.x), ore[1]), fromLeft))
-        everyVein.extend(map(lambda ore: (int(Chunk.SIZE.x+ore[0]), ore[1]), fromRight))
+        
         
         
         
