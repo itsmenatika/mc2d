@@ -8,3 +8,4 @@ class coal_block(Block):
     MAINTEXTURE = "tiles/coal_block.png"
     MAINTEXTUREISTRANSPARENT = False
     ID = "coal_block"
+    IDInt = 14
