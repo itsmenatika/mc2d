@@ -23,21 +23,90 @@ class entityType(Enum):
 # basics of entity, i'm to lazy to continue this now. I need to rewrite how chunk are actived and add some delay and force loading to make able entities going into "unloaded" chunks and i also need to rewrite system to bind entities as "chunk loading entities"
 class Entity(pygame.sprite.Sprite, Executor, Loggable):
     basicGravity = Vector2(0, 0.49) # 20 times per second (one tick) (that's 9.8/m2s)
+    maxSpeed = Vector2(5, 5)
+    dividingFactor = 5 # the smaller factor the more accurate physics but also the slower
     
     
     async def tick(self):
-        # print(self.rect)
-        self.detectColission()
-        # print(self.detectColission())
+        # basic adding
+        temp: Vector2 = self.__velocity.copy()
+        
+        while abs(temp.x) > 0 or abs(temp.y)  > 0:
+            divingFactorX: int = min(self.dividingFactor, temp.x) if temp.x > 0 else max(-self.dividingFactor, temp.x)
+            divingFactorY: int = min(self.dividingFactor, temp.y) if temp.y > 0 else max(-self.dividingFactor, temp.y)
+           
+            temp.x -= divingFactorX
+            temp.y -= divingFactorY
+            
+            self.__cords.x += divingFactorX
+            self.__cords.y += divingFactorY
+            self.rect.midbottom = self.__cords
+            
+            collisions: list = self.detectColission()
+            if len(collisions) > 1:
+                for col in collisions:
+                    if col is self: continue
+                    
+                    # check if collision was (bottom me, you top)
+                    if abs(self.rect.bottom - col.rect.top) < 5:
+                        if self.__velocity.y > 0: 
+                            self.__velocity.y = 0
+                            temp.y = 0
+                        self.rect.bottom = col.rect.top 
+                        
+                    # check if collision was (bottom you, me top)
+                    if abs(self.rect.top - col.rect.bottom) < 5:
+                        if self.__velocity.y < 0: 
+                            self.__velocity.y = 0
+                            temp.y = 0
+                        self.rect.top = col.rect.bottom 
+                        
+                    # check if collision was (right me, you left)
+                    if abs(self.rect.right - col.rect.left) < 5:
+                        if self.__velocity.x > 0:
+                            self.__velocity.x = 0
+                            temp.x = 0
+                        self.rect.right = col.rect.left
+                        
+                    # check if collision was (left me, you right)
+                    if abs(self.rect.left - col.rect.right) < 5:
+                        if self.__velocity.x < 0:
+                            self.__velocity.x = 0
+                            temp.x = 0
+                        self.rect.left = col.rect.right
+                        
+                # repair rect
+                self.repairCordsFromRect()
+                        
+                        
+                        
+                
+        
+        
+        self.__velocity += self.basicGravity
+        
+        
+        # max speed
+        if abs(self.__velocity.x) > self.maxSpeed.x:
+            if self.__velocity.x > 0: self.__velocity.x = self.maxSpeed.x
+            else: self.__velocity.x = -self.maxSpeed.x
+        
+        if abs(self.__velocity.y) > self.maxSpeed.y:
+            if self.__velocity.y > 0: self.__velocity.y = self.maxSpeed.y
+            else: self.__velocity.y = -self.maxSpeed.y
+        
+        
     
     def getChunk(self) -> 'Chunk':
         return self.__chunk
     
     
     def detectColission(self) -> list:
-        sceneSprites: pygame.sprite.Group = self.getScene().sprites()
+        sceneSprites: pygame.sprite.Group = self.getScene().mainBlocks.sprites()
+        entitySprites = pygame.sprite.Group = self.getScene().entityGroup.sprites()
         
-        return pygame.sprite.spritecollide(self, sceneSprites, False)
+        
+        return pygame.sprite.spritecollide(self, sceneSprites, False) + pygame.sprite.spritecollide(self, entitySprites, False)
     
     def isPartOfTheChunk(self, chunk: 'Chunk') -> bool:
         return chunk.isEntityPartOfTheChunk(self)
@@ -53,6 +122,9 @@ class Entity(pygame.sprite.Sprite, Executor, Loggable):
     
     def moveBy(self, howMuch: Vector2) -> Vector2:
         pass
+    
+    def repairCordsFromRect(self) -> None:
+        self.__cords: Vector2 = Vector2(self.rect.midbottom)
     
     def __init__(self, image: pygame.surface.Surface, chunk: 'Chunk', cords: Vector2, oftype: entityType, forcedUUID: Optional[int] = None, nbtData: Optional[dict] = None):
         super().__init__()
