@@ -24,76 +24,89 @@ class entityType(Enum):
 class Entity(pygame.sprite.Sprite, Executor, Loggable):
     basicGravity = Vector2(0, 0.49) # 20 times per second (one tick) (that's 9.8/m2s)
     maxSpeed = Vector2(5, 5)
-    dividingFactor = 5 # the smaller factor the more accurate physics but also the slower
+    dividingFactor = 2 # the smaller factor the more accurate physics but also the slower
     
     
     async def tick(self):
         # basic adding
-        temp: Vector2 = self.__velocity.copy()
         
-        while abs(temp.x) > 0 or abs(temp.y)  > 0:
-            divingFactorX: int = min(self.dividingFactor, temp.x) if temp.x > 0 else max(-self.dividingFactor, temp.x)
-            divingFactorY: int = min(self.dividingFactor, temp.y) if temp.y > 0 else max(-self.dividingFactor, temp.y)
-           
-            temp.x -= divingFactorX
-            temp.y -= divingFactorY
+        # check if entity has any velocity
+        if abs(self.__velocity.x) > 0 or abs(self.__velocity.y) > 0:
+            # copy velocity to divide it into smaller parts in the future (temp will function as remaining part to add)
+            temp: Vector2 = self.__velocity.copy()
             
-            self.__cords.x += divingFactorX
-            self.__cords.y += divingFactorY
-            self.rect.midbottom = self.__cords
+            # execute till there's at least one part to divide
+            while abs(temp.x) > 0 or abs(temp.y)  > 0:
+                # get parts
+                divingFactorX: int = min(self.dividingFactor, temp.x) if temp.x > 0 else max(-self.dividingFactor, temp.x)
+                divingFactorY: int = min(self.dividingFactor, temp.y) if temp.y > 0 else max(-self.dividingFactor, temp.y)
             
-            collisions: list = self.detectColission()
-            if len(collisions) > 1:
-                for col in collisions:
-                    if col is self: continue
-                    
-                    # check if collision was (bottom me, you top)
-                    if abs(self.rect.bottom - col.rect.top) < 5:
-                        if self.__velocity.y > 0: 
-                            self.__velocity.y = 0
-                            temp.y = 0
-                        self.rect.bottom = col.rect.top 
-                        
-                    # check if collision was (bottom you, me top)
-                    if abs(self.rect.top - col.rect.bottom) < 5:
-                        if self.__velocity.y < 0: 
-                            self.__velocity.y = 0
-                            temp.y = 0
-                        self.rect.top = col.rect.bottom 
-                        
-                    # check if collision was (right me, you left)
-                    if abs(self.rect.right - col.rect.left) < 5:
-                        if self.__velocity.x > 0:
-                            self.__velocity.x = 0
-                            temp.x = 0
-                        self.rect.right = col.rect.left
-                        
-                    # check if collision was (left me, you right)
-                    if abs(self.rect.left - col.rect.right) < 5:
-                        if self.__velocity.x < 0:
-                            self.__velocity.x = 0
-                            temp.x = 0
-                        self.rect.left = col.rect.right
-                        
-                # repair rect
-                self.repairCordsFromRect()
-                        
-                        
-                        
+                # remove from remaining
+                temp.x -= divingFactorX
+                temp.y -= divingFactorY
                 
-        
-        
+                # add everything to cords and then fix rect
+                self.__cords.x += divingFactorX
+                self.__cords.y += divingFactorY
+                self.rect.midbottom = self.__cords
+                
+                # get list of collisions via pygame
+                collisions: list = self.detectColission()
+                
+                # if there's any collision
+                if len(collisions) > 1:
+                    # loop through them
+                    for col in collisions:
+                        # if collision wasn't with itself
+                        if col is self: continue
+                        
+                        # check if collision was (bottom me, you top)
+                        if abs(self.rect.bottom - col.rect.top) < 5:
+                            if self.__velocity.y > 0: 
+                                self.__velocity.y = 0
+                                temp.y = 0
+                            self.rect.bottom = col.rect.top 
+                            
+                        # check if collision was (bottom you, me top)
+                        if abs(self.rect.top - col.rect.bottom) < 5:
+                            if self.__velocity.y < 0: 
+                                self.__velocity.y = 0
+                                temp.y = 0
+                            self.rect.top = col.rect.bottom 
+                            
+                        # check if collision was (right me, you left)
+                        if abs(self.rect.right - col.rect.left) < 5:
+                            if self.__velocity.x > 0:
+                                self.__velocity.x = 0
+                                temp.x = 0
+                            self.rect.right = col.rect.left
+                            
+                        # check if collision was (left me, you right)
+                        if abs(self.rect.left - col.rect.right) < 5:
+                            if self.__velocity.x < 0:
+                                self.__velocity.x = 0
+                                temp.x = 0
+                            self.rect.left = col.rect.right
+                            
+                    # repair rect
+                    self.repairCordsFromRect()
+                        
+        # adding velocity from gravity
         self.__velocity += self.basicGravity
+        
+        # TODO: checking if object got outside map
         
         
         # max speed
         if abs(self.__velocity.x) > self.maxSpeed.x:
-            if self.__velocity.x > 0: self.__velocity.x = self.maxSpeed.x
-            else: self.__velocity.x = -self.maxSpeed.x
+            self.__velocity.x = self.maxSpeed.x if self.__velocity.x > 0 else  -self.maxSpeed
+            # if self.__velocity.x > 0: self.__velocity.x = self.maxSpeed.x
+            # else: self.__velocity.x = -self.maxSpeed.x
         
         if abs(self.__velocity.y) > self.maxSpeed.y:
-            if self.__velocity.y > 0: self.__velocity.y = self.maxSpeed.y
-            else: self.__velocity.y = -self.maxSpeed.y
+            self.__velocity.y = self.maxSpeed.y if self.__velocity.y > 0 else  -self.maxSpeed        
+            # if self.__velocity.y > 0: self.__velocity.y = self.maxSpeed.y
+            # else: self.__velocity.y = -self.maxSpeed.y
         
         
     
@@ -104,7 +117,6 @@ class Entity(pygame.sprite.Sprite, Executor, Loggable):
     def detectColission(self) -> list:
         sceneSprites: pygame.sprite.Group = self.getScene().mainBlocks.sprites()
         entitySprites = pygame.sprite.Group = self.getScene().entityGroup.sprites()
-        
         
         return pygame.sprite.spritecollide(self, sceneSprites, False) + pygame.sprite.spritecollide(self, entitySprites, False)
     
