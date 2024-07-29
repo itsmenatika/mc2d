@@ -116,7 +116,7 @@ class Entity(pygame.sprite.Sprite, Executor, Loggable):
     
     def detectColission(self) -> list:
         sceneSprites: pygame.sprite.Group = self.getScene().mainBlocks.sprites()
-        entitySprites = pygame.sprite.Group = self.getScene().entityGroup.sprites()
+        entitySprites: pygame.sprite.Group = self.getScene().entityGroup.sprites()
         
         return pygame.sprite.spritecollide(self, sceneSprites, False) + pygame.sprite.spritecollide(self, entitySprites, False)
     
