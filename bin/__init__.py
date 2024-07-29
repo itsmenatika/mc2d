@@ -124,6 +124,8 @@ class Game(Loggable):
                                     "window": event.window,
                                     "unicode": event.unicode,
                                     "mod": event.mod,
+                                    "mousePos": self.__mousePos,
+                                    "buttonClickedMouse": self.__buttonsClicked,
                                     "scancode": event.scancode,
                                     "allKeysPressed": self.__keysPressed,
                                     "leftShift": self.__keysPressed[pygame.K_LSHIFT],
@@ -149,6 +151,8 @@ class Game(Loggable):
                                     "window": event.window,
                                     "unicode": event.unicode,
                                     "mod": event.mod,
+                                    "mousePos": self.__mousePos,
+                                    "buttonClickedMouse": self.__buttonsClicked,
                                     "scancode": event.scancode,
                                     "allKeysPressed": self.__keysPressed,
                                     "leftShift": self.__keysPressed[pygame.K_LSHIFT],
@@ -323,8 +327,8 @@ class Game(Loggable):
                 loggable.info(f"block editor got changed to {game.storage['selectedBlockName']} (intID: {game.storage['selectedBlock']})")
                 
         # binding events
-        self.addInputEvent("test", InputType.rightClickHold, destroyBlock)
-        # self.addInputEvent("test2", InputType.leftClickHold, addBlock)
+        self.addInputEvent("destroyingBlock", InputType.rightClickHold, destroyBlock)
+        self.addInputEvent("addingBlock", InputType.leftClickHold, addBlock)
         self.addInputEvent("keyUp", InputType.keyDown, lambda *args, **kwargs: self.camera.moveBy(Vector2(0,-200)), key=pygame.K_UP)
         self.addInputEvent("keyDown", InputType.keyDown, lambda *args, **kwargs: self.camera.moveBy(Vector2(0,200)), key=pygame.K_DOWN)
         self.addInputEvent("keyRight", InputType.keyDown, lambda *args, **kwargs: self.camera.moveBy(Vector2(200,0)), key=pygame.K_RIGHT)
@@ -348,7 +352,7 @@ class Game(Loggable):
             mousePos = Vector2(info['mousePos'])
             currentScene.addEntity(Entity(pygame.image.load("resources/tiles/allium.png"), currentScene.getChunk(currentScene.getChunkPosFromCords(mousePos)), mousePos+self.camera.cords, entityType.falling_block))
             
-        self.addInputEvent("test2", InputType.leftClick, spawnEntity)
+        self.addInputEvent("test2", InputType.keyDown, spawnEntity, key=pygame.K_e)
             
             
         
