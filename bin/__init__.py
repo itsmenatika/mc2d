@@ -159,19 +159,14 @@ class Game(Loggable):
             block_loc_x = (info['mousePos'][0] + self.camera.cords.x) // Block.SIZE.x
             block_loc_y = (info['mousePos'][1] + self.camera.cords.y) // Block.SIZE.y
 
-            blockLocation = (int(block_loc_x), int(block_loc_y))
-
-            currentScene.setBlockByAbsolutePosWithEvent(blockLocation, None, dontRaiseErrors=True)
+            currentScene.setBlockByAbsolutePosWithEvent((block_loc_x, block_loc_y), None, dontRaiseErrors=True)
             
             
         def addBlock(game, currentScene: Scene, typeEvent, info, loggable):
             block_loc_x = (info['mousePos'][0] + self.camera.cords.x) // Block.SIZE.x
             block_loc_y = (info['mousePos'][1] + self.camera.cords.y) // Block.SIZE.y
 
-            blockLocation = (int(block_loc_x), int(block_loc_y))
-
-
-            currentScene.setBlockByAbsolutePosWithEvent(blockLocation, self.storage['selectedBlockName'], dontRaiseErrors=True)
+            currentScene.setBlockByAbsolutePosWithEvent((block_loc_x, block_loc_y), self.storage['selectedBlockName'], dontRaiseErrors=True)
         
         
         # functions for changing block
