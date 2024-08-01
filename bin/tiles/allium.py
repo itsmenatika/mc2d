@@ -9,7 +9,7 @@ class allium(Block):
     MAINTEXTURE = "tiles/allium.png"
     MAINTEXTUREISTRANSPARENT = True
     ID = "allium"
-    IDInt = 19
+    IDInt = 20
     
     # lighting information
     

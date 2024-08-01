@@ -8,6 +8,6 @@ class stone_background(Block):
     MAINTEXTURE = "tiles/stone_background.png"
     MAINTEXTUREISTRANSPARENT = False
     ID = "stone_background"
-    IDInt = 21
+    IDInt = 22
     
     lightingAbsorption = 0 # tells lighting engine how that should be treated (if that should absorb the light)

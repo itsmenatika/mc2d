@@ -10,7 +10,7 @@ class sand(Block):
     MAINTEXTURE = "tiles/sand.png"
     MAINTEXTUREISTRANSPARENT = False
     ID = "sand"
-    IDInt = 22
+    IDInt = 23
     
     # lighting information
     

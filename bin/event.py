@@ -18,26 +18,25 @@ class Event(Executor, Loggable):
         '''forces event to execute. Only use if that required to specified purpose. Internal code of the game will rather not use this function because its time-consuming! (unless you doesn't care lol|sometimes it's easier to just execute this function)'''
         if self.__waiting != True:
             self.logErr("trying to execute event, but event was already executed!")
-            
         
-        if self.__kwargs == None and self.__args == None:
-            if not self.__createAsyncioTask:
-                return self.__callback()
-            asyncio.create_task(self.__callback(), name=self.__shownName)
-
-        elif self.__kwargs != None and self.__args == None:
-            if not self.__createAsyncioTask:
-                return self.__callback(**self.__kwargs)
-            asyncio.create_task(self.__callback(**self.__kwargs), name=self.__shownName)
-                
+        if self.__args == None:
+            if self.__kwargs == None:
+                if not self.__createAsyncioTask:
+                    return self.__callback()
+                asyncio.create_task(self.__callback(), name=self.__shownName)
+            elif self.__kwargs != None:
+                if not self.__createAsyncioTask:
+                    return self.__callback(**self.__kwargs)
+                asyncio.create_task(self.__callback(**self.__kwargs), name=self.__shownName)
         else:
             if not self.__createAsyncioTask:
                 return self.__callback(*self.__args, **self.__kwargs)   
-            asyncio.create_task(self.__callback(*self.__args, **self.__kwargs), name=self.__shownName)
+            asyncio.create_task(self.__callback(*self.__args, **self.__kwargs), name=self.__shownName) 
+
                
         self.__waiting = False
         
-    
+
     def prevent(self) -> None:
         '''prevents event from any execution'''
         if not self.__waiting:

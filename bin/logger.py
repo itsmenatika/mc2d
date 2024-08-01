@@ -120,8 +120,8 @@ class Logger:
         self.__logs: list[str] = []
         
         
-        with open(self.logFile, 'w') as f:
-            pass
+        # with open(self.logFile, 'w') as f:
+        #     pass
         
       
         date = datetime.now()
@@ -173,7 +173,12 @@ class Loggable:
         return self.__game
     
     def __init__(self, *args, **kwargs) -> None:
-        if "logParent" in kwargs:
-            self.__logParent = kwargs['logParent']
-            if "game" in kwargs:
-                self.__game = kwargs['game']
+        if not "logParent" in kwargs:
+            return
+        
+        if "game" in kwargs:
+            self.__game = kwargs['game']
+        
+        self.__logParent = kwargs['logParent']
+
+        
