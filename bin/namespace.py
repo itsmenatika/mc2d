@@ -15,7 +15,7 @@ class exceptionThatShouldntBeWrite(Exception): pass
 class resourceManager(Loggable):
     shadow_layouts = []
 
-    for alpha in range(255, 0, -17):
+    for alpha in range(255, -17, -17):
         shadow = pygame.surface.Surface((Block.SIZE.x, Block.SIZE.y), flags=pygame.SRCALPHA)
 
         shadow.fill((0, 0, 0, alpha))
@@ -23,9 +23,9 @@ class resourceManager(Loggable):
         shadow_layouts.append(shadow)
         
     # no shadow
-    __shadow = pygame.surface.Surface((Block.SIZE.x, Block.SIZE.y), flags=pygame.SRCALPHA)
-    __shadow.fill((0, 0, 0, 0))
-    shadow_layouts.append(__shadow)
+    # __shadow = pygame.surface.Surface((Block.SIZE.x, Block.SIZE.y), flags=pygame.SRCALPHA)
+    # __shadow.fill((0, 0, 0, 0))
+    # shadow_layouts.append(__shadow)
     
     def getAmountOfResources(self) -> int:
         return len(self.__resources)
@@ -36,13 +36,7 @@ class resourceManager(Loggable):
         return image
     
     def getTexture(self, name: str, disableTryingToGet: bool = False, **kwargs):
-        if len(kwargs) == 0:
-            if name in self.__resources:
-                return self.__resources[name]
-            
-            if not disableTryingToGet:
-                return self.loadTextureFromFile(name)
-        else:
+        if len(kwargs) != 0:
             nname = name + "_f%" 
             if 'lightValue' in kwargs: 
                 nname += f"l={kwargs['lightValue']}&"
@@ -58,6 +52,12 @@ class resourceManager(Loggable):
             
             self.__resources[nname] = image
             return self.__resources[nname]
+        
+        if name in self.__resources:
+            return self.__resources[name]
+            
+        if not disableTryingToGet:
+            return self.loadTextureFromFile(name)
         
         
 
