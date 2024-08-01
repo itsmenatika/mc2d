@@ -67,8 +67,6 @@ class Game(Loggable):
                         }, Loggable(game=self, logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
                     except Exception as e:
                         self.getLogger().errorWithTraceback(f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
-                        # traceback.print_exception(e)
-                        # print("")
                         
         if self.__buttonsClicked[1]:
             for eventName, eventTwo in self.__inputEventsList["wheelClickHold"].items():
@@ -84,8 +82,6 @@ class Game(Loggable):
                         }, Loggable(game=self, logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
                     except Exception as e:
                         self.getLogger().errorWithTraceback(f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
-                        # traceback.print_exception(e)
-                        # print("")
                         
         if self.__buttonsClicked[2]:
             for eventName, eventTwo in self.__inputEventsList["rightClickHold"].items():
@@ -100,9 +96,6 @@ class Game(Loggable):
                             "anyShift":  self.__keysPressed[pygame.K_LSHIFT] or self.__keysPressed[pygame.K_RSHIFT]
                         }, Loggable(game=self, logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
                     except Exception as e:
-                        # self.getLogger().log(logType.ERROR, f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]}):\n")
-                        # traceback.print_exception(e)
-                        # print("")
                         self.getLogger().errorWithTraceback(f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
         
         # looping through them
@@ -134,16 +127,10 @@ class Game(Loggable):
                                     
                                 }, Loggable(game=self,logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
                             except Exception as e:
-                                # self.getLogger().log(logType.ERROR, f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]}):\n")
-                                # traceback.print_exception(e)
-                                # print("")
                                 self.getLogger().errorWithTraceBack(f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
                 case pygame.KEYDOWN:
-                    # print(event)
                     # handling events when user start pressing key
                     for eventName, eventTwo in self.__inputEventsList["keyDown"].items():
-                        # print(event.key, event['key'])
-                        # print(event[1])
                         try:
                             if eventTwo[1]['key'] == event.key:
                                 if eventTwo[0](self, self.getCurrentScene(), InputType.keyDown, {
@@ -160,35 +147,11 @@ class Game(Loggable):
                                     "anyShift":  self.__keysPressed[pygame.K_LSHIFT] or self.__keysPressed[pygame.K_RSHIFT]
                                 }, Loggable(game=self,logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
                         except Exception as e:
-                            # type, value, traceback = sys.exc_info()
-                            # traceback.print_exception(e)
-                            # print(type,value,traceback)
-                            # self.getLogger().log(logType.ERROR, f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]}):\n")
-                            # traceback.print_exception(e)
-                            # print("")
                             self.getLogger().errorWithTraceback(f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
-                    
-                    # if event.key == pygame.K_LEFT:
-                    #     # self.camera.cords.x -= 200
-                    #     self.camera.moveBy(Vector2(-200,0))
-                    # elif event.key == pygame.K_RIGHT:
-                    #     # self.camera.cords.x += 200
-                    #     self.camera.moveBy(Vector2(200,0))
-                    # elif event.key == pygame.K_UP:
-                    #     # self.camera.cords.y -= 200
-                    #     self.camera.moveBy(Vector2(0,-200))
-                    # elif event.key == pygame.K_DOWN:
-                    #     # self.camera.cords.y += 200
-                    #     self.camera.moveBy(Vector2(0,200))
+
                 case pygame.MOUSEBUTTONDOWN:
-                    # print(event, event.button == 1)
                     # handling events when user clicks something on their mouse
-                    
-                    
-                    # print(self.__inputEventsList)
-                    # print(Event)
                     if event.button == 1:
-                        # print('sw')
                         for eventName, eventTwo in self.__inputEventsList["leftClick"].items():
                             if eventTwo[1]['enabled']:
                                 try:
@@ -204,8 +167,6 @@ class Game(Loggable):
                                     }, Loggable(game=self, logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
                                 except Exception as e:
                                     self.getLogger().errorWithTraceback(f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
-                                    # traceback.print_exception(e)
-                                    # print("")
                     if event.button == 2:
                         for eventName, eventTwo in self.__inputEventsList["wheelClick"].items():
                             if eventTwo[1]['enabled']:
@@ -222,8 +183,6 @@ class Game(Loggable):
                                     }, Loggable(game=self, logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
                                 except Exception as e:
                                     self.getLogger().errorWithTraceback(f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
-                                    # traceback.print_exception(e)
-                                    # print("")
                     if event.button == 3:
                         for eventName, eventTwo in self.__inputEventsList["rightClick"].items():
                             if eventTwo[1]['enabled']:
@@ -239,9 +198,6 @@ class Game(Loggable):
                                         "anyShift":  self.__keysPressed[pygame.K_LSHIFT] or self.__keysPressed[pygame.K_RSHIFT]  
                                     }, Loggable(game=self, logParent=ParentForLogs(name=f"inputevent_{eventName}", parent=self.getLogParent()))): break
                                 except Exception as e:
-                                    # self.getLogger().log(logType.ERROR, f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]}):\n")
-                                    # traceback.print_exception(e)
-                                    # print("")
                                     self.getLogger().errorWithTraceback(f"An error has occured during trying to execute a function given to the event with the name of '{eventName}' (eventData: {eventTwo[1]})", e)
                 
                
@@ -287,10 +243,6 @@ class Game(Loggable):
             list_of_blocks = list(filtered_blocks)
             
 
-            # loggable.log(logType.INFO, idInts)
-            # loggable.info(type(game.storage['selectedBlock']))
-            # loggable.info(idInts.keys())
-            # loggable.info(list(filter(lambda thing: thing > game.storage['selectedBlock'], idInts.keys())))
             if len(list_of_blocks) > 0:
                 game.storage['selectedBlock'] += 1
                 while game.storage['selectedBlock'] not in idInts.keys():
@@ -350,11 +302,17 @@ class Game(Loggable):
         
         def spawnEntity(game, currentScene: Scene, typeEvent, info, loggable: Loggable):
             mousePos = Vector2(info['mousePos'])
-            currentScene.addEntity(Entity(pygame.image.load("resources/tiles/allium.png"), currentScene.getChunk(currentScene.getChunkPosFromCords(mousePos)), mousePos+self.camera.cords, entityType.falling_block))
+            currentScene.addEntity(Entity(pygame.image.load("resources/tiles/sand.png"), currentScene.getChunk(currentScene.getChunkPosFromCords(mousePos)), mousePos+self.camera.cords, entityType.falling_block))
             
         self.addInputEvent("test2", InputType.keyDown, spawnEntity, key=pygame.K_e)
+        
+        
+        def testChunk(game, currentScene: Scene, typeEvent, info, loggable: Loggable):
+            mousePos = Vector2(info['mousePos'])
+            chunk: Chunk = currentScene.getChunk(currentScene.getChunkPosFromCords(mousePos))
+            print(chunk.test())
             
-            
+        self.addInputEvent("testChunk", InputType.keyDown, testChunk, key=pygame.K_o)
         
 
     async def __tick(self):
@@ -394,28 +352,16 @@ class Game(Loggable):
         self.__tickPerSecond = 20
         self.__tickPerSecondTime = []
         asyncio.create_task(coro=self.__tick(), name="ticker")
-        # print(asyncio.all_tasks())
         self.__logger.log(logType.SUCCESS, "intialized ticks.")
-        
-        # # giving tick time for every scene for scene specific events
-        # def executeScene(scene: Scene) -> Scene:
-        #     if not scene.idle:
-        #         scene.tick()
-        #     return scene
             
         # final main loop
         self.__logger.log(logType.INIT, "Starting the final game loop.")          
         while self.__isGameOn:
             await self.__eventHandler()
             
-            # for scene in self.__scenes.values():
-            #     if not scene.idle: await scene.tick()
-            
             await asyncio.sleep(0.000000001)
             await self.__drawLoop()
             self.clock.tick(1000)
-            # self.clock.get_rawtime()
-            # print(self.clock.get_fps())
             
             
             
@@ -545,22 +491,7 @@ class Game(Loggable):
             input_key_events = self.__inputEventsList[key]
 
             return is_in(name, key, input_key_events)
-
-        # just checking
-        # i need to optimize this someday...
-        # if name in self.__inputEventsList["rightClick"]:
-        #     if forcedType is None: return True
-        #     elif forcedType == "rightClick": return True
-        # if name in self.__inputEventsList["leftClick"]:
-        #     if forcedType is None: return True
-        #     elif forcedType == "leftClick": return True
-        # if name in self.__inputEventsList["keyUp"]:
-        #     if forcedType is None: return True
-        #     elif forcedType == "leftClick": return True
-        # if name in self.__inputEventsList["keyDown"]:
-        #     if forcedType is None: return True
-        #     elif forcedType == "leftClick": return True
-            
+        
         return False
         
     
@@ -583,23 +514,20 @@ class Game(Loggable):
             None'''
             
         # i couldn't put that type into working, idk why
-        #callable[['Game', currentScene, InputType,inputEventInfo], bool]
+        # callable[['Game', currentScene, InputType,inputEventInfo, Loggable], bool]
             
             
         # get value from enum
         if typeOfInputTypeEvent != str:
             typeOfInputTypeEvent = typeOfInputTypeEvent.value
                 
-        # callable[['Game', currentScene, InputType,inputEventInfo, Loggable], bool]
-        # name Checking
-        
         # handling situation if there was already event with that name
         if self.doesInputEventNameDoExist(name):
             self.getLogger().log(logType.ERROR, f"Tried to initialize an input event for already existing input event \'{name}\'!")
             if not dontRaiseAnyErrors:
                 raise invalidName(f"Name of the input event (\'{name}\') is not available.")
             if not setIfDoExist: return
-            # Tu nie wiedziałem jak to by inaczej opisać (nie czaje do końca xd)
+            # Tu nie wiedziałem jak to by inaczej opisać (nie czaje do końca xd) # tu chodzi o to że ustawian awet jeśli pojawi się błąd, że miejsce jest już zajęte (wymusza ustawienie tego, ale jest to niebezpieczne)
             self.getLogger().log(logType.INFO, f"f'{name}' will be set anyways, because a flag of ignoring that is set!")
         
         # setting event
@@ -610,9 +538,8 @@ class Game(Loggable):
         
         # logs
         self.getLogger().log(logType.SUCCESS, f"Initialized a new input event \'{name}\'! Event info: {eventInfo}.")
-        
-            # if forcedSceneName is not None:
-                
+
+
     def removeInputEvent(self, name: str, dontRaiseAnyErrors: bool = True) -> None:
         '''removes input event\n
             Args:\n
@@ -689,13 +616,6 @@ class Game(Loggable):
             del self.__inputEventsList['events'][name]
                 
         
-        
-        
-    
-    # def addRightClick(self, name: str, function: callable, DontRaiseAnyErrors: bool = False, ForceSetting: bool = False) -> None:
-    #     if name in self.__events or name in self.__events[''])and not DontRaiseAnyErrors:
-    #         raise gameEngineError(f"{name} is already taken")
-        
 
     # logger
     
@@ -728,11 +648,6 @@ class Game(Loggable):
     def getEvents(self) -> list[pygame.event.Event]:
         '''Get events from pygame'''
         return self.__events
-
-    # already implemented in Loggable    
-    # def log(self, logtype: logType, message: str) -> None:
-    #     self.__logger.log(logtype, message, self.__logParent)
-    
     
     def __writeInformationAboutClosedGame(self) -> None:
         with open("temp/isGameOpen", "w") as f:
@@ -804,12 +719,6 @@ class Game(Loggable):
         
 
         self.__resourceManager = resourceManager(self)
-        
-        # asyncio
-        # self.__eventLoop = asyncio.new_event_loop()
-        # asyncio.set_event_loop(self.__eventLoop)
-        # asyncio.create_task(self.__gameLoop(), name="gameLoop")
-        
         
         # main loop
         

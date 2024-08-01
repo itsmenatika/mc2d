@@ -27,14 +27,6 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
     async def restoreChunkFromChunkData(self, chunkData: dict) -> None:
         '''allows you to restore chunk from chunkData'''
         try:
-            # # blocks
-            # blockPosSplit = []
-            # for blockPosStr, blockData in chunkData['blocks'].items():
-            #     blockPosSplit = blockPosStr.split("_")
-            #     blockPos = (int(blockPosSplit[0]), int(blockPosSplit[1]))
-            #     # print('s')
-            #     self.setBlock(blockPos, blockData['id'], executor=self, reason=Reason.chunkRestore)
-            
             # main blocks
             howManyBlocks = len(chunkData['blocks'])
             
@@ -86,8 +78,6 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
         for sprite in self.sprites(): sprite.kill()
         scene.remove(self.sprites())
         self.empty()
-        # self.__mainBlocksGroup.empty()
-        # self.__backgroundBlocks.empty()
         
         self.log(logType.SUCCESS, f"unloading chunk {self.getChunkPos()}... SUCCESS")
 
@@ -215,9 +205,11 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
                 * blockPosition: tuple[int,int] -> that block position
                 * background: bool (default False) -> if you want a block from background
             Returns:\n
-                None | Block: result (None if no block found)'''                
+                None | Block: result (None if no block found)'''     
         return (self.__backgroundBlocks[(blockPosition[0],blockPosition[1])] if (blockPosition[0],blockPosition[1]) in self.__backgroundBlocks else None) if background else (self.__blocks[(blockPosition[0],blockPosition[1])] if (blockPosition[0],blockPosition[1]) in self.__blocks else None)
     
+    
+    def test(self): return self.__blocks
     
     def setBlock(self, blockPosition: tuple[int,int], block: 'Block | str | None', background: bool = False, executor: Optional[Executor] = None, reason: Optional[str] = None) -> 'None | Block | str':
         '''allows you to set block in specified chunk\n
@@ -294,25 +286,6 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
         if not scene.has(block): scene.add(block)
         
         return block
-
-        # deleting block if that will be replace with something else or just should be deleted
-        # elif block == None or self.checkPositionForBlock(blockPosition):
-        #         if blockPosition in self.__blocks:
-        #             self.__blocks[blockPosition].kill()
-        #             del self.__blocks[blockPosition]
-        #         if block == None: return
-           
-        # setting block
-         
-        # print(block, type(block))
-        # self.__blocks[blockPosition] = block
-        # print(block)
-        # try:
-            
-        # if not self.has(block): self.add(block)
-        # if not self.getScene().has(block): self.getScene().add(block)
-        # except Exception:
-        #     print(block, type(block))
         
     def removeBlock(self, blockPosition: tuple[int,int], background: bool = False, dontRaiseException: bool = False) -> None | NoReturn:
         '''allows you to remove block\n
@@ -394,34 +367,10 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
             return True if self.__blocks[blockPosition] == block else False
         else:
             # the final logic
-            # print(blockPosition not in self.__blocks, self.__blocks[blockPosition], block)
             return True if self.__blocks[blockPosition].ID == block.ID else False
         
-    def __checkForErrorsWorldGeneratorAsyncio(self, task: asyncio.Task) -> None:
-        print(task)
-        try:
-             _  = task.result()
-             print(_)
-        except Exception as e:
-            print('gada', e)
-            
-
-
     # entity managing
     
-    # def getEntity(self, uuid: UUID) -> Entity | None:
-    #     return self.__entities.get(uuid, default=None)
-    
-    # def getEntityUuid(self, entity: Entity) -> UUID | None:
-        
-    
-    # def addEntity(self, entity: Entity) -> None:
-    #     self.__entities[entity.getUuid()] = entity
-    #     self.add(entity)
-        
-    #     # add to scene 
-    #     self.getScene().add(entity)
-        
     def isEntityPartOfTheChunk(self, entity: Entity) -> bool:
         return True if entity in self.__entities.values() else False
     
@@ -436,11 +385,6 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
     def removentityFromEntityList(self, entity: Entity) -> None:
         '''That shouldn't be used! That adds manually entity to entity list of the chunk. use Scene.removeEntity instead or just Entity().unalive() !'''
         del self.__entities[entity.getUuid()]
-        
-    
-    
-    # def removeEntity(self, entity: Entity) -> None:
-    #     del self.__entities[self.getEntity()]
         
     
     def __init__(self, scene: 'Scene', chunkPos: int = 0, chunkData: Optional[dict] = None) -> None:
@@ -462,14 +406,6 @@ class Chunk(pygame.sprite.Group, Executor, Loggable):
         )
         
         self.__endPoint = self.__startPoint + Chunk.SIZE
-        
-  
-        
-        # self.__blocks: dict[tuple[int,int], Block] = {}
-        
-        
-        # self.loadChunkFromCsv("test.csv")
-        # self.generateChunk()
         
         # intialize blocks 
         self.__blocks: dict[tuple[int,int], Block] = {}
@@ -506,63 +442,6 @@ class Block(pygame.sprite.Sprite):
     # informations for every block
     SIZE = Vector2(32,32) # SIZE OF ALL BLOCKS
     
-    
-    # dark textures for faster lighting calculations (NOT USED, MOVED TO RESOURCEMANAGER)
-    # darkTexture0 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    # darkTexture0.fill((0,0,0,255))
-
-    # darkTexture1 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    # darkTexture1.fill((0,0,0,240))
-    
-    # darkTexture2 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    # darkTexture2.fill((0,0,0,230))
-    
-    # darkTexture3 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    # darkTexture3.fill((0,0,0,220))
-    
-    # darkTexture4 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    # darkTexture4.fill((0,0,0,200))
-    
-    # darkTexture5 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    # darkTexture5.fill((0,0,0,180))
-    
-    # darkTexture6 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    # darkTexture6.fill((0,0,0,160))
-    
-    # darkTexture7 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    # darkTexture7.fill((0,0,0,140))
-    
-    # darkTexture8 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    # darkTexture8.fill((0,0,0,120))
-    
-    # darkTexture9 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    # darkTexture9.fill((0,0,0,100))
-    
-    # darkTexture10 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    # darkTexture10.fill((0,0,0,80))
-    
-    # darkTexture11 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    # darkTexture11.fill((0,0,0,70))
-    
-    # darkTexture12 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    # darkTexture12.fill((0,0,0,60))
-    
-    # darkTexture13 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    # darkTexture13.fill((0,0,0,40))
-    
-    # darkTexture14 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    # darkTexture14.fill((0,0,0,20))
-    
-    # darkTexture15 = pygame.surface.Surface((SIZE.x,SIZE.y), flags=pygame.SRCALPHA)
-    # darkTexture15.fill((0,0,0,0))
-
-    # darkTextures = [
-    #     darkTexture0, darkTexture1, darkTexture2, darkTexture3, darkTexture4,
-    #     darkTexture5, darkTexture6, darkTexture7, darkTexture8, darkTexture9,
-    #     darkTexture10, darkTexture11, darkTexture12, darkTexture13, darkTexture14,
-    #     darkTexture15,
-    # ]
-    
     # basic information about block (info that can be changed in every block)
     MAINTEXTURE: str | None = None  # texture that will be used
     MAINTEXTUREISTRANSPARENT: bool = False # if texture is transparent (that is only for pygame optimization)
@@ -595,19 +474,23 @@ class Block(pygame.sprite.Sprite):
     def onPlaceAttempt(blockPosAbsolute: tuple[int,int], inChunkPosition: tuple[int,int], chunk: Chunk, event: Event, background: bool = False, reason: Optional[Reason] = None, executor: Optional[Executor] = None, changingBlock: bool = False) -> None:  
         '''method executed when block would be break (if you really want BLOCK OBJECT YOU MUST INTIALIZE EVENT BY event.do())'''
         pass
-    
-    # block.onBreak(blockPosAbsolute=pos,
-    #                                 inChunkPosition=block.getInChunkPosition()
-    #                                 chunk=self,
-    #                                 event=event,
-    #                                 reason=reason,
-    #                                 executor=executor)
+
     def onBreakAttempt(self, blockPosAbsolute: tuple[int,int], inChunkPosition: tuple[int,int], chunk: Chunk, event: Event, background: bool = False, reason: Optional[Reason] = None, executor: Optional[Executor] = None) -> None:  
         '''method executed when block would be break'''
         pass
     
     def onUpdate(self, blockPosAbsolute: tuple[int,int], inChunkPosition: tuple[int,int], chunk, background: bool = False, reason: Optional[Reason] = None, executor: Optional[Executor] = None) -> None:
+        '''method that is run every time block received that it should update itself.\n
+        current reasons to cause update:
+        * method .causeUpdate() or .causeUpdateOnNeighbours
+        * destroying/placing/changing neighbour of this block (only after event is done! on attempts event is still not done, you must force event to be done by using event.do())'''
         pass
+    
+    def onGetCollided(self, cords: Vector2, posAbsolute: tuple[int,int], chunk: 'Chunk', collisionSide: str, executor: Executor, forLogs: Loggable) -> None:
+        '''method executed when entity got collided with that block'''
+        pass
+
+    
     
     # update managing
     def causeUpdate(self, reason: Optional[Reason] = None, executor: Optional[Executor] = None) -> None:
@@ -623,29 +506,7 @@ class Block(pygame.sprite.Sprite):
         '''cause update on all neighbours'''
         for neighbor in self.getBlockNeighbours():
             if neighbor != None: neighbor.causeUpdate(reason=reason, executor=executor)
-    
-    
-    # @classmethod
-    # def causeUpdatesOnNeighborsByAbsPos(cls, blockPos: tuple[int,int], reason: Optional[Reason] = None, executor: Optional[Executor] = None) -> None:
-    #     '''cause update on all neighbours, but by giving position of this block (block doesn't have to exist!)'''
-    #     for neighbor in cls.getBlockNeighboursByAbsPos(blockPos):
-    #         if neighbor != None: neighbor.causeUpdate(reason=reason, executor=executor)
-    
-    # # getting neighbours
-    
-    
-    # @classmethod
-    # def getBlockNeighboursByAbsPos(cls, blockPos: tuple[int,int]) -> tuple['Block|None']:
-    #     '''Function that allows you to get all neighbouring blocks (not diagonal ones) simply by just absolute block pos. It returns it in format like this:
-    #         tuple[BlockFromLeft, BlockFromRight, BlockFromUp, BlockFromDown]'''
-    #     getBlockFunction = cls.getScene().getBlockByAbsPos
-    #     return (
-    #         getBlockFunction((blockPos[0]-1,blockPos[1])),
-    #         getBlockFunction((blockPos[0]+1,blockPos[1])),
-    #         getBlockFunction((blockPos[0],blockPos[1]-1)),
-    #         getBlockFunction((blockPos[0],blockPos[1]+1))
-    #     )
-    
+
     def getBlockNeighbours(self) -> tuple['Block|None']:
         '''Function that allows you to get all neighbouring blocks (not diagonal ones). It returns it in format like this:
             tuple[BlockFromLeft, BlockFromRight, BlockFromUp, BlockFromDown]'''
@@ -716,7 +577,7 @@ class Block(pygame.sprite.Sprite):
                 * reason: Optional[str] -> reason why block will be set
             Returns:\n
                 None'''
-        self.getChunk().setBlock(self.getBlockPos(), None, background=self.__isInbackground, executor=executor, reason=reason)
+        self.getChunk().setBlock(self.getBlockPos(), None, background=self.__isInBackground, executor=executor, reason=reason)
          
     def removeBlock(self) -> None:
         '''same as self.setToAir() but doesn't have neither executor or reason and use removeBlock function instead of setBlock in the chunk'''
@@ -737,24 +598,6 @@ class Block(pygame.sprite.Sprite):
     
     def getMainCamera(self) -> 'camera':
         return self.__chunk.getScene().getGame().camera
-    
-    
-    # def changeBlockTo(self, block: 'Block') -> None:
-    #     chunk = self.getChunk()
-    #     cords = self.getCords()
-        
-    #     chunk.removeBlock(cords)
-    #     chunk.setBlock(cords, block)
-        
-    # def update(self, surface) -> None:
-    #     camera = self.getMainCamera()  
-    #     print('s')      
-    #     if self.cords.x > camera.cords.x - self.SIZE.x and self.cords.x < camera.cameraEndPoint[0] + self.SIZE.x and self.cords.y + self.SIZE.y > camera.cords.y and self.cords.y < camera.cameraEndPoint[1] + self.SIZE.y:
-    #         surface.blit(self.image,
-    #                     self.cords - camera.cords)
-            
-         
-
         
     
     '''Returns cords relative to chunk starting Points'''
@@ -813,28 +656,6 @@ class Block(pygame.sprite.Sprite):
         
         chunk.setBlock(blockPos, _b, background=background)
         
-        # if addToEverything:
-        #     _b = blockInfo['class'](
-        #         image=rm.getTexture(blockInfo['class'].MAINTEXTURE),
-        #         blockPos=blockPos,
-        #         chunk=chunk,
-        #         executor = executor,
-        #         reason=reason,
-                
-        #     )
-        #     # print(_b)
-        #     chunk.setBlock(blockPos, _b)
-        #     # print(chunk.getBlockByTuple(blockPos))
-        # else:
-        #     _b = blockInfo['class'](
-        #         image=rm.getTexture(blockInfo['class'].MAINTEXTURE),
-        #         blockPos=blockPos,
-        #         chunk=chunk,
-        #         executor = executor,
-        #         reason=reason
-        #     )
-        #     chunk.setBlock(blockPos, _b)
-        
         return _b
         
     
@@ -883,12 +704,9 @@ class Block(pygame.sprite.Sprite):
             
         # basics
         self.__isInBackground, self.__chunk, self.__inChunkPos = background, chunk, blockPos
-        # self.__chunk = chunk
-        # self.__inChunkPos = blockPos
         self.__absolutePos = (blockPos[0]+chunk.getChunkPos()*Chunk.SIZE.x, blockPos[1])
         self.image = self.mainImageCompiled
         self.__cords: Vector2 = Vector2(blockPos[0] * Block.SIZE.x, blockPos[1] * Block.SIZE.y)
-        # print(self.__cords)
         self.cordsAbsolute: Vector2 = Vector2(self.__cords.x + self.__chunk.getStartingPoint().x,
                                         self.__cords.y + self.__chunk.getStartingPoint().y)
         
@@ -900,15 +718,12 @@ class Block(pygame.sprite.Sprite):
         # self.recompileLight()
         
         # reason handling
-# (self, blockPosAbsolute: tuple[int,int], inChunkPosition: tuple[int,int], chunk: Chunk, event: Event, reason: Optional[Reason] = None, executor: Optional[Executor] = None)
         match reason:
             case "world_generator":
                 self.onGenerate(cordsAbsolute=self.cordsAbsolute,cordsRelative=self.__cords, inChunkPosition=blockPos, chunk=chunk, executor=executor)
             case "chunk_restore":
                 self.onLoad(cordsAbsolute=self.cordsAbsolute,cordsRelative=self.__cords, inChunkPosition=blockPos, chunk=chunk, executor=executor)
 
-        # ???? co skąd to coś tu jest
-        # del chunk_position
 
 # class dupa(): pass
 class Scene(pygame.sprite.Group, Executor, Loggable):   
@@ -1037,11 +852,6 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
 
         del self.__activeChunks[chunk.getChunkPos()]
         
-    # def draw(self):
-    #     surf = self.__game.getDisplayOrginal()
-    #     # for chunk in self.__activeChunks.values():
-    #     #     chunk.draw(surf)
-    #     self.camera.draw(self.get)
     
     # blocks handling
     
@@ -1065,6 +875,7 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
         if blockT != None:
             neighboursOfBlocks = blockT.getBlockNeighbours()
             
+       
         # updating neighbours
         if neighboursOfBlocks != None:
             neighbour: Block = None
@@ -1072,15 +883,6 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
                 if neighbour != None: 
                     neighbour.causeUpdate(reason=reason, executor=executor)
         
-        # blockOld: Block | None = chunk.getBlockByTuple(blockPos)
-        # if blockOld != None and block == None: blockOld.causeUpdatesOnNeighbours(reason=reason,executor=executor)
-         
-        # block: Block = self.getChunk(chunkPos).setBlock(blockPos, block)
-        # if block != None: 
-        #     block.causeUpdatesOnNeighbours(reason=reason,executor=executor)
-
-    
-
     
     def setBlockByAbsolutePosWithEvent(self, pos: tuple[int,int], block: None|str, background: bool = False, reason: Optional[Reason] = None, dontRaiseErrors: bool = True, executor: Optional[Executor] = None) -> None:
         '''create fast event about changing the block without caring about managing event (though if you want to truly optimize something you should control events yourself!). That's kind of temporary command. If functions like self.tryToPlace() or self.tryToBreak() do exist, use them instead.'''
@@ -1122,10 +924,6 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
         
             
     def setBlockByAbsolutePos(self, pos: tuple[int,int], block: None|Block|str, background: bool = False, executor: Optional[Executor] = None, reason: Optional[Reason] = None, dontRaiseErrors: bool = False) -> None:
-        # if isinstance(pos, Vector2):
-        #     pos = tuple(pos)
-        
-        # chunkPos = (pos[0] // Chunk.SIZE.x, pos[1] // Chunk.SIZE.y)
         chunkPos = pos[0] // Chunk.SIZE.x
         
         if chunkPos not in self.__activeChunks:
@@ -1133,39 +931,29 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
             if dontRaiseErrors: return
             raise chunkNotLoaded(f"Trying to access block of position ${pos} which should be located in chunk ${chunkPos}, but that chunk is not loaded!")
         
-        # previousAmountOfBlocks = ((chunkPos-1) * Chunk.SIZE.x, (chunkPos-1) * Chunk.SIZE.y)
-        # blockPos = (cords[0] // Chunk.SIZE.x, cords[1] // Chunk.SIZE.y)
-        
         BlockPos = (int(pos[0] % Chunk.SIZE.x), int(pos[1] % Chunk.SIZE.y))
         
         self.getChunk(chunkPos).setBlock(BlockPos, block, background=background, executor=executor, reason=reason)
         
     def getBlockByAbsPos(self, absolutePos: tuple[int,int], background: bool = False, executor: Optional[Executor] = None, reason: Optional[Reason] = None, dontRaiseErrors: bool = True) -> Block | None:
-        '''Get block by absolute blockPos'''
+        '''Get block by absolute cords'''
         chunkCords = absolutePos[0] // Chunk.SIZE.x
-        # chunkStartPoint = (Chunk.SIZE.x * chunkCords, 0) 
-        RelativeBlockPos = (absolutePos[0] % Block.SIZE.x, 
+        RelativeBlockPos = (absolutePos[0] % Chunk.SIZE.x, 
                             absolutePos[1])
-        
-        
+
         if chunkCords not in self.__activeChunks:
             if not dontRaiseErrors:
                 raise chunkNotLoaded(f"Trying to access block of cords ${absolutePos} which should be located in chunk ${chunkCords}, but that chunk is not loaded!")
             return None
         
-        # print('fa',RelativeBlockPos)
         return self.__activeChunks[chunkCords].getBlockByTuple(RelativeBlockPos, background=background)       
         
-    def getBlock(self, cords: Vector2, background: bool = False) -> Block | None:
+    def getBlockByAbsCords(self, cords: Vector2, background: bool = False) -> Block | None:
         '''Get block by absolute cords'''
         # for some reason in the first line diving by block SIZE is unnecessary (even tho it should be), but that is blocking readability...
-        # chunkCords = (cords.x // Block.SIZE.x // Chunk.SIZE.x, cords.y // Block.SIZE.y // Chunk.SIZE.y)
-        # print(self.getChunkPosFromCords(cords))
         chunkCords = cords.x // Block.SIZE.x // Chunk.SIZE.x
-        # print(chunkCords)
-        # chunkStartPoint = (Chunk.SIZE.x * chunkCords, 0) 
-        RelativeBlockPos = (cords.x // Block.SIZE.x % Chunk.SIZE.x, 
-                            cords.y // Block.SIZE.x)
+        RelativeBlockPos = (cords.x % Block.SIZE.x % Chunk.SIZE.x, 
+                            cords.y % Block.SIZE.x)
         
         if RelativeBlockPos[0] < 0: RelativeBlockPos[0] += Chunk.SIZE.x
         
@@ -1271,7 +1059,7 @@ class Scene(pygame.sprite.Group, Executor, Loggable):
         
         # generating basic chunks
         
-
+        # add this to code if error occurs, for some reasons it sometimes helps
         # self.__activeChunks[0] = Chunk(scene=self, chunkPos=0)
                  
         if autoAdd:

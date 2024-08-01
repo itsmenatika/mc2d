@@ -80,13 +80,7 @@ class resourceManager(Loggable):
         
         loc_tiles = os.path.join(loc, "tiles")
         loc_entities = os.path.join(loc, "entities")
-        
-        # GAME_NAMESPACE['types'] = {
-        #     "air": "block",
-        #     "none_item": "item"
-        # }
-        
-        
+                
         # setting environment
         GAME_NAMESPACE['environment']['bin_loc'] = loc
         GAME_NAMESPACE['environment']['tiles_loc'] = loc_tiles
@@ -99,7 +93,6 @@ class resourceManager(Loggable):
         
         self.log(logType.INIT, "loading tiles...")
         
-        # print(os.listdir(loc_tiles))
         loadedBlocks = 0
         totalBlocks = 0
 
@@ -210,15 +203,12 @@ class resourceManager(Loggable):
                 
                 self.log(logType.SUCCESS, f"new block added: {name} (INT ID: {mainClassData.IDInt})")
                 loadedBlocks+=1
-                # print(f"[NAMESPACE] New block added: {name} (INT ID: {module.__dict__[name].IDInt})")
             except ModuleNotFoundError as e:
                 self.errorWithTraceback(f"error with importing block {name}, couldn't find module, even though module was expected. Check your integrity of game files via launcher! An error provided by the game:",e)
                 self.log(logType.CRASHREPORT, f"Unable to import module \'bin.tiles.{name}\'! Module not found. Check your files integrity. That error shouldn't have occur under any circumstances!")
                 exit()
             except Exception as e:
-                # self.log(logType.ERROR, f"unable to block of id {name}\nERROR:\n {e}\n")
                 self.errorWithTraceback(f"Unexpected error occured during trying to load block of id '{name}', more details about detail is depicted below:", e)
-                # print(f"[NAMESPACE] unable to load tile of id {name}\nERROR:\n {e}\n")
                 totalBlocks += 1
                 
         self.log(logType.SUCCESS, f"loading blocks has ended! LOADED BLOCKS: {loadedBlocks}/{totalBlocks} (failed: {totalBlocks - loadedBlocks})")
@@ -320,15 +310,13 @@ class resourceManager(Loggable):
                 
                 self.log(logType.SUCCESS, f"new entity added: {name}")
                 loadedEntities+=1
-                # print(f"[NAMESPACE] New block added: {name} (INT ID: {module.__dict__[name].IDInt})")
             except ModuleNotFoundError as e:
                 self.errorWithTraceback(f"error with importing entity {name}, couldn't find module, even though module was expected. Check your integrity of game files via launcher! An error provided by the game:",e)
                 self.log(logType.CRASHREPORT, f"Unable to import module \'bin.tiles.{name}\'! Module not found. Check your files integrity. That error shouldn't have occur under any circumstances!")
                 exit()
             except Exception as e:
-                # self.log(logType.ERROR, f"unable to block of id {name}\nERROR:\n {e}\n")
+                self.log(logType.ERROR, f"unable to block of id {name}\nERROR:\n {e}\n")
                 self.errorWithTraceback(f"Unexpected error occured during trying to load entity of id '{name}', more details about detail is depicted below:", e)
-                # print(f"[NAMESPACE] unable to load tile of id {name}\nERROR:\n {e}\n")
                 totalEntities += 1
                 
         self.log(logType.SUCCESS, f"loading entities has ended! LOADED entities: {loadedEntities}/{totalEntities} (failed: {totalEntities - loadedEntities})")        

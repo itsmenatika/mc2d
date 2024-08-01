@@ -18,7 +18,6 @@ class allium(Block):
     @staticmethod
     def onPlaceAttempt(blockPosAbsolute: tuple[int,int], inChunkPosition: tuple[int,int], chunk: Chunk, event: Event, background: bool = False, reason: Optional[Reason] = None, executor: Optional[Executor] = None, changingBlock: bool = False) -> None:
         block = chunk.getScene().getBlockByAbsPos((blockPosAbsolute[0], blockPosAbsolute[1]+1))
-        
         if block == None or block.ID not in ("dirt", "grass_block"):
             event.prevent()
    

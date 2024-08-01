@@ -117,72 +117,47 @@ class Camera:
         return self.__game
     
     def draw(self, surface: pygame.surface.Surface):
-        # sceneToDraw: Scene = self.__game.getCurrentScene()
-        
-        # screensize = pygame.display.get_surface().get_size()
-        
-        # chunk: Chunk = None
-        sprite: Block = None
-
+        # draw background blocks
         for sprite in self.backgroundBlocks:
             surface.blit(sprite.image, sprite.getCords() - self.cords)
 
+        # draw main blocks
         for sprite in self.mainBlocks:
             surface.blit(sprite.image, sprite.getCords() - self.cords)
             
-            
+        # draw entities
         for entity in self.sceneToDraw.entityGroup.sprites():
             surface.blit(entity.image, entity.getCords() - self.cords)
-        # for sprite in sceneToDraw.sprites():
-        #     cords = sprite.getCords()
-            
-        #     if cords.x > self.cords.x - Block.SIZE.x and cords.x < cameraEndPoint[0] + Block.SIZE.x and cords.y + Block.SIZE.y > self.cords.y and cords.y < cameraEndPoint[1] + Block.SIZE.y:
-        #         surface.blit(sprite.image,
-        #                     cords - self.cords)
-            
-        # for chunk in sceneToDraw.getActiveChunks().values():
-        #     for sprite in chunk.sprites():
-        #         if not sprite.doRender: continue
-        #         # spritecords = sprite.getCordsRelative() - self.cords + chunk.getStartingPoint()
-        #         cords = sprite.getCords()
-                
-        #         if cords.x > self.cords.x - Block.SIZE.x and cords.x < cameraEndPoint[0] + Block.SIZE.x and cords.y + Block.SIZE.y > self.cords.y and cords.y < cameraEndPoint[1] + Block.SIZE.y:
-        #             surface.blit(sprite.image,
-        #                         cords - self.cords)
-        
-        # chunks edges
-        # Chunk.getStartingPoint()
-        # print(sceneToDraw.getActiveChunks().values())
-        # print([chunk.getEndingPoint() for chunk in sceneToDraw.getActiveChunks().values()])
-        # chunkEdges = set([chunk.getStartingPoint() for chunk in sceneToDraw.getActiveChunks().values()].extend(
-        #                 [chunk.getEndingPoint() for chunk in sceneToDraw.getActiveChunks().values()]))
-        
+
+        # get all chunks
         active_scene_chunks = self.sceneToDraw.getActiveChunks()
         
         # draw chunkEdges and information
+        
+        # get starting positions of all active chunks
         chunkEdges =  [chunk.getStartingPoint().x for chunk in active_scene_chunks.values()]
-        # chunkEdges.extend(
-        #     [chunk.getEndingPoint().x for chunk in sceneToDraw.getActiveChunks().values()]
-        # )
         chunkEdgesSet = set(chunkEdges)
         
-
+        # draw line on every starting position
         for edge in chunkEdgesSet:
             pygame.draw.line(surface, (230, 0, 20), (edge - self.cords.x, 0 - self.cords.y), (edge - self.cords.x, (Chunk.SIZE.y * Block.SIZE.y) - self.cords.y), 1)
 
+        # draw dev information
         surface.blit(self.__infoToDraw, (0,0))
         
+        # get mouse position
         mousePos = pygame.mouse.get_pos()
 
-        # self.cords = Vector2(0,0)
         
+        # draw selected frame
         self.pointedBlock.topleft = (
             (mousePos[0] + self.cords.x) // Block.SIZE.x * Block.SIZE.x - self.cords.x,
             (mousePos[1] + self.cords.y) // Block.SIZE.y * Block.SIZE.y - self.cords.y)
 
         pygame.draw.rect(surface, "red", self.pointedBlock, width=2)
+        
 
-
+        # draw information about selected block (that you would place)
         game = self.getGame()
 
         g_storage_selected_block = game.storage['selectedBlockName']
@@ -192,22 +167,15 @@ class Camera:
         surface.blit(self.__font.render(f"{g_storage_selected_block} ({game.storage['selectedBlock']})", False, (100, 100, 100)), (75,50))
         
         
-    # @property
-    # def cords(self):
-    #     return self.cords
-        
-    # @property.setter
-    # def cords(self, setTo):
-    #     self.__cords = setTo
-    #     self.__filterSpritesToDrawNonAsync()
-    
     def moveTo(self, newCords: Vector2, callFilter: bool = True) -> None:
+        '''moves camera to a new position and force refiltering sprites'''
         self.cords = newCords
 
         if callFilter: 
             self.__filterSpritesToDrawNonAsync()
         
     def moveBy(self, by: Vector2, callFilter: bool = True) -> Vector2:
+        '''same as self.moveTo(), but using relativePosition to previous position (original position)'''
         self.cords += by
 
         if callFilter: 

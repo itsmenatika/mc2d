@@ -23,8 +23,19 @@ class entityType(Enum):
 # basics of entity, i'm to lazy to continue this now. I need to rewrite how chunk are actived and add some delay and force loading to make able entities going into "unloaded" chunks and i also need to rewrite system to bind entities as "chunk loading entities"
 class Entity(pygame.sprite.Sprite, Executor, Loggable):
     basicGravity = Vector2(0, 0.49) # 20 times per second (one tick) (that's 9.8/m2s)
-    maxSpeed = Vector2(5, 5)
+    maxSpeed = Vector2(120, 120)
     dividingFactor = 2 # the smaller factor the more accurate physics but also the slower
+    
+    
+    # functions to change
+    # function that get executed every time collission happens
+    def onCollision(self, cords: Vector2, posAbsolute: tuple[int,int], chunk: 'Chunk', collisionSide: str, executor: Executor, forLogs: Loggable) -> None:
+        pass
+    
+    def onGetCollided(self, cords: Vector2, posAbsolute: tuple[int,int], chunk: 'Chunk', collisionSide: str, executor: Executor, forLogs: Loggable) -> None:
+        pass
+    
+    
     
     
     async def tick(self):
@@ -82,7 +93,7 @@ class Entity(pygame.sprite.Sprite, Executor, Loggable):
                             self.rect.right = col.rect.left
                             
                         # check if collision was (left me, you right)
-                        if abs(self.rect.left - col.rect.right) < 5:
+                        if abs(self.rect.left - col.rect.right) < self.dividingFactor:
                             if self.__velocity.x < 0:
                                 self.__velocity.x = 0
                                 temp.x = 0
@@ -137,6 +148,14 @@ class Entity(pygame.sprite.Sprite, Executor, Loggable):
     
     def repairCordsFromRect(self) -> None:
         self.__cords: Vector2 = Vector2(self.rect.midbottom)
+        
+        
+    @classmethod
+    def createEntityUsingResourceManager(cls, chunk: 'Chunk', cords: Vector2, id: str, changedNbtData: Optional[dict] = None) -> 'Entity':
+        game = chunk.getGame()
+        namespace = game.getResourceManager().getNameSpace()
+        
+        resourceManager.getNameSpace()
     
     def __init__(self, image: pygame.surface.Surface, chunk: 'Chunk', cords: Vector2, oftype: entityType, forcedUUID: Optional[int] = None, nbtData: Optional[dict] = None):
         super().__init__()

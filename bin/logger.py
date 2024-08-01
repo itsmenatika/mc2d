@@ -119,8 +119,6 @@ class Logger:
         self.__game = game
         self.__logs: list[str] = []
         
-        # if not os.path.exists(self.logFile):
-        #     os.fi
         
         with open(self.logFile, 'w') as f:
             pass
@@ -162,15 +160,8 @@ class Loggable:
         self.getGame().getLogger().log(logtype, message, self.__logParent)
         
     def errorWithTraceback(self, message: str, error: Exception) -> None:
-        # tb = sys.exc_info()
-        # self.log(logType.ERROR, message + '\n' + str(error.with_traceback(tb[2])) + "\n")
         tb = traceback.format_exc()
         self.log(logType.ERROR, message + '\n' + str(tb))
-        # tb = sys.exc_info()[2]
-        # # traceback.print_exc()
-        # # self.getGame().getLogger().log(logType.ERROR, message, self.__logParent)
-        # # print( message + "\n" + error.with_traceback(tb) + "\n")
-        # self.log(logType.ERROR, message + "\n" + error.with_traceback(tb) + "\n")
         
     def getLogParent(self) -> ParentForLogs:
         return self.__logParent

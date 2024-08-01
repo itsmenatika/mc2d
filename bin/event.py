@@ -10,18 +10,6 @@ class Event(Executor, Loggable):
     '''class to easy manage preventing events'''
     defaultName = "unkownEvent"
     
-    
-    # fast event creating
-    # @staticmethod
-    # def createBlockPlacementByAbsolutePos(self, scene: 'Scene', blockPos: tuple[int,int], block: str | None | 'Block', dontRaiseErrors: bool = True) -> 'event':
-    #     return event(
-    #         callback=lambda: scene.setBlockByAbsolutePos(blockPos, block, dontRaiseErrors),
-    #         eventType=EventType.blockPlacement
-    #     )
-      
-    
-    
-    
     def isWaiting(self) -> bool: 
         '''check if event still waits for execution'''
         return self.__waiting
