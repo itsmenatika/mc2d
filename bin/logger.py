@@ -119,9 +119,9 @@ class Logger:
         self.__game = game
         self.__logs: list[str] = []
         
-        
-        # with open(self.logFile, 'w') as f:
-        #     pass
+        # YOU REALLY SHOULD KEEP IT, THAT ERASES PREVIOUS LOGS        
+        with open(self.logFile, 'w') as f:
+            pass
         
       
         date = datetime.now()
