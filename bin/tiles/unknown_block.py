@@ -7,5 +7,5 @@ from bin.abstractClasses import Executor
 class Unknown(Block):
     MAINTEXTURE = "tiles/default.png"
     MAINTEXTUREISTRANSPARENT = False
-    ID = "?"
+    ID = "default"
     IDInt = 19
