@@ -15,8 +15,10 @@ Całość resource Managera jest zlokalizowana w **bin/namespace.py**, głównie
 
 # Metody
 
+<br><br><br><br>
 ## metody ładowania/cachowania
 
+<br><br>
 ### loadTextureFromFile()
 
 **wymaga instancji:** tak
@@ -31,13 +33,15 @@ Całość resource Managera jest zlokalizowana w **bin/namespace.py**, głównie
 Cachuje daną teksturę oraz zwraca ją.
 
 
-
+<br><br><br><br>
 ## metody zapisu
 
 **MOŻE KIEDYŚ, AKTUALNIE BRAK**
 
+<br><br><br><br>
 ## metody obróbki źródeł
 
+<br><br>
 ### applyDarkToTexture()
 
 **wymaga instancji:** nie
@@ -54,8 +58,10 @@ Tworzy kopię przesłanego obrazu i nakłada na ten obraz ciemność z zakresu (
 > [!IMPORTANT]  
 > Zwracana rzecz nie jest tutaj cachowana!
 
+<br><br><br><br>
 ## metody pozyskiwania źródeł oraz scachowanych informacji
 
+<br><br>
 ### getTexture() **ZALECANE**
 
 **wymaga instancji:** tak
@@ -70,7 +76,7 @@ Tworzy kopię przesłanego obrazu i nakłada na ten obraz ciemność z zakresu (
 * result: pygame.surface.Surface](https://www.pygame.org/docs/ref/surface.html) -> gdy tekstura została scachowana wcześniej/udało się ją pozyskać
 * result: None -> gdy nie udało się z jakiekolwiek powodu uzyskać grafiki
 
-
+<br><br>
 ### getBlockInformation()
 **wymaga instancji:** tak
 **argumenty:** name: str -> id bloku
@@ -79,11 +85,12 @@ Tworzy kopię przesłanego obrazu i nakłada na ten obraz ciemność z zakresu (
 pozyskuje informacje o danym bloku
 
 
-
+<br><br><br><br>
 
 
 ## metody dostępu oraz uzyskiwania informacji
 
+<br><br>
 ### getAmountOfResources()
 
 **wymaga instancji:** tak
@@ -92,6 +99,8 @@ pozyskuje informacje o danym bloku
 
 Zwraca liczbe scachowanych źródeł (czyli pomijając scachowane dane bloków, entity i gui)
 
+
+<br><br>
 ### getAmountOfCached()
 
 **wymaga instancji:** tak
@@ -100,6 +109,8 @@ Zwraca liczbe scachowanych źródeł (czyli pomijając scachowane dane bloków, 
 
 Zwraca liczbe scachowanych rzeczy.
 
+
+<br><br>
 ### getGame()
 
 **wymaga instancji:** tak
