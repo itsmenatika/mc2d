@@ -20,8 +20,10 @@ Całość resource Managera jest zlokalizowana w **bin/namespace.py**, głównie
 ### loadTextureFromFile()
 
 **wymaga instancji:** tak
+
 **argumenty (1):**
 * name: str -> ścieżka do pliku
+  
 **zwraca:** 
 * result: [pygame.surface.Surface](https://www.pygame.org/docs/ref/surface.html) -> wynik
 * result: None -> gdy wystąpi jakikolwiek błąd
@@ -39,9 +41,11 @@ Cachuje daną teksturę oraz zwraca ją.
 ### applyDarkToTexture()
 
 **wymaga instancji:** nie
+
 **argumenty (2):**
 * image: [pygame.surface.Surface](https://www.pygame.org/docs/ref/surface.html) -> pierwotny obraz
-* lightValue: int -> wartość (zakres 16>i>=0)    
+* lightValue: int -> wartość (zakres 16>i>=0)
+  
 **zwraca:** 
 * result: [pygame.surface.Surface](https://www.pygame.org/docs/ref/surface.html) -> wynik
 
@@ -55,11 +59,13 @@ Tworzy kopię przesłanego obrazu i nakłada na ten obraz ciemność z zakresu (
 ### getTexture() **ZALECANE**
 
 **wymaga instancji:** tak
+
 **argumenty: (2+)**
 * name: str -> nazwa zawartości, zwykle ścieżka do pliku
 * disableTryingToGet: bool = False -> czy wyłączyć próbę pozyskiwania zawartości gdy tekstura nie zostanie znaleziona w cachu 
 * other: kwargs -> dodatkowe opcje
   - lightValue: int -> czy pozyskiwać teksturę z nałożoną paletą ciemności (zakres 0-15)
+
 **zwraca:**
 * result: pygame.surface.Surface](https://www.pygame.org/docs/ref/surface.html) -> gdy tekstura została scachowana wcześniej/udało się ją pozyskać
 * result: None -> gdy nie udało się z jakiekolwiek powodu uzyskać grafiki
