@@ -19,6 +19,15 @@ Całość resource Managera jest zlokalizowana w **bin/namespace.py**, głównie
 ## metody ładowania/cachowania
 
 <br><br>
+### loadFromNamespace()
+**wymaga instancji:** tak
+**argumenty:** brak
+**zwraca:** None
+
+Jest to metoda która jest wywoływana automatycznie przy inicjalizacji obiektu oraz przez [self.namespaceReload()](docs/pl/resourceManager.md#namespaceReload()), powoduje ona załadowanie przestrzenii nazw oraz scachowanie automatycznie wielu rzeczy (takie jak tekstury entity, bloków itd). 
+
+
+<br><br>
 ### loadTextureFromFile()
 
 **wymaga instancji:** tak
@@ -73,7 +82,7 @@ Tworzy kopię przesłanego obrazu i nakłada na ten obraz ciemność z zakresu (
   - lightValue: int -> czy pozyskiwać teksturę z nałożoną paletą ciemności (zakres 0-15)
 
 **zwraca:**
-* result: pygame.surface.Surface](https://www.pygame.org/docs/ref/surface.html) -> gdy tekstura została scachowana wcześniej/udało się ją pozyskać
+* result: [pygame.surface.Surface](https://www.pygame.org/docs/ref/surface.html) -> gdy tekstura została scachowana wcześniej/udało się ją pozyskać
 * result: None -> gdy nie udało się z jakiekolwiek powodu uzyskać grafiki
 
 <br><br>
@@ -84,6 +93,14 @@ Tworzy kopię przesłanego obrazu i nakłada na ten obraz ciemność z zakresu (
 
 pozyskuje informacje o danym bloku
 
+
+<br><br>
+### getNamespace()
+**wymaga instancji:** tak
+**argumenty:** brak
+**zwraca:** dict 
+
+zwraca przestrzeń nazw ([namespace](docs/pl/resourceManager.md#namespace)) zawierającą defacto wszystkie informacje o istniejących entity, blokach itd, liste wszystkich ID istniejących w grze itd.
 
 <br><br><br><br>
 
@@ -104,7 +121,9 @@ Zwraca liczbe scachowanych źródeł (czyli pomijając scachowane dane bloków, 
 ### getAmountOfCached()
 
 **wymaga instancji:** tak
+
 **argumenty:** brak
+
 **zwraca:** int (zakres >=0)
 
 Zwraca liczbe scachowanych rzeczy.
@@ -114,7 +133,9 @@ Zwraca liczbe scachowanych rzeczy.
 ### getGame()
 
 **wymaga instancji:** tak
+
 **argumenty:** brak
+
 **zwraca:** Game
 
 Jest to metoda która pozwala na uzyskanie referencji do klas.
