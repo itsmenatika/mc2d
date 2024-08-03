@@ -12,6 +12,68 @@ Resource Manager jest narzędziem które ma za cel cachowanie wszelkich danych k
 Całość resource Managera jest zlokalizowana w **bin/namespace.py**, głównie w klasie **resourceManager**
 
 
+# Namespace
+
+## Czym jest?
+
+jest to przestrzeń nazw zawierająca dane o wszystkich istniejących id, entitach (rodzaje) oraz blokach (rodzaje). Jest ładowania za pomocą  [self.namespaceReload()](docs/pl/resourceManager.md#loadfromNameSpace())
+
+## struktura
+
+TODO: przetłumaczenie struktury na polski
+
+```json
+ "environment": {
+        "bin_loc": ABSOLUTE_LOCALIZATION_OF_GAME_BIN (str),
+        "version": VERSION_OF_THE_GAME (int),
+        "versionInt": INTVERSION_OFTHEGAME (int),
+    }, # basic environment information
+    "IDInts": {
+      intID: stringID
+     }, # a dictionary of int ids
+    "IDIntsList": [], # a list of id ints
+    "blocksFastLighting": {
+        "blockStringName": {
+            1: pygame.surface.Surface
+        }
+    }, # NOT USED ANYMORE
+    "id_type": {
+        stringID: block, gui, unknown,  or entity
+    }, # types of id with corresponding type for them
+    "blocks": {
+        stringID: {
+            "module": module (module), # module of the game
+            "id": name (str), # string id
+            "intID": idINT (int), # int id
+            "type": "block", 
+            "class": the main class of this block (class inherting from Block),
+            "MAINTEXTURE_loc": localization to a raw main Texture that was written in class (str),
+            "MAINTEXTURE_loc_with": localization to a raw main Texture that was written in class, but compiled (str),
+            "ISMAINTEXTURETRANSPARENT": flag if main texture is transparent (bool),
+            "MAINTEXTURE_RENDER": render of a main texture,
+            "MAINTEXTURE_object": the same as MAINTEXTURE_RENDER (THATS THE SAME REFERENCE),
+            "MAINTEXTURE_get": lambda: self.getTexture(mainClassData.MAINTEXTURE) # DONT USE IT
+        }
+    }, # list of blocks
+    "entities": {
+        stringID: {
+            "module": module (module), # module of the game
+            "id": name (str), # string id
+            "type": "entity", 
+            "class": the main class of this entity (class inherting from Block),
+            "MAINTEXTURE_loc": localization to a raw main Texture that was written in class (str),
+            "MAINTEXTURE_loc_with": localization to a raw main Texture that was written in class, but compiled (str),
+            "ISMAINTEXTURETRANSPARENT": flag if main texture is transparent (bool),
+            "MAINTEXTURE_RENDER": render of a main texture,
+            "MAINTEXTURE_object": the same as MAINTEXTURE_RENDER (THATS THE SAME REFERENCE),
+            "MAINTEXTURE_get": lambda: self.getTexture(mainClassData.MAINTEXTURE) # DONT USE IT
+        }
+    } # list of entities
+
+
+```
+
+
 
 # Metody
 
@@ -19,7 +81,7 @@ Całość resource Managera jest zlokalizowana w **bin/namespace.py**, głównie
 ## metody ładowania/cachowania
 
 <br><br>
-### loadFromNamespace()
+### loadFromNameSpace()
 **wymaga instancji:** tak
 **argumenty:** brak
 **zwraca:** None
