@@ -103,6 +103,15 @@ Jest to metoda która jest wywoływana automatycznie przy inicjalizacji obiektu 
 
 Cachuje daną teksturę oraz zwraca ją.
 
+przykład użycia:
+```python
+x: pygame.surface.Surface | None = resourceManager.loadTextureFromFile("resource/gui/x.png")
+
+if x == None:
+   raise Exception("???")
+
+screen.blit(x)
+```
 
 <br><br><br><br>
 ## metody zapisu
@@ -126,6 +135,13 @@ Cachuje daną teksturę oraz zwraca ją.
 
 Tworzy kopię przesłanego obrazu i nakłada na ten obraz ciemność z zakresu (0-15). Zwraca ten obraz. Zalecane jest korzystanie z innych metod takich jak [getTexture()](docs/pl/resourceManager.md#getTexture())
 
+przykład użycia:
+```python
+jajko: pygame.surface.Surface = resourceManager.getTexture(name="resources/jajka/duzejajko.png")
+jajkoCiemne: pygame.surface.Surface = resourceManager.applyDarkToTexture(jajko, 5)
+screen.blit(jajkoCiemne, (0,0))
+```
+
 > [!IMPORTANT]  
 > Zwracana rzecz nie jest tutaj cachowana!
 
@@ -147,22 +163,51 @@ Tworzy kopię przesłanego obrazu i nakłada na ten obraz ciemność z zakresu (
 * result: [pygame.surface.Surface](https://www.pygame.org/docs/ref/surface.html) -> gdy tekstura została scachowana wcześniej/udało się ją pozyskać
 * result: None -> gdy nie udało się z jakiekolwiek powodu uzyskać grafiki
 
+przykład użycia:
+```python
+jajko: pygame.surface.Surface = resourceManager.getTexture(name="resources/jajka/duzejajko.png")
+screen.blit(jajko, (0,0))
+```
+
 <br><br>
 ### getBlockInformation()
 **wymaga instancji:** tak
 **argumenty:** name: str -> id bloku
 **zwraca:** dict lub None
 
+defacto działa praktycznie identycznie jak coś takiego:
+```python
+namespace: dict = resourceManager.getNameSpace()
+blockData: dict = namespace['blocks'][ID]
+return blockData
+```
+ale jest szybsze i znacznie bezpieczniejsze
+
+przykład użycia:
+```python
+stone: dict = resourceManager.getBlockInformation(name="stone)
+print(f"ścieżka do głównej tekstury stona to resources/{stone['class'].MAINTEXTURE})
+```
+
 pozyskuje informacje o danym bloku
 
 
 <br><br>
-### getNamespace()
+### getNameSpace()
 **wymaga instancji:** tak
 **argumenty:** brak
 **zwraca:** dict 
 
 zwraca przestrzeń nazw ([namespace](docs/pl/resourceManager.md#namespace)) zawierającą defacto wszystkie informacje o istniejących entity, blokach itd, liste wszystkich ID istniejących w grze itd.
+
+
+przykład użycia
+```python
+namespace: dict = resourceManager.getNameSpace()
+intIDStona: int = namespace['blocks']['stone']['intID']
+print(f"int id stona to {intIDStona}")
+```
+
 
 <br><br><br><br>
 
@@ -178,6 +223,11 @@ zwraca przestrzeń nazw ([namespace](docs/pl/resourceManager.md#namespace)) zawi
 
 Zwraca liczbe scachowanych źródeł (czyli pomijając scachowane dane bloków, entity i gui)
 
+przykład:
+```python
+liczbaScachowanychRzeczy: int = resourceManager.getAmountOfResources()
+print(f"liczba scachowanych rzeczy to {liczbaScachowanychRzeczy}")
+```
 
 <br><br>
 ### getAmountOfCached()
@@ -190,6 +240,12 @@ Zwraca liczbe scachowanych źródeł (czyli pomijając scachowane dane bloków, 
 
 Zwraca liczbe scachowanych rzeczy.
 
+przykład:
+```python
+liczbaScachowanychRzeczy: int = resourceManager.getAmountOfCached()
+print(f"liczba scachowanych rzeczy to {liczbaScachowanychRzeczy}")
+```
+
 
 <br><br>
 ### getGame()
@@ -201,3 +257,13 @@ Zwraca liczbe scachowanych rzeczy.
 **zwraca:** Game
 
 Jest to metoda która pozwala na uzyskanie referencji do klas.
+
+przykład użycia:
+
+```python
+# prosta funkcja zamieniająca blok na pozycji 0,0 na powietrze
+game: 'Game' = resourceManager.getGame()
+block: Block|None = game.getCurrentScene().getBlockByAbsPos(absolutePos=(0,0))
+
+if Block != None: block.setToAir()
+```
