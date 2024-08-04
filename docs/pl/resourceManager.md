@@ -16,7 +16,7 @@ Całość resource Managera jest zlokalizowana w **bin/namespace.py**, głównie
 
 ## Czym jest?
 
-jest to przestrzeń nazw zawierająca dane o wszystkich istniejących id, entitach (rodzaje) oraz blokach (rodzaje). Jest ładowania za pomocą  [self.namespaceReload()](docs/pl/resourceManager.md#loadfromNameSpace())
+jest to przestrzeń nazw zawierająca dane o wszystkich istniejących id, entitach (rodzaje) oraz blokach (rodzaje). Jest ładowania za pomocą  [self.namespaceReload()](docs/pl/resourceManager.md#loadfromNameSpace()). A uzyskać ją można za pomocą [resourceManager.getNameSpace()](docs/pl/resourceManager.md#getNameSpace()) lub [game.getNameSpace()](docs/pl/gameClass.md#getNameSpace()).
 
 ## struktura
 
